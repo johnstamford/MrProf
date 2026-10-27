@@ -4,10 +4,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
 WORKDIR /srv
 
-COPY requirements.txt .
+COPY requirements.txt pytest.ini ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+COPY tests ./tests
 
 EXPOSE 8000
 

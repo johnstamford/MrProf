@@ -1,43 +1,30 @@
-"""MrProf FastAPI entrypoint (Feature 1: health + readiness + Agent Framework spike)."""
+"""MrProf FastAPI entrypoint (Feature 2: assessment session + persistence)."""
 
 import importlib.metadata
 import logging
-import os
 
 from fastapi import FastAPI
-from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel
+
+from .db import get_db
+from .routes.assessments import router as assessments_router
 
 log = logging.getLogger("mrprof")
-MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://mongo:27017/mrprof")
 
 app = FastAPI(title="MrProf API")
-_client: AsyncIOMotorClient | None = None
+app.include_router(assessments_router)
 
 
-def get_client() -> AsyncIOMotorClient:
-    global _client
-    if _client is None:
-        _client = AsyncIOMotorClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
-    return _client
-
-
-class Health(BaseModel):
-    ok: bool
-    service: str = "api"
-
-
-@app.get("/health", response_model=Health)
-async def health() -> Health:
+@app.get("/health")
+async def health() -> dict:
     """Liveness: the process is up. No dependency checks."""
-    return Health(ok=True)
+    return {"ok": True, "service": "api"}
 
 
 @app.get("/ready")
 async def ready() -> dict:
     """Readiness: API can reach MongoDB."""
     try:
-        await get_client().admin.command("ping")
+        await get_db().client.admin.command("ping")
         return {"ok": True, "mongo": "ok"}
     except Exception as exc:  # noqa: BLE001 - surfaced as JSON for readiness
         log.warning("readiness mongo ping failed: %s", type(exc).__name__)
@@ -46,12 +33,8 @@ async def ready() -> dict:
 
 @app.get("/spike/agent-framework")
 async def agent_framework_spike() -> dict:
-    """Feature 1 spike: prove the pinned Agent Framework installs and a session
-    blob round-trips through MongoDB alongside assessment state.
-
-    Full interview wiring lands in Feature 5; this only locks the approach:
-    persist session state in Mongo per assessment, restore per request.
-    """
+    """Feature 1 spike: pinned Agent Framework installs and a session blob
+    round-trips through MongoDB. Full interview wiring lands in Feature 5."""
     try:
         version = importlib.metadata.version("agent-framework")
     except importlib.metadata.PackageNotFoundError:
@@ -59,7 +42,7 @@ async def agent_framework_spike() -> dict:
 
     probe = {"spike": "agent-session", "blob": {"turn": 0, "note": "roundtrip stub"}}
     try:
-        col = get_client().get_default_database()["spike_sessions"]
+        col = get_db()["spike_sessions"]
         await col.delete_many({"spike": "agent-session"})
         await col.insert_one(probe)
         found = await col.find_one({"spike": "agent-session"}, {"_id": 0})

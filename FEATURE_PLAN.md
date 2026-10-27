@@ -38,6 +38,19 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 **Depends on:** 1.
 
 **Status (27 Oct 2026): ✅ done — implemented and verified.**
+- `POST /assessments` issues `a_…` ID + one-time 32B secret (bcrypt hash stored);
+  `GET /assessments/{id}` resumes with `version/stage/status`. Unknown ID → 404,
+  missing/wrong/cross secret → 401; hash never leaves the DB.
+- `PATCH /assessments/{id}/stage`: atomic `findOneAndUpdate({_id, version,
+  idem.key != key})` — duplicate key replays stored result, stale version → 409
+  with current state.
+- `docker compose exec api pytest tests -q`: 3 passed (resume, auth isolation,
+  idempotency + conflict). HTTP acceptance: create/resume/401s/replay/409 all
+  correct; state survived `restart api mongo`; secret absent from logs.
+- Minimal `/start` page (start once, resume via ID + secret/localStorage).
+- Remaining: no key recovery by design (MVP); expiry/deletion in Feature 13.
+
+**Status (27 Oct 2026): ✅ done — implemented and verified.**
 - `docker compose up --build` starts web → api → mongo; `/api/health` → `{"ok":true}`,
   `/ready` → `{"ok":true,"mongo":"ok"}`, web page reports both reachable.
 - Agent Framework spike green: `agent-framework==1.23.0` installed, session-blob
