@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { loadSession } from "../start/page";
 
 const QUESTIONS = [
   "How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?",
@@ -35,22 +36,35 @@ export default function ScreeningPage() {
   const [saved, setSaved] = useState<Saved | null>(null);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const session = loadSession();
+    if (session) {
+      setId(session.code);
+      setPassword(session.password);
+      void load(session.code, session.password);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function setAnswer(i: number, key: string) {
     setAnswers((prev) => prev.map((v, j) => (j === i ? key : v)));
   }
 
-  async function load() {
+  async function load(code?: string, pw?: string) {
     setError("");
     setSaved(null);
-    const res = await fetch(`/api/assessments/${encodeURIComponent(id.trim().toUpperCase())}`, {
-      headers: { Authorization: `Bearer ${password}` },
+    const useCode = (code ?? id).trim().toUpperCase();
+    const usePw = pw ?? password;
+    if (!useCode || !usePw) return;
+    const res = await fetch(`/api/assessments/${encodeURIComponent(useCode)}`, {
+      headers: { Authorization: `Bearer ${usePw}` },
     });
     if (res.status === 401) return setError("wrong assessment code or password");
     if (!res.ok) return setError(`load failed: ${res.status}`);
     const body = await res.json();
     setVersion(body.version as number);
-    const s = await fetch(`/api/assessments/${encodeURIComponent(id.trim().toUpperCase())}/screening`, {
-      headers: { Authorization: `Bearer ${password}` },
+    const s = await fetch(`/api/assessments/${encodeURIComponent(useCode)}/screening`, {
+      headers: { Authorization: `Bearer ${usePw}` },
     });
     if (s.ok) {
       const data = await s.json();
@@ -95,7 +109,7 @@ export default function ScreeningPage() {
         <h2>Your assessment</h2>
         <label>Assessment code <input value={id} onChange={(e) => setId(e.target.value)} /></label>{" "}
         <label>Password <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" /></label>{" "}
-        <button onClick={load}>Load</button>
+        <button onClick={() => load()}>Load</button>
         {version !== null && <p>Loaded assessment version {version}.</p>}
       </section>
       <section>
