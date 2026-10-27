@@ -1,7 +1,7 @@
 # MrProf — Ordered Feature Plan
 
-Planning baseline: 26 October 2026. Features 1–4 are implemented and verified;
-features 5–14 below remain planned, not implemented.
+Planning baseline: 26 October 2026. Features 1–6 are implemented and verified
+(Milestone A: runnable prototype); features 7–14 below remain planned, not implemented.
 
 Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focused, and update this plan with implementation status, verification evidence, and remaining limitations. Do not infer that a working prototype is clinically validated or ready for real-user data.
 
@@ -143,6 +143,27 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 
 **Depends on:** 2. Can be developed after 4 without requiring full interview content.
 
+**Status (27 Oct 2026): ✅ done — implemented with stub food/hobbies agent and verified.**
+- Stub two-topic flow (`food-open → hobbies-open → 2 follow-ups → complete`):
+  `api/app/skills/SKILL.md` (`stub-skill-v0.1`), `api/app/topics/stub.yaml`
+  (`stub-topics-v0.1`). Explicitly non-clinical; real coverage lands in 6/9.
+- `api/app/llm.py`: `LLM_PROVIDER=dummy` (default, no network) or
+  `openai-compatible` via Agent Framework `Agent` + `OpenAIChatClient`
+  (`agent-framework==1.23.0`), `AgentSession` blob persisted per assessment.
+  Strict JSON+Pydantic validation, 1 bounded regen, `LLM_TIMEOUT_S`/`LLM_MAX_TOKENS`
+  bounds; misconfig/malformed/timeout → actionable `LLMError`, never silent.
+- `api/app/interview.py`: deterministic code planner (LLM only phrases the
+  assigned objective). `POST .../interview/start`, `POST .../interview/answer`,
+  `GET .../interview/next` (read-only resume) with atomic version-checked
+  writes + idempotency replay + 409 conflicts, mirroring screening.
+- `docker compose exec api pytest tests -q`: 20 passed (14 prior + 6 interview:
+  planner/config/parse units, full 4-turn journey, idempotency + conflict,
+  validation/auth). HTTP acceptance verified (start→Q1, answer→Q2, replay flag,
+  409/401 paths, bogus provider → `provider_unsupported` 500); secrets and
+  answers absent from logs; acceptance docs cleaned.
+- Remaining: real clinical topics/planner (Feature 6), evidence extraction
+  (Feature 7), live-model run against a real endpoint (env-only change).
+
 ## 6. First complete interview journey
 
 **Deliver:** One-question UI, a small versioned topic set, basic objective selection, persistence, completion, and an initial report.
@@ -155,6 +176,27 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 - Initial briefing distinguishes patient statements from system interpretation and makes no diagnostic conclusion.
 
 **Depends on:** 4–5.
+
+**Status (27 Oct 2026): ✅ done — implemented and verified on stub topics.**
+- Backend: `api/app/briefing.py` fixed template (no LLM) — verbatim
+  `statements` vs `system_notes` (objective/reason/model per turn) vs `gaps`
+  (all six screening-report broad areas unexplored in the stub flow).
+  `POST .../interview/answer` writes a versioned `kind: interview` briefing
+  on completion (replay-safe, no duplicates); `GET .../interview/report`
+  reopens it, 404 before completion.
+- Frontend: `web/app/interview/page.tsx` one-question journey — auto-start,
+  409 reload-and-retry-once, refresh-safe answer drafts in sessionStorage,
+  explicit completion with the full briefing (statements, system notes,
+  gaps) + links to both reports. No fake countdown (`Question N` only).
+- `api/tests/conftest.py` forces `LLM_PROVIDER=dummy` for the suite so tests
+  stay hermetic now the container env carries real credentials; live-model
+  runs remain manual acceptance only.
+- `docker compose exec api pytest tests -q`: 23 passed (20 prior + 3 briefing:
+  patient/system separation + banned-language check, lifecycle + reopen,
+  auth isolation). Live end-to-end verified against Claude (`muse-spark-1.3`):
+  screening 4/6 positive → 4 contextual turns (follow-ups referenced prior
+  answers) → screening report v1 + briefing v1 (4 statements, 6 gaps).
+  Secrets/answers absent from logs; journey fixtures cleaned.
 
 **Milestone A:** Runnable prototype. The short flow is not represented as comprehensive assessment coverage.
 

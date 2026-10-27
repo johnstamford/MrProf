@@ -1,0 +1,21 @@
+# Stub interview topics — v0.1 (Feature 5 flow test only, NOT clinical)
+version: stub-topics-v0.1
+note: Non-clinical placeholders (food, hobbies) to test the interview loop.
+  Real ADHD coverage lands in Features 6/9; taxonomy in Feature 7.
+objectives:
+  - id: food-open
+    title: What you like to eat
+    goal: Elicit an open-ended answer about favourite foods or meals.
+    opener: "What do you most like to eat, and what makes it a favourite?"
+  - id: hobbies-open
+    title: Hobbies and free time
+    goal: Elicit an open-ended answer about hobbies or free-time activities.
+    opener: "What do you like to do in your free time?"
+  - id: food-followup
+    title: Food follow-up
+    goal: Ask one brief follow-up for detail about the food answer.
+    opener: "Can you tell me a bit more about a recent meal you enjoyed?"
+  - id: hobbies-followup
+    title: Hobbies follow-up
+    goal: Ask one brief follow-up for detail about the hobbies answer.
+    opener: "Can you tell me a bit more about the last time you did one of those activities?"

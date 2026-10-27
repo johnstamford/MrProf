@@ -2,28 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-export const SESSION_CODE_KEY = "mrprof.assessment_code";
-export const SESSION_PASSWORD_KEY = "mrprof.assessment_password";
-
-export function saveSession(code: string, password: string) {
-  try {
-    sessionStorage.setItem(SESSION_CODE_KEY, code.toUpperCase());
-    sessionStorage.setItem(SESSION_PASSWORD_KEY, password);
-  } catch {
-    // Private-mode storage may throw; manual entry remains as fallback.
-  }
-}
-
-export function loadSession(): { code: string; password: string } | null {
-  try {
-    const code = sessionStorage.getItem(SESSION_CODE_KEY) ?? "";
-    const password = sessionStorage.getItem(SESSION_PASSWORD_KEY) ?? "";
-    return code && password ? { code, password } : null;
-  } catch {
-    return null;
-  }
-}
+import { saveSession } from "../../lib/session";
 
 type Created = { assessment_id: string; version: number; stage: string };
 type Fetched = { assessment_id: string; version: number; stage: string; status: string };
@@ -55,7 +34,7 @@ export default function StartPage() {
     setCreated(body);
     setId(body.assessment_id);
     setPassword(newPassword);
-    goToScreening(body.assessment_id, newPassword);
+    // Stay on this screen: the user must save code + password before continuing.
   }
 
   async function resume() {
@@ -69,7 +48,7 @@ export default function StartPage() {
     if (!res.ok) return setError(`resume failed: ${res.status}`);
     const body = (await res.json()) as Fetched;
     setFetched(body);
-    goToScreening(code, password);
+    // Stay on this screen: confirm the assessment ID and recovery warning first.
   }
 
   return (
@@ -83,9 +62,16 @@ export default function StartPage() {
         <button onClick={start}>Start</button>
         {created && (
           <div>
-            <p>Write down your assessment code — you need it plus your password to resume.</p>
+            <h3>Save your assessment details</h3>
             <p>Assessment code: <code>{created.assessment_id}</code></p>
-            <p>Taking you to the screening questions…</p>
+            <p role="alert">
+              Write down your assessment code and password somewhere safe.
+              You need both to get back to your assessment — without them it
+              cannot be retrieved, and there is no password reset.
+            </p>
+            <button onClick={() => goToScreening(created.assessment_id, newPassword)}>
+              I have saved my code and password — continue →
+            </button>
           </div>
         )}
       </section>
@@ -94,7 +80,18 @@ export default function StartPage() {
         <label>Assessment code <input value={id} onChange={(e) => setId(e.target.value)} /></label>{" "}
         <label>Password <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" /></label>{" "}
         <button onClick={resume}>Resume</button>
-        {fetched && <p>Stage: {fetched.stage}, status: {fetched.status}, version: {fetched.version}. Taking you on…</p>}
+        {fetched && (
+          <div>
+            <h3>Assessment found</h3>
+            <p>Assessment code: <code>{fetched.assessment_id}</code> (stage: {fetched.stage}, status: {fetched.status})</p>
+            <p role="alert">
+              Keep your assessment code and password somewhere safe.
+              You need both to get back to your assessment — without them it
+              cannot be retrieved, and there is no password reset.
+            </p>
+            <button onClick={() => goToScreening(fetched.assessment_id, password)}>Continue →</button>
+          </div>
+        )}
       </section>
       {error && <p role="alert">{error}</p>}
     </main>

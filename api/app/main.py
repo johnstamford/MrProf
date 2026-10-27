@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from .db import get_db
 from .routes.assessments import router as assessments_router
+from .routes.interview import router as interview_router
 from .routes.screening import router as screening_router
 
 log = logging.getLogger("mrprof")
@@ -14,6 +15,7 @@ log = logging.getLogger("mrprof")
 app = FastAPI(title="MrProf API")
 app.include_router(assessments_router)
 app.include_router(screening_router)
+app.include_router(interview_router)
 
 
 @app.get("/health")

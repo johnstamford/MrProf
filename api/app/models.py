@@ -102,3 +102,87 @@ class ScreeningReportOut(BaseModel):
     interview_offer: InterviewOffer
     next_section: NextSection
     completed_at: datetime
+
+
+class InterviewStartRequest(BaseModel):
+    base_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=128)
+
+
+class InterviewAnswerRequest(BaseModel):
+    answer_text: str = Field(min_length=1, max_length=2000)
+    base_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=128)
+
+
+class InterviewQuestionOut(BaseModel):
+    turn: int
+    objective: str
+    reason: str
+    text: str
+    model_provider: str
+    model_name: str
+    skill_version: str
+    topic_version: str
+
+
+class InterviewStartResult(BaseModel):
+    assessment_id: str
+    version: int
+    stage: str
+    status: str
+    question: InterviewQuestionOut
+    replayed: bool = False
+
+
+class InterviewAnswerResult(BaseModel):
+    assessment_id: str
+    version: int
+    turn_answered: int
+    status: str
+    question: InterviewQuestionOut | None = None
+    completed: bool = False
+    replayed: bool = False
+
+
+class InterviewNextOut(BaseModel):
+    assessment_id: str
+    version: int
+    status: str
+    turns_answered: int
+    question: InterviewQuestionOut | None = None
+    completed: bool = False
+
+
+class BriefingStatement(BaseModel):
+    turn: int
+    question: str
+    answer: str
+
+
+class BriefingSystemNote(BaseModel):
+    turn: int
+    objective: str
+    reason: str
+    model_provider: str
+    model_name: str
+
+
+class BriefingGap(BaseModel):
+    area: str
+    status: str
+
+
+class InterviewBriefingOut(BaseModel):
+    assessment_id: str
+    report_version: int
+    kind: str
+    skill_version: str
+    topic_version: str
+    banner: str
+    completion_note: str
+    turns_answered: int
+    statements: list[BriefingStatement]
+    system_notes: list[BriefingSystemNote]
+    gaps: list[BriefingGap]
+    completed_at: datetime

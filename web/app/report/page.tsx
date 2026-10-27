@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { loadSession } from "../start/page";
+import { loadSession } from "../../lib/session";
 
 type Answer = { n: string; question: string; answer: string; counted: boolean };
 type Report = {

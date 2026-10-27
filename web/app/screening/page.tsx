@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { loadSession } from "../start/page";
+import { loadSession } from "../../lib/session";
 
 const QUESTIONS = [
   "How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?",
