@@ -1,4 +1,4 @@
-"""Feature 5 focused checks: stub interview flow (food/hobbies), real API path.
+"""Feature 5 focused checks: draft-topics interview flow, real API path.
 
 Run inside the api container: docker compose exec api pytest tests -q
 Default env has no LLM credentials, so the deterministic dummy provider
@@ -13,7 +13,7 @@ from httpx import ASGITransport, AsyncClient
 
 os.environ.setdefault("MONGODB_DB", "mrprof")
 
-from app.interview import MAX_STUB_TURNS, plan_next  # noqa: E402
+from app.interview import MAX_TURNS, PLAN_ORDER, SKILL_VERSION, TOPIC_VERSION, plan_next  # noqa: E402
 from app.llm import is_dummy, load_config, parse_llm_json  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -42,13 +42,13 @@ def _auth(password: str) -> dict:
 
 
 def test_unit_planner_sequence():
-    assert plan_next([])[0] == "food-open"
-    assert plan_next([{"objective": "food-open", "answer": "pizza"}])[0] == "food-followup"
-    assert plan_next([{"objective": t, "answer": "x"} for t in ("food-open", "food-followup")])[0] == "hobbies-open"
+    assert plan_next([])[0] == PLAN_ORDER[0] == "attention-tasks"
+    assert plan_next([{"objective": PLAN_ORDER[0], "answer": "x"}])[0] == PLAN_ORDER[1]
+    assert plan_next([{"objective": t, "answer": "x"} for t in PLAN_ORDER[:5]])[0] == PLAN_ORDER[5]
     assert plan_next(
-        [{"objective": t, "answer": "x"} for t in ("food-open", "food-followup", "hobbies-open")]
-    )[0] == "hobbies-followup"
-    _, _, done_full = plan_next([{"objective": f"t{i}", "answer": "x"} for i in range(MAX_STUB_TURNS)])
+        [{"objective": t, "answer": "x"} for t in PLAN_ORDER[:4]]
+    )[0] == PLAN_ORDER[4]
+    _, _, done_full = plan_next([{"objective": t, "answer": "x"} for t in PLAN_ORDER])
     assert done_full is True
 
 
@@ -56,11 +56,11 @@ def test_unit_dummy_config_and_strict_parse():
     cfg = load_config()
     # No credentials in test env -> dummy path, no network.
     assert is_dummy(cfg) is True
-    q = parse_llm_json('{"question_text": "What do you like to eat?", "reason": "why now"}', "food-open")
-    assert (q.question_text, q.objective) == ("What do you like to eat?", "food-open")
+    q = parse_llm_json('{"question_text": "What tasks are hardest?", "reason": "why now"}', "attention-tasks")
+    assert (q.question_text, q.objective) == ("What tasks are hardest?", "attention-tasks")
     for bad in ('not json', "[1,2]", '{"question_text": "x"}', '{"question_text": "Q?", "reason": "why"}'):
         try:
-            parse_llm_json(bad, "food-open")
+            parse_llm_json(bad, "attention-tasks")
         except Exception:
             pass
         else:
@@ -103,8 +103,8 @@ async def test_start_answer_resume_complete(client):
     assert started["response"].status_code == 200, started["response"].text
     body = started["response"].json()
     assert body["version"] == 2 and body["stage"] == "interview"
-    assert body["question"]["turn"] == 1 and body["question"]["objective"] == "food-open"
-    assert "eat" in body["question"]["text"].lower()
+    assert body["question"]["turn"] == 1 and body["question"]["objective"] == PLAN_ORDER[0]
+    assert "tasks" in body["question"]["text"].lower()
     assert body["question"]["model_provider"] == "dummy"
 
     nxt = await client.get(f"{base}/interview/next", headers=headers)
@@ -114,7 +114,7 @@ async def test_start_answer_resume_complete(client):
     assert nxt.json()["version"] == 2
 
     version, last = 2, None
-    for i in range(MAX_STUB_TURNS):
+    for i in range(MAX_TURNS):
         key = f"fk5-ans-{uuid.uuid4().hex[:8]}"
         res = await client.post(
             f"{base}/interview/answer",
@@ -125,10 +125,10 @@ async def test_start_answer_resume_complete(client):
         last = res.json()
         version = last["version"]
         if i == 0:
-            # Topic finishes before moving on: food follow-up comes second.
-            assert last["question"]["objective"] == "food-followup"
+            # Topic finishes before moving on: second topic comes second.
+            assert last["question"]["objective"] == PLAN_ORDER[1]
     assert last["completed"] is True and last["status"] == "complete"
-    assert last["question"] is None and last["turn_answered"] == MAX_STUB_TURNS
+    assert last["question"] is None and last["turn_answered"] == MAX_TURNS
 
     nxt2 = await client.get(f"{base}/interview/next", headers=headers)
     assert nxt2.json()["completed"] is True and nxt2.json()["question"] is None

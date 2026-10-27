@@ -1,0 +1,31 @@
+# Interview topics — v0.2 DRAFT (NOT clinically reviewed)
+version: topics-v0.2-draft
+note: First draft of experience-focused topics, one per broad area from the
+  screening report. Open-ended and non-leading by design: no diagnostic
+  language, no suggested causation, no compound questions. Draft for review —
+  coverage and stop rules stay provisional until Features 7/9 + clinical review.
+objectives:
+  - id: attention-tasks
+    title: Attention and getting things done
+    goal: Elicit an open-ended account of starting, sustaining, and finishing tasks.
+    opener: "Think about an ordinary week. What kinds of tasks are hardest for you to start or finish?"
+  - id: restlessness
+    title: Restlessness and staying with one thing
+    goal: Elicit an open-ended account of restlessness or difficulty staying with one activity.
+    opener: "When you need to sit still or stay with one thing, what is that like for you?"
+  - id: history-course
+    title: Background and history over time
+    goal: Elicit when these difficulties were first noticed and how they changed. Accept cannot-remember.
+    opener: "Looking back, when did you first notice these kinds of difficulties, and how have they changed over time?"
+  - id: impact-life
+    title: Impact on work, study, and relationships
+    goal: Elicit a concrete recent example of impact, without suggesting causation.
+    opener: "Can you describe a recent time when these difficulties affected your work, studies, or relationships?"
+  - id: context-factors
+    title: Sleep, stress, mood, and health context
+    goal: Elicit factors the person links with better or worse periods, without suggesting causation.
+    opener: "Are there things like sleep, stress, mood, or health that seem to make these difficulties better or worse?"
+  - id: strategies
+    title: Strategies and support
+    goal: Elicit routines, reminders, help from others, or workarounds the person uses.
+    opener: "What do you do to cope with or work around these difficulties — routines, reminders, help from others?"

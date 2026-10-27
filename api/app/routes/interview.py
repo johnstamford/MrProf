@@ -1,4 +1,4 @@
-"""Feature 5: stub interview API (food/hobbies flow test, NOT clinical).
+"""Feature 5: draft-topics interview API (v0.2 DRAFT, not clinically reviewed).
 
 Endpoints (all require the assessment Bearer secret; ID is lookup only):
   POST /assessments/{id}/interview/start   begin stub interview -> Q1
@@ -21,7 +21,7 @@ from ..db import get_db
 from ..interview import (
     ANSWER_MAX_LEN,
     HARD_TURN_CAP,
-    MAX_STUB_TURNS,
+    MAX_TURNS,
     SKILL_VERSION,
     TOPIC_VERSION,
 )
@@ -235,7 +235,7 @@ async def submit_answer(
         "topic_version": pending["topic_version"],
     }
     new_history = history + [answered_turn]
-    if len(new_history) >= HARD_TURN_CAP or len(new_history) >= MAX_STUB_TURNS:
+    if len(new_history) >= HARD_TURN_CAP or len(new_history) >= MAX_TURNS:
         completed, next_turn_doc = True, None
         session_blob = iv.get("session") or {"session_id": assessment_id}
     else:

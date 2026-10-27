@@ -1,10 +1,9 @@
-"""Test-suite guard: the API suite always exercises the deterministic dummy
-provider. Live-model runs are manual acceptance only (same env, real key),
-never part of `pytest`.
+"""Test-suite guard: the API suite exercises the deterministic dummy provider
+by default so runs are hermetic and free. The live-model smoke test is
+opt-in only: `MRPROF_LIVE_SMOKE=1 pytest tests/test_live_smoke.py -q`.
 """
 
 import os
 
-os.environ["LLM_PROVIDER"] = "dummy"
-for _key in ("LLM_MODEL", "LLM_BASE_URL", "LLM_API_KEY"):
-    os.environ.pop(_key, None)
+if os.environ.get("MRPROF_LIVE_SMOKE") != "1":
+    os.environ["LLM_PROVIDER"] = "dummy"

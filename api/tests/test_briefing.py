@@ -13,7 +13,6 @@ os.environ.setdefault("MONGODB_DB", "mrprof")
 
 from app.briefing import build_interview_briefing  # noqa: E402
 from app.main import app  # noqa: E402
-from app.reports import NEXT_TOPICS  # noqa: E402
 
 
 @pytest.fixture(scope="session")
@@ -40,16 +39,18 @@ def _auth(password: str) -> dict:
 
 
 def _interview_state() -> dict:
+    from app.interview import PLAN_ORDER, SKILL_VERSION, TOPIC_VERSION
+
     return {
-        "skill_version": "stub-skill-v0.1",
-        "topic_version": "stub-topics-v0.1",
+        "skill_version": SKILL_VERSION,
+        "topic_version": TOPIC_VERSION,
         "turns": [
             {
                 "turn": 1,
-                "objective": "food-open",
-                "reason": "stub plan turn 1",
-                "question": "What do you most like to eat?",
-                "answer": "spicy ramen",
+                "objective": PLAN_ORDER[0],
+                "reason": "draft plan turn 1",
+                "question": "What kinds of tasks are hardest?",
+                "answer": "starting paperwork",
                 "model_provider": "dummy",
                 "model_name": "dummy-stub",
             }
@@ -64,12 +65,17 @@ def test_unit_briefing_separates_patient_from_system():
     assert content["turns_answered"] == 1
     # Patient section carries verbatim Q/A only — no objectives/reasons.
     assert set(content["statements"][0]) == {"turn", "question", "answer"}
-    assert content["statements"][0]["answer"] == "spicy ramen"
+    assert content["statements"][0]["answer"] == "starting paperwork"
     # System section carries planning metadata — no answers.
     assert set(content["system_notes"][0]) == {"turn", "objective", "reason", "model_provider", "model_name"}
     assert "answer" not in content["system_notes"][0]
-    # Stub covers food/hobbies only: all six broad areas are gaps.
-    assert [g["area"] for g in content["gaps"]] == list(NEXT_TOPICS)
+    # One of six draft topics covered: the other five are gaps.
+    from app.interview import PLAN_ORDER, load_topics
+
+    topics = load_topics()
+    assert [g["area"] for g in content["gaps"]] == [topics[oid]["title"] for oid in PLAN_ORDER[1:]]
+    assert content["skill_version"] == "skill-v0.2-draft"
+    assert content["topic_version"] == "topics-v0.2-draft"
     # No diagnostic, probability, or severity language.
     blob = " ".join([content["banner"], content["completion_note"]]).lower()
     for banned in ("you have adhd", "probability", "severity", "mild", "moderate", "severe", "%"):
@@ -86,7 +92,7 @@ async def _run_full_journey(client, created) -> None:
     )
     assert res.status_code == 200
     version = res.json()["version"]
-    for _ in range(4):
+    for _ in range(6):
         res = await client.post(
             f"{base}/interview/answer",
             json={
@@ -114,10 +120,10 @@ async def test_briefing_lifecycle(client):
     first = await client.get(f"{base}/interview/report", headers=headers)
     assert first.status_code == 200
     body = first.json()
-    assert body["report_version"] == 1 and body["turns_answered"] == 4
-    assert len(body["statements"]) == 4 and len(body["system_notes"]) == 4
-    assert len(body["gaps"]) == len(NEXT_TOPICS)
-    assert body["skill_version"] == "stub-skill-v0.1"
+    assert body["report_version"] == 1 and body["turns_answered"] == 6
+    assert len(body["statements"]) == 6 and len(body["system_notes"]) == 6
+    assert body["gaps"] == []  # full run covers every draft topic
+    assert body["skill_version"] == "skill-v0.2-draft"
     # Reopen returns the same versioned briefing.
     second = await client.get(f"{base}/interview/report", headers=headers)
     assert second.json() == body

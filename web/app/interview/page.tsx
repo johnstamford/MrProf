@@ -272,7 +272,7 @@ export default function InterviewPage() {
   return (
     <main>
       <h1>MrProf — interview</h1>
-      <p>Short test interview about food and hobbies. One question at a time — there is no time limit.</p>
+      <p>Draft interview, one question at a time — there is no time limit. Topics are a first draft, not a clinical assessment.</p>
       <p>Question {question ? question.turn : "…"} · {turnsAnswered} answered so far</p>
       {question && (
         <section>

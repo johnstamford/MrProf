@@ -197,6 +197,14 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
   screening 4/6 positive → 4 contextual turns (follow-ups referenced prior
   answers) → screening report v1 + briefing v1 (4 statements, 6 gaps).
   Secrets/answers absent from logs; journey fixtures cleaned.
+- Topics v0.2-draft added post-Milestone-A at owner request (early start on
+  real topics; evidence engine still Feature 7): `topics/v0.2.yaml` +
+  `skill-v0.2-draft`, six experience-focused objectives asked once each in
+  fixed order, briefing gaps now computed from uncovered plan topics.
+  All draft-labeled, not clinically reviewed. Suite: 23 passed + 1 live
+  smoke skipped by default (`tests/test_live_smoke.py`, opt-in via
+  `MRPROF_LIVE_SMOKE=1`; verified passing live: 2 model-phrased turns).
+  Full 6-turn live journey re-verified with contextual questions.
 
 **Milestone A:** Runnable prototype. The short flow is not represented as comprehensive assessment coverage.
 

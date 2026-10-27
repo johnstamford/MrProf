@@ -1,29 +1,28 @@
-"""Feature 6: initial interview briefing from stored stub-interview state.
+"""Feature 6: initial interview briefing from stored interview state.
 
 Fixed template, no LLM. Patient statements (verbatim questions/answers)
-stay separate from system notes (per-question objective/reason). The stub
-flow covers food/hobbies only, so the six broad areas named in the
-screening report are listed as unexplored gaps — gaps are documented,
-never treated as negative findings. No diagnostic language.
+stay separate from system notes (per-question objective/reason). Topics
+not yet covered are listed as unexplored gaps — gaps are documented,
+never treated as negative findings. Draft topics, not clinically
+reviewed. No diagnostic language.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
 
-from .reports import NEXT_TOPICS
+from .interview import PLAN_ORDER, load_topics
 
 BRIEFING_BANNER = (
-    "Short-flow test briefing (unreviewed). This summarizes what was reported "
-    "in a short stub interview about food and hobbies. It is not a clinical "
-    "assessment. Only a qualified clinician can determine what explains a "
-    "person's experiences."
+    "Draft-topics briefing (unreviewed). This summarizes what was reported "
+    "in a short interview using draft topics that are not clinically reviewed. "
+    "It is not a clinical assessment. Only a qualified clinician can determine "
+    "what explains a person's experiences."
 )
 
 COMPLETION_NOTE = (
-    "Information gathering for this short test flow has ended. The areas below "
-    "were not explored in this flow; they are recorded as gaps, not as negative "
-    "findings."
+    "Information gathering for this short flow has ended. Topics below were "
+    "not covered in this flow; they are recorded as gaps, not as negative findings."
 )
 
 
@@ -35,6 +34,8 @@ def build_interview_briefing(
 ) -> dict:
     """Build the fixed briefing content dict from stored interview state."""
     turns = interview.get("turns", [])
+    covered = {t["objective"] for t in turns}
+    topics = load_topics()
     return {
         "assessment_id": assessment_id,
         "report_version": report_version,
@@ -58,6 +59,10 @@ def build_interview_briefing(
             }
             for t in turns
         ],
-        "gaps": [{"area": area, "status": "unexplored in this short flow"} for area in NEXT_TOPICS],
+        "gaps": [
+            {"area": topics[oid].get("title", oid), "status": "unexplored in this short flow"}
+            for oid in PLAN_ORDER
+            if oid not in covered
+        ],
         "completed_at": completed_at,
     }
