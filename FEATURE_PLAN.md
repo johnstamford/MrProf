@@ -1,6 +1,7 @@
 # MrProf — Ordered Feature Plan
 
-Planning baseline: 26 October 2026. All features below are planned, not implemented.
+Planning baseline: 26 October 2026. Features 1–4 are implemented and verified;
+features 5–14 below remain planned, not implemented.
 
 Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focused, and update this plan with implementation status, verification evidence, and remaining limitations. Do not infer that a working prototype is clinically validated or ready for real-user data.
 
@@ -22,6 +23,19 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 - Dependency versions are pinned and the currently supported Agent Framework integration approach is identified.
 
 **Depends on:** None. Pick routine package/tooling defaults and document them.
+
+**Status (27 Oct 2026): ✅ done — implemented and verified.**
+- `docker compose up --build` starts web → api → mongo; `/api/health` → `{"ok":true}`,
+  `/ready` → `{"ok":true,"mongo":"ok"}`, web page reports both reachable.
+- Agent Framework spike green: `agent-framework==1.23.0` installed, session-blob
+  Mongo round-trip `ok` via `GET /spike/agent-framework`. Note: requires
+  `fastapi==0.141.1` (`agent-framework-ag-ui` caps `fastapi<0.142`).
+- Persistence verified: seeded doc survived `down`/`up` via `mrprof_mongo_data`
+  named volume; probe cleaned up afterwards.
+- MongoDB publishes no ports in the default stack; api bound to `127.0.0.1:8000`
+  only; `.env` ignored, no secrets in repo. (Localhost-only MongoDB port lives in
+  `docker-compose.dev.yml` for Compass; default `up` stays portless.)
+- Remaining: model/provider choice + interview wiring (Feature 5).
 
 ## 2. Assessment session and persistence
 
@@ -51,18 +65,6 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
   state survived service restart; secret absent from logs. Test data cleaned.
 - Minimal `/start` page: choose password → get code; resume via code + password.
 - Remaining: no password recovery by design (MVP); expiry/deletion in Feature 13.
-
-**Status (27 Oct 2026): ✅ done — implemented and verified.**
-- `docker compose up --build` starts web → api → mongo; `/api/health` → `{"ok":true}`,
-  `/ready` → `{"ok":true,"mongo":"ok"}`, web page reports both reachable.
-- Agent Framework spike green: `agent-framework==1.23.0` installed, session-blob
-  Mongo round-trip `ok` via `GET /spike/agent-framework`. Note: requires
-  `fastapi==0.141.1` (`agent-framework-ag-ui` caps `fastapi<0.142`).
-- Persistence verified: seeded doc survived `down`/`up` via `mrprof_mongo_data`
-  named volume; probe cleaned up afterwards.
-- MongoDB publishes no ports; api bound to `127.0.0.1:8000` only; `.env` ignored,
-  no secrets in repo.
-- Remaining: model/provider choice + interview wiring (Feature 5).
 
 ## 3. Six-question ASRS screening
 
