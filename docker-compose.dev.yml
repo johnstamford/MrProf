@@ -1,7 +1,12 @@
 # Dev-only tooling. NOT loaded by plain `docker compose up`.
 # Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-# MongoDB itself still publishes no ports; only Express listens, on localhost.
+# MongoDB publishes a localhost-only port (for Compass etc.) only when this
+# override is loaded; plain `docker compose up` keeps it portless.
 services:
+  mongo:
+    # Localhost-only, for Compass etc. Never expose this publicly.
+    ports:
+      - "127.0.0.1:27017:27017"
   mongo-express:
     image: mongo-express:1
     depends_on:
