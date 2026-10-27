@@ -14,11 +14,17 @@ export default function StartPage() {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [fetched, setFetched] = useState<Fetched | null>(null);
+  const [resumeTarget, setResumeTarget] = useState("/screening");
   const [error, setError] = useState("");
 
   function goToScreening(code: string, pw: string) {
     saveSession(code, pw);
     router.push("/screening");
+  }
+
+  function goTo(code: string, pw: string, path: string) {
+    saveSession(code, pw);
+    router.push(path);
   }
 
   async function start() {
@@ -41,13 +47,17 @@ export default function StartPage() {
     setError("");
     setFetched(null);
     const code = id.trim().toUpperCase();
-    const res = await fetch(`/api/assessments/${encodeURIComponent(code)}`, {
-      headers: { Authorization: `Bearer ${password}` },
-    });
+    const headers = { Authorization: `Bearer ${password}` };
+    const res = await fetch(`/api/assessments/${encodeURIComponent(code)}`, { headers });
     if (res.status === 401) return setError("wrong assessment code or password");
     if (!res.ok) return setError(`resume failed: ${res.status}`);
     const body = (await res.json()) as Fetched;
     setFetched(body);
+    // Route to the furthest progress: an in-progress or finished interview
+    // resumes on the interview page (pending question or briefing);
+    // otherwise continue with the screening questions.
+    const next = await fetch(`/api/assessments/${encodeURIComponent(code)}/interview/next`, { headers });
+    setResumeTarget(next.ok ? "/interview" : "/screening");
     // Stay on this screen: confirm the assessment ID and recovery warning first.
   }
 
@@ -89,7 +99,9 @@ export default function StartPage() {
               You need both to get back to your assessment — without them it
               cannot be retrieved, and there is no password reset.
             </p>
-            <button onClick={() => goToScreening(fetched.assessment_id, password)}>Continue →</button>
+            <button onClick={() => goTo(fetched.assessment_id, password, resumeTarget)}>
+              Continue to {resumeTarget === "/interview" ? "interview" : "screening"} →
+            </button>
           </div>
         )}
       </section>
