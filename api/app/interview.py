@@ -22,9 +22,6 @@ HARD_TURN_CAP = 30
 ANSWER_MIN_LEN = 1
 ANSWER_MAX_LEN = 2000
 
-OBJECTIVE_ORDER = ("food-open", "hobbies-open")
-FOLLOWUP_OF = {"food-open": "food-followup", "hobbies-open": "hobbies-followup"}
-
 _FALLBACK_OPENERS = {
     "food-open": "What do you most like to eat, and what makes it a favourite?",
     "hobbies-open": "What do you like to do in your free time?",
@@ -71,24 +68,21 @@ def fallback_question(objective: str) -> str:
 
 
 def plan_next(turns: list[dict]) -> tuple[str, str, bool]:
-    """Return (objective_id, reason, complete). Pure function of answered turns."""
+    """Return (objective_id, reason, complete). Pure function of answered turns.
+
+    One topic is finished before the next begins: food open -> food
+    follow-up -> hobbies open -> hobbies follow-up (max 1 follow-up probe
+    per topic in this stub; the 3-probe limit lives in the full planner).
+    """
+    order = ("food-open", "food-followup", "hobbies-open", "hobbies-followup")
     n = len(turns)
-    if n < len(OBJECTIVE_ORDER):
-        obj = OBJECTIVE_ORDER[n]
-        return obj, f"stub plan turn {n + 1}: cover {obj} in fixed order", False
-    if n >= MAX_STUB_TURNS:
+    if n >= len(order):
         return "", f"stub complete after {n} answered turns", True
-    # Follow-ups: shortest answer's topic first.
-    lens = {}
-    for t in turns:
-        lens[t.get("objective", "")] = len(t.get("answer", ""))
-    first_open = min(OBJECTIVE_ORDER, key=lambda o: lens.get(o, 0))
-    done_followups = {t.get("objective") for t in turns} & set(FOLLOWUP_OF.values())
-    if FOLLOWUP_OF[first_open] not in done_followups:
-        obj = FOLLOWUP_OF[first_open]
-        return obj, f"stub plan turn {n + 1}: follow up on shortest answer ({first_open})", False
-    other = next(o for o in OBJECTIVE_ORDER if o != first_open)
-    return FOLLOWUP_OF[other], f"stub plan turn {n + 1}: follow up on {other}", False
+    obj = order[n]
+    if obj.endswith("followup"):
+        base = obj.removesuffix("-followup")
+        return obj, f"stub plan turn {n + 1}: one follow-up to finish the {base} topic", False
+    return obj, f"stub plan turn {n + 1}: open the {obj.removesuffix('-open')} topic", False
 
 
 def build_prompt(

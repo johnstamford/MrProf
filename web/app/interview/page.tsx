@@ -220,7 +220,7 @@ export default function InterviewPage() {
     return (
       <main>
         <h1>MrProf — interview</h1>
-        <p>Loading…</p>
+        <p role="status">Starting your interview — this can take a few seconds…</p>
         {error && <p role="alert">{error}</p>}
       </main>
     );
@@ -279,11 +279,12 @@ export default function InterviewPage() {
           <p><strong>{question.text}</strong></p>
           <label>
             Your answer{" "}
-            <textarea value={answer} onChange={(e) => onType(e.target.value)} rows={4} cols={60} />
+            <textarea value={answer} onChange={(e) => onType(e.target.value)} rows={4} cols={60} disabled={saving} />
           </label>
           <div>
-            <button onClick={submit} disabled={saving}>{saving ? "Saving…" : "Save and continue →"}</button>
+            <button onClick={submit} disabled={saving}>{saving ? "Thinking…" : "Save and continue →"}</button>
           </div>
+          {saving && <p role="status">Waiting for the next question — usually a few seconds…</p>}
         </section>
       )}
       {error && <p role="alert">{error}</p>}

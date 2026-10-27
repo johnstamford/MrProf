@@ -42,17 +42,12 @@ def _auth(password: str) -> dict:
 
 
 def test_unit_planner_sequence():
-    obj1, _, done1 = plan_next([])
-    assert (obj1, done1) == ("food-open", False)
-    obj2, _, done2 = plan_next([{"objective": "food-open", "answer": "pizza"}])
-    assert (obj2, done2) == ("hobbies-open", False)
-    obj3, _, done3 = plan_next(
-        [
-            {"objective": "food-open", "answer": "pizza and long pasta story"},
-            {"objective": "hobbies-open", "answer": "chess"},
-        ]
-    )
-    assert (obj3, done3) == ("hobbies-followup", False)
+    assert plan_next([])[0] == "food-open"
+    assert plan_next([{"objective": "food-open", "answer": "pizza"}])[0] == "food-followup"
+    assert plan_next([{"objective": t, "answer": "x"} for t in ("food-open", "food-followup")])[0] == "hobbies-open"
+    assert plan_next(
+        [{"objective": t, "answer": "x"} for t in ("food-open", "food-followup", "hobbies-open")]
+    )[0] == "hobbies-followup"
     _, _, done_full = plan_next([{"objective": f"t{i}", "answer": "x"} for i in range(MAX_STUB_TURNS)])
     assert done_full is True
 
@@ -129,6 +124,9 @@ async def test_start_answer_resume_complete(client):
         assert res.status_code == 200, res.text
         last = res.json()
         version = last["version"]
+        if i == 0:
+            # Topic finishes before moving on: food follow-up comes second.
+            assert last["question"]["objective"] == "food-followup"
     assert last["completed"] is True and last["status"] == "complete"
     assert last["question"] is None and last["turn_answered"] == MAX_STUB_TURNS
 
