@@ -1,32 +1,41 @@
-"""Feature 5: draft-topics interview API (v0.2 DRAFT, not clinically reviewed).
+"""Feature 7: interview API with immutable transcripts + evidence extraction.
 
 Endpoints (all require the assessment Bearer secret; ID is lookup only):
-  POST /assessments/{id}/interview/start   begin stub interview -> Q1
-  POST /assessments/{id}/interview/answer  save answer -> next Q or complete
+  POST /assessments/{id}/interview/start   begin interview -> Q1
+  POST /assessments/{id}/interview/answer  save answer -> extract -> next Q
   GET  /assessments/{id}/interview/next    read-only resume (no version change)
+  GET  /assessments/{id}/interview/transcript  verbatim segments, read-only
+  GET  /assessments/{id}/interview/evidence    versioned observations, read-only
 
 Concurrency/idempotency mirror the screening endpoint: writes match only
 the exact base_version with an unseen idempotency key; replays return the
-stored result; otherwise 409. Model failures never write state, so a retry
-with the same key is always safe.
+stored result; otherwise 409. Extraction runs after the atomic turn write
+and never blocks the interview loop: model failures leave the saved turn
+intact with evidence pending.
 """
 
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
+from pymongo.errors import DuplicateKeyError
 
 from .. import interview as planner
 from ..briefing import build_interview_briefing
 from ..db import get_db
+from ..extraction import extract_turn, upsert_evidence
 from ..interview import (
     ANSWER_MAX_LEN,
     HARD_TURN_CAP,
     MAX_TURNS,
+    PLAN_ORDER,
     SKILL_VERSION,
     TOPIC_VERSION,
 )
 from ..llm import LLMError, generate_next_question, load_config
 from ..models import (
+    EvidenceOut,
+    EvidenceTurnOut,
     InterviewAnswerRequest,
     InterviewAnswerResult,
     InterviewBriefingOut,
@@ -34,10 +43,14 @@ from ..models import (
     InterviewQuestionOut,
     InterviewStartRequest,
     InterviewStartResult,
+    TranscriptOut,
 )
+from ..transcripts import segment_text
 from .assessments import require_assessment
 
 router = APIRouter(prefix="/assessments", tags=["interview"])
+
+log = logging.getLogger("mrprof")
 
 
 def _now() -> datetime:
@@ -92,6 +105,99 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
         fallback_question=planner.fallback_question(objective),
         session_id=assessment_id,
     )
+
+
+async def _append_transcript(
+    assessment_id: str, turn: int, question: str, answer: str | None
+) -> list[dict]:
+    """Append Q/A segments for one turn. Append-only; replays dedupe by ID.
+
+    Returns the turn's segments for extraction. Transcript failures are
+    logged, never raised — the assessment write is the source of truth.
+    """
+    db = get_db()
+    doc = await db["transcripts"].find_one({"_id": assessment_id})
+    existing = {s["id"] for s in (doc.get("segments") if doc else [])} if doc else set()
+    start_line = (doc.get("lines", 0) + 1) if doc else 1
+    q_segs, line = segment_text(question, turn, "Q", start_line)
+    if existing and q_segs and all(s["id"] in existing for s in q_segs):
+        # Question already stored (normal case: written at start). Discard the
+        # re-segmentation so it cannot consume line numbers; answers continue
+        # exactly where the transcript left off.
+        q_segs = []
+        line = start_line
+    a_segs: list[dict] = []
+    if answer is not None:
+        a_segs, line = segment_text(answer, turn, "A", line)
+    turn_segs = q_segs + a_segs
+    fresh = [s for s in turn_segs if s["id"] not in existing]
+    now = _now()
+    try:
+        if doc is None:
+            await db["transcripts"].insert_one(
+                {
+                    "_id": assessment_id,
+                    "assessment_id": assessment_id,
+                    "skill_version": SKILL_VERSION,
+                    "topic_version": TOPIC_VERSION,
+                    "segments": fresh,
+                    "lines": line - 1,
+                    "created_at": now,
+                    "updated_at": now,
+                }
+            )
+        elif fresh:
+            await db["transcripts"].update_one(
+                {"_id": assessment_id},
+                {
+                    "$push": {"segments": {"$each": fresh}},
+                    "$set": {"lines": line - 1, "updated_at": now},
+                },
+            )
+    except DuplicateKeyError:
+        pass  # concurrent start won the insert; segments dedupe by ID below
+    except Exception as exc:  # noqa: BLE001 - transcript is secondary to the turn write
+        log.warning("transcript append failed for %s turn %d: %s", assessment_id, turn, type(exc).__name__)
+    return turn_segs
+
+
+async def _extract_and_store(
+    assessment_id: str, answered_turn: dict, history: list[dict], turn_segs: list[dict]
+) -> None:
+    """Run the extractor and upsert versioned evidence. Never raises."""
+    try:
+        result, info = await extract_turn(
+            objective=answered_turn["objective"],
+            segments=turn_segs,
+            answer=answered_turn["answer"] or "",
+            session_id=assessment_id,
+        )
+    except LLMError as exc:
+        log.warning(
+            "extraction pending for %s turn %d: %s", assessment_id, answered_turn["turn"], exc.code
+        )
+        return
+    except Exception as exc:  # noqa: BLE001 - extraction must not break the loop
+        log.warning(
+            "extraction failed for %s turn %d: %s", assessment_id, answered_turn["turn"], type(exc).__name__
+        )
+        return
+    covered = [t["objective"] for t in history]
+    gaps = [o for o in PLAN_ORDER if o not in covered]
+    try:
+        await upsert_evidence(
+            get_db(),
+            assessment_id=assessment_id,
+            turn=answered_turn["turn"],
+            result=result,
+            info=info,
+            covered=covered,
+            gaps=gaps,
+        )
+    except Exception as exc:  # noqa: BLE001 - turn already saved; evidence stays pending
+        log.warning(
+            "evidence store failed for %s turn %d: %s", assessment_id, answered_turn["turn"], type(exc).__name__
+        )
 
 
 @router.post("/{assessment_id}/interview/start", response_model=InterviewStartResult)
@@ -187,6 +293,7 @@ async def start_interview(
             status_code=409,
             detail={"error": "version_conflict", "current_version": current["version"]},
         )
+    await _append_transcript(result["_id"], 1, turn_doc["question"], None)
     return InterviewStartResult(
         assessment_id=result["_id"],
         version=result["version"],
@@ -322,6 +429,14 @@ async def submit_answer(
                 "created_at": now,
             }
         )
+    turn_segs = await _append_transcript(
+        result["_id"], answered_turn["turn"], answered_turn["question"], answered_turn["answer"]
+    )
+    if next_turn_doc is not None:
+        await _append_transcript(
+            result["_id"], next_turn_doc["turn"], next_turn_doc["question"], None
+        )
+    await _extract_and_store(result["_id"], answered_turn, new_history, turn_segs)
     return _answer_result_from_doc(result, result["version"])
 
 
@@ -370,3 +485,44 @@ async def get_interview_report(doc: dict = Depends(require_assessment)) -> Inter
         report_version=report[0]["report_version"],
         **content,
     )
+
+
+@router.get("/{assessment_id}/interview/transcript", response_model=TranscriptOut)
+async def get_transcript(doc: dict = Depends(require_assessment)) -> TranscriptOut:
+    """Read-only verbatim transcript with stable segment IDs. 404 until start."""
+    t = await get_db()["transcripts"].find_one({"_id": doc["_id"]})
+    if t is None:
+        raise HTTPException(status_code=404, detail="transcript not found")
+    return TranscriptOut(
+        assessment_id=doc["_id"],
+        skill_version=t.get("skill_version", ""),
+        topic_version=t.get("topic_version", ""),
+        segments=t.get("segments", []),
+        lines=t.get("lines", 0),
+    )
+
+
+@router.get("/{assessment_id}/interview/evidence", response_model=EvidenceOut)
+async def get_evidence(doc: dict = Depends(require_assessment)) -> EvidenceOut:
+    """Read-only versioned evidence per turn. Empty turns list before any answer."""
+    docs = (
+        await get_db()["evidence"]
+        .find({"assessment_id": doc["_id"]})
+        .sort("turn", 1)
+        .to_list(100)
+    )
+    turns = []
+    for d in docs:
+        latest = d["versions"][-1]
+        turns.append(
+            EvidenceTurnOut(
+                turn=d["turn"],
+                status=d.get("status", "complete"),
+                version=latest["version"],
+                taxonomy_version=latest["taxonomy_version"],
+                extractor=latest["extractor"],
+                observations=latest["observations"],
+                coverage=latest["coverage"],
+            )
+        )
+    return EvidenceOut(assessment_id=doc["_id"], turns=turns)

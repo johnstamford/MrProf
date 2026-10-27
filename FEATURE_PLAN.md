@@ -1,7 +1,7 @@
 # MrProf — Ordered Feature Plan
 
-Planning baseline: 26 October 2026. Features 1–6 are implemented and verified
-(Milestone A: runnable prototype); features 7–14 below remain planned, not implemented.
+Planning baseline: 26 October 2026. Features 1–7 are implemented and verified;
+features 8–14 below remain planned, not implemented.
 
 Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focused, and update this plan with implementation status, verification evidence, and remaining limitations. Do not infer that a working prototype is clinically validated or ready for real-user data.
 
@@ -223,6 +223,28 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 - Hand-reviewed synthetic examples check semantic support, not merely citation existence.
 
 **Depends on:** 6.
+
+**Status (27 Oct 2026): ✅ done — implemented and verified (taxonomy draft, not reviewed).**
+- `transcripts` collection: append-only verbatim segments (`T{turn}-Q/A{n}` + global
+  lines; paragraph breaks/lists preserved), written on start/answer with replay
+  dedupe. `GET .../interview/transcript` read-only, 404 until start.
+- `api/app/taxonomy/v0.1.yaml`: draft codes per v0.2 topic + assertion rules +
+  includes/excludes/examples. Explicitly not clinically reviewed.
+- Extractor (`api/app/extraction.py`): second Agent Framework agent per turn —
+  strict quote validation (exact substring of cited segment; altered/missing/
+  unknown code rejected), present/denied/uncertain distinct, criterion links
+  separate with rationale, contradictions retained as linked observations,
+  `review_status: pending` throughout. Runs after the atomic turn write;
+  failures degrade to evidence-pending, never break the loop.
+- `evidence` collection: idempotent per-turn docs with versioned extractions +
+  coverage snapshots (covered/gaps). `GET .../interview/evidence` read-only.
+- `api/app/llm.py` refactored: shared `build_agent`/`run_agent_text` for both agents.
+- `docker compose exec api pytest tests -q`: 32 passed (23 prior + 9 evidence:
+  segmentation, taxonomy/plan match, classifier, quote validation, contradiction
+  retention, dummy quote-exactness, transcript+evidence lifecycle + replay safety,
+  failure degradation, auth/404s). Live-verified with Claude: real observation
+  (`attention-tasks`/`present`, exact quote, coverage tracked), contiguous lines.
+  Secrets/answers absent from logs; fixtures cleaned.
 
 ## 8. Synthetic patient test runner
 

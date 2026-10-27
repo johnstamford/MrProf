@@ -186,3 +186,49 @@ class InterviewBriefingOut(BaseModel):
     system_notes: list[BriefingSystemNote]
     gaps: list[BriefingGap]
     completed_at: datetime
+
+
+class TranscriptSegment(BaseModel):
+    id: str
+    turn: int
+    role: str
+    n: int
+    text: str
+    line: int
+
+
+class TranscriptOut(BaseModel):
+    assessment_id: str
+    skill_version: str
+    topic_version: str
+    segments: list[TranscriptSegment]
+    lines: int
+
+
+class EvidenceObservationOut(BaseModel):
+    code: str
+    assertion: str
+    segment_id: str
+    quote: str
+    period: str = ""
+    setting: str = ""
+    frequency: str = ""
+    note: str = ""
+    criterion_links: list[dict] = Field(default_factory=list)
+    links: list[dict] = Field(default_factory=list)
+    review_status: str = "pending"
+
+
+class EvidenceTurnOut(BaseModel):
+    turn: int
+    status: str
+    version: int
+    taxonomy_version: str
+    extractor: dict
+    observations: list[EvidenceObservationOut]
+    coverage: dict
+
+
+class EvidenceOut(BaseModel):
+    assessment_id: str
+    turns: list[EvidenceTurnOut]

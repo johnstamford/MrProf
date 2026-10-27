@@ -173,6 +173,29 @@ async def generate_next_question(
             model_info,
             session_blob,
         )
+    agent, session = build_agent(cfg, instructions, session_id)
+    last_error: LLMError | None = None
+    current_prompt = prompt
+    for attempt in (1, 2):  # initial try + one bounded regeneration
+        text, model_info, session_blob = await run_agent_text(
+            cfg, agent, session, current_prompt, model_info, session_id
+        )
+        try:
+            return parse_llm_json(text, objective), model_info, session_blob
+        except LLMError as exc:
+            last_error = exc
+            current_prompt = (
+                "Your previous reply was not valid JSON with keys "
+                "question_text/objective/reason. Reply with JSON ONLY, no other text.\n\n"
+                + prompt
+            )
+            log.warning("malformed model output (attempt %d), retrying once", attempt)
+    assert last_error is not None
+    raise last_error
+
+
+def build_agent(cfg: LLMConfig, instructions: str, session_id: str) -> tuple:
+    """Build (agent, session). Raises actionable LLMError on any setup failure."""
     try:
         from agent_framework import Agent, AgentSession
         from agent_framework.openai import OpenAIChatClient
@@ -195,47 +218,47 @@ async def generate_next_question(
             f"LLM_BASE_URL, and credentials. ({type(exc).__name__})",
             status=500,
         )
-    last_error: LLMError | None = None
-    current_prompt = prompt
-    for attempt in (1, 2):  # initial try + one bounded regeneration
-        try:
-            response = await asyncio.wait_for(
-                agent.run(current_prompt, session=session), timeout=cfg.timeout_s
-            )
-        except (asyncio.TimeoutError, TimeoutError):
-            raise LLMError(
-                "timeout",
-                f"Model request timed out after {cfg.timeout_s}s. "
-                "No state was changed; retry with the same idempotency key.",
-                status=502,
-            )
-        except Exception as exc:
-            # Never leak keys/answers: exception text is not forwarded.
-            log.warning("model call failed: %s", type(exc).__name__)
-            raise LLMError(
-                "provider_error",
-                "Model request failed before any state was saved. Check "
-                "LLM_BASE_URL/LLM_MODEL/credentials and retry with the same "
-                f"idempotency key. ({type(exc).__name__})",
-                status=502,
-            )
-        try:
-            session_blob = session.to_dict()
-        except Exception:  # noqa: BLE001 - blob is best-effort diagnostics
-            session_blob = {"session_id": session_id}
-        text = (response.text or "").strip()
-        usage = getattr(response, "usage_details", None)
-        if usage is not None:
-            model_info["usage"] = str(usage)[:500]
-        try:
-            return parse_llm_json(text, objective), model_info, session_blob
-        except LLMError as exc:
-            last_error = exc
-            current_prompt = (
-                "Your previous reply was not valid JSON with keys "
-                "question_text/objective/reason. Reply with JSON ONLY, no other text.\n\n"
-                + prompt
-            )
-            log.warning("malformed model output (attempt %d), retrying once", attempt)
-    assert last_error is not None
-    raise last_error
+    return agent, session
+
+
+async def run_agent_text(
+    cfg: LLMConfig,
+    agent,
+    session,
+    prompt: str,
+    model_info: dict,
+    session_id: str,
+) -> tuple[str, dict, dict]:
+    """One bounded agent call. Returns (text, model_info, session_blob).
+
+    Raises LLMError (timeout / provider_error); never leaks keys or answers.
+    """
+    try:
+        response = await asyncio.wait_for(
+            agent.run(prompt, session=session), timeout=cfg.timeout_s
+        )
+    except (asyncio.TimeoutError, TimeoutError):
+        raise LLMError(
+            "timeout",
+            f"Model request timed out after {cfg.timeout_s}s. "
+            "No state was changed; retry with the same idempotency key.",
+            status=502,
+        )
+    except Exception as exc:
+        # Never leak keys/answers: exception text is not forwarded.
+        log.warning("model call failed: %s", type(exc).__name__)
+        raise LLMError(
+            "provider_error",
+            "Model request failed before any state was saved. Check "
+            "LLM_BASE_URL/LLM_MODEL/credentials and retry with the same "
+            f"idempotency key. ({type(exc).__name__})",
+            status=502,
+        )
+    try:
+        session_blob = session.to_dict()
+    except Exception:  # noqa: BLE001 - blob is best-effort diagnostics
+        session_blob = {"session_id": session_id}
+    usage = getattr(response, "usage_details", None)
+    if usage is not None:
+        model_info["usage"] = str(usage)[:500]
+    return (response.text or "").strip(), model_info, session_blob

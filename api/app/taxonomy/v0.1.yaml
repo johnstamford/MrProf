@@ -1,0 +1,49 @@
+# Evidence taxonomy — v0.1 DRAFT (NOT clinically reviewed)
+version: taxonomy-v0.1-draft
+status: draft — not clinically reviewed. Codes are a starting scaffold for traceability plumbing only; no clinical adequacy is claimed.
+assertions: present, explicitly-denied, uncertain, missing
+source_types: self-report
+note: Informant and document source types land in a later version.
+codes:
+  - id: attention-tasks
+    family: reported-behavior
+    label: Difficulty starting, sustaining, or finishing tasks
+    includes: Descriptions of trouble getting started, staying with, or completing ordinary tasks.
+    excludes: General busyness, task difficulty caused by a stated external barrier, restlessness without a task context.
+    example_present: "I stare at the form for an hour and never start it."
+    example_denied: "No, starting tasks is fine for me."
+  - id: restlessness
+    family: reported-behavior
+    label: Restlessness or difficulty staying with one activity
+    includes: Descriptions of fidgeting, feeling driven, or trouble staying seated or with one thing.
+    excludes: Ordinary exercise, task-avoidance without restlessness.
+    example_present: "I have to get up three times during every meeting."
+    example_denied: "No, I can sit still without any problem."
+  - id: history-course
+    family: development-and-course
+    label: Onset and course over time
+    includes: When difficulties were first noticed, duration, persistence, and change over time.
+    excludes: Causal explanations for why the course changed.
+    example_present: "This has been going on since primary school."
+    example_denied: "No, this only started last month after the new job."
+  - id: impact-life
+    family: functional-impact
+    label: Impact on work, study, or relationships
+    includes: Concrete examples of consequences in work, education, or relationships.
+    excludes: General dissatisfaction with no linked example.
+    example_present: "I missed two deadlines last month and got a written warning."
+    example_denied: "No, it has never really affected my work or relationships."
+  - id: context-factors
+    family: context-and-contributors
+    label: Sleep, stress, mood, or health context
+    includes: Factors the person links with better or worse periods.
+    excludes: Stated causal attribution; record the link as reported, never as causation.
+    example_present: "Everything is worse when I have slept badly."
+    example_denied: "No, sleep makes no difference as far as I can tell."
+  - id: strategies
+    family: coping-and-support
+    label: Strategies, routines, reminders, or support used
+    includes: Workarounds, reminders, routines, help from others, extra effort.
+    excludes: Treatments prescribed by a clinician (record as reported, no dosing detail needed).
+    example_present: "I set three alarms and my partner checks I am up."
+    example_denied: "No, I do not use anything like that."
