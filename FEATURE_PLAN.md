@@ -37,7 +37,7 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 
 **Depends on:** 1.
 
-**Status (27 Oct 2026): implemented and verified.**
+**Status (27 Oct 2026): ✅ done — implemented and verified.**
 - `docker compose up --build` starts web → api → mongo; `/api/health` → `{"ok":true}`,
   `/ready` → `{"ok":true,"mongo":"ok"}`, web page reports both reachable.
 - Agent Framework spike green: `agent-framework==1.23.0` installed, session-blob
