@@ -92,9 +92,9 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
   boundaries/edges, validation, resume, auth isolation, idempotency + conflict).
   HTTP acceptance verified (submit 4/6 positive, replay flag, 409/422/401 paths);
   secret absent from logs; acceptance doc cleaned. `/screening` page 200.
-- Remaining: re-verify threshold table against the official shaded PDF (Harvard
-  update URL returned 503 at build time); screening interpretation/report is
-  Feature 4 — this UI shows only the saved count, no diagnostic claim.
+- Remaining: screening interpretation/report is Feature 4 — this UI shows only
+  the saved count, no diagnostic claim. Threshold table owner-verified 27 Oct 2026
+  against the NYU patient-facing shaded PDF (Q1–Q3 from Sometimes, Q4–Q6 from Often).
 
 ## 4. Screening report and interview transition
 

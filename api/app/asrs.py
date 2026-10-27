@@ -7,10 +7,12 @@ question-specific shaded-box thresholds; >= 4 of 6 is a positive screen.
 Content source: WHO Adult ASRS v1.1 Part A patient-facing wording, used under
 the NYU terms (free clinical/non-clinical/commercial use with attribution;
 electronic versions allowed, no other modifications). Attribution retained
-verbatim in ATTRIBUTION. The February 2024 Harvard scoring-update PDF was
-unreachable (HTTP 503) at build time, so the threshold table below must be
-re-verified against the official shaded PDF when reachable. Thresholds are
-kept as explicit versioned constants — never inferred by an LLM.
+verbatim in ATTRIBUTION. Threshold table verified by the project owner against
+the NYU patient-facing English shaded PDF on 27 Oct 2026: Q1-Q3 shaded from
+Sometimes, Q4-Q6 shaded from Often. The February 2024 Harvard scoring-update
+PDF was unreachable (HTTP 503) at build time; it is informational only and
+does not change the shaded-box rule. Thresholds are kept as explicit
+versioned constants — never inferred by an LLM.
 
 Threshold table applied (documented, reviewable):
   Q1-Q3 positive on Sometimes / Often / Very often (>= Sometimes).
@@ -24,7 +26,7 @@ INSTRUMENT = "asrs-v1.1-6q"
 SCORING_METHOD = "original-0-6"
 SCORING_VERSION = (
     "WHO-Adult-ASRS-v1.1-PartA-shaded-2003/Q1-3>=Sometimes-Q4-6>=Often-cutoff4;"
-    "NYU-attribution-2026-10;harvard-update-unreachable-2026-10-27-reverify"
+    "NYU-attribution-2026-10;owner-verified-vs-NYU-patient-facing-shaded-PDF-2026-10-27"
 )
 THRESHOLD_DESCRIPTION = "Q1-Q3: Sometimes/Often/Very often; Q4-Q6: Often/Very often; positive if >=4 of 6"
 
