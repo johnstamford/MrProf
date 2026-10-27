@@ -67,6 +67,55 @@ def test_unit_dummy_config_and_strict_parse():
             raise AssertionError(f"expected LLMError for {bad}")
 
 
+def test_unit_transient_retry(monkeypatch):
+    import app.llm as llm
+
+    calls = {"n": 0}
+
+    async def flaky(*a, **k):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise llm.LLMError("timeout", "timed out", status=502)
+        return ('{"question_text": "What tasks are hardest?", "reason": "why now"}', {}, {"session_id": "s"})
+
+    monkeypatch.setattr(llm, "run_agent_text", flaky)
+    import asyncio
+
+    q, _, _ = asyncio.run(
+        llm.generate_next_question(
+            cfg=llm.LLMConfig(provider="openai-compatible", model="m", base_url="http://x", api_key="k"),
+            instructions="i",
+            prompt="p",
+            objective="attention-tasks",
+            reason="r",
+            fallback_question="fb",
+            session_id="s",
+        )
+    )
+    assert q.question_text == "What tasks are hardest?" and calls["n"] == 2
+
+    async def always_down(*a, **k):
+        raise llm.LLMError("provider_error", "down", status=502)
+
+    monkeypatch.setattr(llm, "run_agent_text", always_down)
+    try:
+        asyncio.run(
+            llm.generate_next_question(
+                cfg=llm.LLMConfig(provider="openai-compatible", model="m", base_url="http://x", api_key="k"),
+                instructions="i",
+                prompt="p",
+                objective="attention-tasks",
+                reason="r",
+                fallback_question="fb",
+                session_id="s",
+            )
+        )
+    except llm.LLMError as exc:
+        assert exc.code == "provider_error"
+    else:
+        raise AssertionError("expected LLMError after retried transient failure")
+
+
 def test_unit_provider_misconfiguration_is_actionable():
     from app.llm import LLMConfig, LLMError, require_effective_provider
 

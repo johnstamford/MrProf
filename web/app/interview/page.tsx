@@ -53,12 +53,27 @@ export default function InterviewPage() {
     return session ? { session, headers: { Authorization: `Bearer ${session.password}` } } : null;
   }, []);
 
-  const load = useCallback(async () => {
-    const auth = authHeaders();
-    if (!auth) {
-      router.replace("/start");
-      return;
-    }
+  function failureMessage(res: Response, fallback: string): Promise<string> {
+    return (async () => {
+      try {
+        const body = await res.json();
+        const detail = (body as { detail?: string | { message?: string } }).detail;
+        if (typeof detail === "string") return detail;
+        if (detail?.message) return detail.message;
+      } catch {
+        // Non-JSON error body; fall through to the generic message.
+      }
+      return `${fallback} (status ${res.status})`;
+    })();
+  }
+
+  const load = useCallback(
+    async (depth = 0) => {
+      const auth = authHeaders();
+      if (!auth) {
+        router.replace("/start");
+        return;
+      }
     const { session, headers } = auth;
     const base = `/api/assessments/${encodeURIComponent(session.code)}`;
     setError("");
@@ -85,9 +100,13 @@ export default function InterviewPage() {
         headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify({ base_version: assessed.version, idempotency_key: key }),
       });
-      if (started.status === 409) return load();
+      if (started.status === 409) {
+        if (depth < 2) return load(depth + 1);
+        setError("the interview changed while loading — please try again");
+        return;
+      }
       if (!started.ok) {
-        setError("could not start the interview — please try again");
+        setError(await failureMessage(started, "could not start the interview"));
         return;
       }
       const body = await started.json();
@@ -221,7 +240,12 @@ export default function InterviewPage() {
       <main>
         <h1>MrProf — interview</h1>
         <p role="status">Starting your interview — this can take a few seconds…</p>
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <div>
+            <p role="alert">{error}</p>
+            <button onClick={() => { setError(""); void load(); }}>Try again</button>
+          </div>
+        )}
       </main>
     );
   }

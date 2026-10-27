@@ -176,20 +176,30 @@ async def generate_next_question(
     agent, session = build_agent(cfg, instructions, session_id)
     last_error: LLMError | None = None
     current_prompt = prompt
-    for attempt in (1, 2):  # initial try + one bounded regeneration
-        text, model_info, session_blob = await run_agent_text(
-            cfg, agent, session, current_prompt, model_info, session_id
-        )
+    # Bounded attempts: one transient retry (timeout/provider blip, same prompt)
+    # plus one malformed-output regen (repair prompt). Worst case: 3 calls.
+    for attempt in (1, 2, 3):
+        try:
+            text, model_info, session_blob = await run_agent_text(
+                cfg, agent, session, current_prompt, model_info, session_id
+            )
+        except LLMError as exc:
+            if exc.code in ("timeout", "provider_error") and attempt == 1:
+                log.warning("transient model failure, retrying once: %s", exc.code)
+                continue
+            raise
         try:
             return parse_llm_json(text, objective), model_info, session_blob
         except LLMError as exc:
             last_error = exc
+            if attempt == 3:
+                break
             current_prompt = (
                 "Your previous reply was not valid JSON with keys "
                 "question_text/objective/reason. Reply with JSON ONLY, no other text.\n\n"
                 + prompt
             )
-            log.warning("malformed model output (attempt %d), retrying once", attempt)
+            log.warning("malformed model output (attempt %d), retrying", attempt)
     assert last_error is not None
     raise last_error
 
