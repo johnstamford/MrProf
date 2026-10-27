@@ -9,15 +9,15 @@ import secrets
 
 import bcrypt
 
-ID_PREFIX = "a_"
+ID_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"  # no 0/O/1/I/l: typable codes
+ID_LENGTH = 8  # 31^8 ≈ 852B: not practically enumerable, still human-usable
+ID_ATTEMPTS = 10
+
+MIN_PASSWORD_LEN = 10
 
 
 def new_assessment_id() -> str:
-    return ID_PREFIX + secrets.token_urlsafe(16)
-
-
-def new_access_secret() -> str:
-    return secrets.token_urlsafe(32)
+    return "".join(secrets.choice(ID_ALPHABET) for _ in range(ID_LENGTH))
 
 
 def hash_secret(secret: str) -> str:

@@ -7,9 +7,13 @@ from pydantic import BaseModel, Field
 STAGES = ("created", "screening", "interview", "complete")
 
 
+class AssessmentCreateRequest(BaseModel):
+    # Called "password" in the UI. Hashed with bcrypt, never stored or logged.
+    password: str = Field(min_length=10, max_length=128)
+
+
 class AssessmentCreated(BaseModel):
     assessment_id: str
-    access_secret: str  # returned once at creation, never stored or logged
     version: int
     stage: str
     status: str

@@ -27,21 +27,28 @@ async def client():
             await get_db().client.drop_database(name)
 
 
-async def _create(client) -> dict:
-    res = await client.post("/assessments")
+async def _create(client, password: str | None = None) -> dict:
+    password = password or f"correct horse {uuid.uuid4().hex[:8]}"
+    res = await client.post("/assessments", json={"password": password})
     assert res.status_code == 201
     body = res.json()
-    assert body["access_secret"] and body["assessment_id"].startswith("a_")
-    return body
+    assert len(body["assessment_id"]) == 8
+    assert "secret" not in res.text and "password" not in body
+    return {"assessment_id": body["assessment_id"], "password": password, **body}
 
 
-def _auth(secret: str) -> dict:
-    return {"Authorization": f"Bearer {secret}"}
+def _auth(password: str) -> dict:
+    return {"Authorization": f"Bearer {password}"}
+
+
+async def test_create_rejects_short_password(client):
+    res = await client.post("/assessments", json={"password": "short"})
+    assert res.status_code == 422
 
 
 async def test_create_and_resume(client):
     created = await _create(client)
-    res = await client.get(f"/assessments/{created['assessment_id']}", headers=_auth(created["access_secret"]))
+    res = await client.get(f"/assessments/{created['assessment_id']}", headers=_auth(created["password"]))
     assert res.status_code == 200
     assert res.json()["version"] == 1
     # secret hash is never exposed
@@ -57,7 +64,7 @@ async def test_auth_isolation(client):
     ).status_code == 401
     # cross-assessment secret must not work
     assert (
-        await client.get(f"/assessments/{created['assessment_id']}", headers=_auth(other["access_secret"]))
+        await client.get(f"/assessments/{created['assessment_id']}", headers=_auth(other["password"]))
     ).status_code == 401
     assert (await client.get("/assessments/a_doesnotexist", headers=_auth("x"))).status_code == 404
 
@@ -65,7 +72,7 @@ async def test_auth_isolation(client):
 async def test_idempotent_stage_update_and_conflict(client):
     created = await _create(client)
     url = f"/assessments/{created['assessment_id']}/stage"
-    headers = _auth(created["access_secret"])
+    headers = _auth(created["password"])
     payload = {"base_version": 1, "idempotency_key": "key-12345678", "stage": "screening"}
 
     first = await client.patch(url, json=payload, headers=headers)

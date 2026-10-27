@@ -5,9 +5,16 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pymongo.errors import DuplicateKeyError
 
-from ..auth import hash_secret, new_access_secret, new_assessment_id, verify_secret
+from ..auth import ID_ATTEMPTS, hash_secret, new_assessment_id, verify_secret
 from ..db import get_db
-from ..models import STAGES, AssessmentCreated, AssessmentOut, StageUpdate, StageUpdateResult
+from ..models import (
+    STAGES,
+    AssessmentCreateRequest,
+    AssessmentCreated,
+    AssessmentOut,
+    StageUpdate,
+    StageUpdateResult,
+)
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 
@@ -33,16 +40,15 @@ async def require_assessment(
 
 
 @router.post("", response_model=AssessmentCreated, status_code=201)
-async def create_assessment() -> AssessmentCreated:
-    for _ in range(3):  # retry on the astronomically unlikely ID collision
+async def create_assessment(body: AssessmentCreateRequest) -> AssessmentCreated:
+    for _ in range(ID_ATTEMPTS):
         assessment_id = new_assessment_id()
-        secret = new_access_secret()
         now = _now()
         try:
             await get_db()["assessments"].insert_one(
                 {
                     "_id": assessment_id,
-                    "secret_hash": hash_secret(secret),
+                    "secret_hash": hash_secret(body.password),
                     "version": 1,
                     "stage": "created",
                     "status": "in_progress",
@@ -53,7 +59,6 @@ async def create_assessment() -> AssessmentCreated:
             )
             return AssessmentCreated(
                 assessment_id=assessment_id,
-                access_secret=secret,
                 version=1,
                 stage="created",
                 status="in_progress",
