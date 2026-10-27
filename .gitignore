@@ -9,3 +9,5 @@ build/
 # Never commit local database dumps or synthetic/real run artefacts with answers.
 data/
 *.nsdump
+sim/runs/*/
+!sim/runs/.gitkeep

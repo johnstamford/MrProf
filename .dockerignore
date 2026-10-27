@@ -1,0 +1,12 @@
+# Root build context (api image). Keep web/node artifacts out of the image.
+.git
+web/
+node_modules/
+.next/
+sim/runs/*/
+!sim/runs/.gitkeep
+__pycache__
+*.pyc
+.venv/
+data/
+*.nsdump

@@ -1,7 +1,7 @@
 # MrProf — Ordered Feature Plan
 
-Planning baseline: 26 October 2026. Features 1–7 are implemented and verified;
-features 8–14 below remain planned, not implemented.
+Planning baseline: 26 October 2026. Features 1–8 are implemented and verified;
+features 9–14 below remain planned, not implemented.
 
 Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focused, and update this plan with implementation status, verification evidence, and remaining limitations. Do not infer that a working prototype is clinically validated or ready for real-user data.
 
@@ -259,6 +259,27 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 - Cases include vague answers, denials, contradictions, incomplete recall, and alternative explanations.
 
 **Depends on:** 6–7. Use synthetic data exclusively.
+
+**Status (27 Oct 2026): ✅ done — implemented and verified.**
+- `sim/` (root, SPIT-shaped): `profiles.py` (4 hand-authored personas covering
+  vague/denial/contradiction/incomplete-recall/alternative-explanation),
+  `persona.py` (deterministic extraction + validation: no invented details,
+  no lost uncertainty), `patient.py` (scripted DummyPatient + LLM ModelPatient),
+  `driver.py` (create → screening → interview loop vs the real API, fixed
+  answer-payload keys so ground truth structurally cannot leak, turn/time caps
+  + stop reasons + latency accounting), `artifacts.py` (5 sealed files +
+  hash manifest per run under gitignored `sim/runs/`), `run.py` CLI.
+- Patient kind is a CLI choice; interviewer/extractor always use the server's
+  own LLM config (client code must never select the model).
+- `docker compose exec api pytest tests -q`: 41 passed (37 prior + 4: profile
+  coverage, persona validation incl. violation cases, all-4 dummy journeys
+  hermetic via ASGI, contradiction verbatim flow, artifact sealing + hashes).
+  CLI verified for all 4 profiles (dummy patient vs live interviewer:
+  6 turns, complete, artifacts sealed on host via dev-overlay bind mount).
+- Known finding: live turns take ~7–30s each (model path) with occasional
+  extractor timeouts (degrade gracefully to evidence-pending). Per-turn
+  latency is now the top UX risk for the real-time interview — candidate
+  for streaming/budget work before any real-user use.
 
 ## 9. Full planned adaptive interview coverage
 
