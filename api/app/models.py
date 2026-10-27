@@ -67,3 +67,38 @@ class ScreeningOut(BaseModel):
     score: int
     positive: bool
     completed_at: datetime
+
+
+class ScreeningAnswerSummary(BaseModel):
+    n: str
+    question: str
+    answer: str
+    counted: bool
+
+
+class InterviewOffer(BaseModel):
+    offered: bool
+    next_stage: str
+    note: str
+
+
+class NextSection(BaseModel):
+    intro: str
+    topics: list[str]
+
+
+class ScreeningReportOut(BaseModel):
+    assessment_id: str
+    report_version: int
+    instrument: str
+    scoring_method: str
+    scoring_version: str
+    score: int
+    cutoff: int
+    positive: bool
+    threshold_description: str
+    answers: list[ScreeningAnswerSummary]
+    explanation: str
+    interview_offer: InterviewOffer
+    next_section: NextSection
+    completed_at: datetime

@@ -109,6 +109,25 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 
 **Depends on:** 3.
 
+**Status (27 Oct 2026): ✅ done — implemented and verified.**
+- `api/app/reports.py`: fixed template, no LLM. Positive → "further assessment
+  may be useful"; below threshold → "does not exclude ADHD or other conditions".
+  No diagnosis/exclusion-claim/probability/severity language (test-enforced).
+  Names `original-0-6`, cutoff 4, per-question answer summary, interview offer
+  for both outcomes, and next-section intro with 6 broad topics.
+- Per-question internal objectives stay hidden per owner decision (27 Oct 2026):
+  shown only as broad areas in the intro, never which objective a question serves.
+- `POST .../screening` writes a versioned doc to the `reports` collection
+  (`kind: screening`); `GET .../screening/report` returns the latest, 404 before
+  screening. Resubmission versions the report (1, 2, …).
+- `docker compose exec api pytest tests -q`: 14 passed (9 prior + 5 report:
+  missing→404, positive copy, below-threshold copy + reopen, auth isolation,
+  report versioning). HTTP acceptance verified; secret absent from logs.
+- UI: `/screening` shows **Next →** after save → `/report` (score, explanation,
+  answers, topics, Continue to interview) → `/interview` placeholder noting the
+  interview lands in Features 5–6 with answers carried forward.
+- Remaining: full interview (Features 5–6); final report layout/review is Feature 11.
+
 ## 5. Interview API and configurable model connection
 
 **Deliver:** FastAPI interview endpoints, Microsoft Agent Framework execution, server-side provider configuration, and structured Pydantic outputs.

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { loadSession } from "../start/page";
 
@@ -29,6 +30,7 @@ const ATTRIBUTION =
 type Saved = { score: number; positive: boolean; version: number; replayed?: boolean };
 
 export default function ScreeningPage() {
+  const router = useRouter();
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [version, setVersion] = useState<number | null>(null);
@@ -132,9 +134,10 @@ export default function ScreeningPage() {
         <button onClick={submit}>Save screening answers</button>
       </section>
       {saved && (
-        <p>
-          Saved. Score {saved.score} of 6 (original 0–6 method, cutoff 4){saved.replayed ? " — already saved, no duplicate created" : ""}.
-        </p>
+        <div>
+          <p>Saved. Score {saved.score} of 6 (original 0–6 method, cutoff 4).</p>
+          <button onClick={() => router.push("/report")}>Next →</button>
+        </div>
       )}
       {error && <p role="alert">{error}</p>}
       <footer>

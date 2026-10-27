@@ -11,7 +11,8 @@ from ..asrs import (
     score_answers,
 )
 from ..db import get_db
-from ..models import ScreeningOut, ScreeningResult, ScreeningSubmit
+from ..models import ScreeningOut, ScreeningReportOut, ScreeningResult, ScreeningSubmit
+from ..reports import build_screening_report
 from .assessments import require_assessment
 
 router = APIRouter(prefix="/assessments", tags=["screening"])
@@ -92,6 +93,19 @@ async def submit_screening(
         return_document=True,
     )
     if result is not None:
+        content = build_screening_report(screening_doc)
+        reports = get_db()["reports"]
+        prior = await reports.count_documents({"assessment_id": doc["_id"], "kind": "screening"})
+        await reports.insert_one(
+            {
+                "assessment_id": doc["_id"],
+                "kind": "screening",
+                "report_version": prior + 1,
+                "screening_idem_key": body.idempotency_key,
+                "content": {**content, "completed_at": now},
+                "created_at": now,
+            }
+        )
         return ScreeningResult(
             assessment_id=result["_id"], version=result["version"], score=score, positive=positive
         )
@@ -126,6 +140,25 @@ async def submit_screening(
             "error": "version_conflict",
             "current_version": current["version"],
         },
+    )
+
+
+@router.get("/{assessment_id}/screening/report", response_model=ScreeningReportOut)
+async def get_screening_report(doc: dict = Depends(require_assessment)) -> ScreeningReportOut:
+    report = (
+        await get_db()["reports"]
+        .find({"assessment_id": doc["_id"], "kind": "screening"})
+        .sort("report_version", -1)
+        .limit(1)
+        .to_list(1)
+    )
+    if not report:
+        raise HTTPException(status_code=404, detail="screening report not found")
+    content = report[0]["content"]
+    return ScreeningReportOut(
+        assessment_id=doc["_id"],
+        report_version=report[0]["report_version"],
+        **content,
     )
 
 
