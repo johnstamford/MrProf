@@ -1,0 +1,14 @@
+# Dev-only tooling. NOT loaded by plain `docker compose up`.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# MongoDB itself still publishes no ports; only Express listens, on localhost.
+services:
+  mongo-express:
+    image: mongo-express:1
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/mrprof
+      ME_CONFIG_BASICAUTH: "false"
+    ports:
+      - "127.0.0.1:8081:8081"

@@ -27,6 +27,17 @@ Persistence: `docker compose down && docker compose up -d`, then re-check
 ordinary restarts. MongoDB publishes no ports; it is reachable only inside
 the compose network.
 
+## Dev database UI (optional)
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# open http://localhost:8081 (Mongo Express, localhost only)
+```
+
+`docker-compose.dev.yml` is never loaded by plain `up`, so the default stack
+keeps MongoDB portless. Stop the UI with
+`docker compose -f docker-compose.yml -f docker-compose.dev.yml stop mongo-express`.
+
 ## Reset
 
 ```sh
