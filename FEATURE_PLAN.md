@@ -79,6 +79,23 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 
 **Depends on:** 2.
 
+**Status (27 Oct 2026): ✅ done — implemented original 0–6 and verified.**
+- Owner decision: original 0–6 (≥4 positive, Q1–Q3 ≥ Sometimes, Q4–Q6 ≥ Often),
+  labeled `original-0-6`. Supersedes the summed-0-24 note in
+  `docs/plan/mrprof-locked-plan.md`.
+- `api/app/asrs.py`: fixed wording/instructions/attribution, discrete responses,
+  pure `score_answers()` — no LLM. All 6 required; missing/invalid → 422.
+- `POST /assessments/{id}/screening` (`{answers[6], base_version, idempotency_key}`):
+  atomic version-checked write + idem replay; stale → 409. `GET .../screening`
+  resumes with instrument/method/version/answers/flags/score/completed_at.
+- `docker compose exec api pytest tests -q`: 9 passed (4 session + 5 screening:
+  boundaries/edges, validation, resume, auth isolation, idempotency + conflict).
+  HTTP acceptance verified (submit 4/6 positive, replay flag, 409/422/401 paths);
+  secret absent from logs; acceptance doc cleaned. `/screening` page 200.
+- Remaining: re-verify threshold table against the official shaded PDF (Harvard
+  update URL returned 503 at build time); screening interpretation/report is
+  Feature 4 — this UI shows only the saved count, no diagnostic claim.
+
 ## 4. Screening report and interview transition
 
 **Deliver:** Immediate screening report, explanation, and optional continuation to stage two.
