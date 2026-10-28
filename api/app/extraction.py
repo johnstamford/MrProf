@@ -23,7 +23,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from .interview import PLAN_ORDER
+from .interview import PLAN_ORDER, polarity
 from .llm import (
     LLMConfig,
     LLMError,
@@ -134,11 +134,11 @@ def extraction_prompt(objective: str, segments: list[dict]) -> str:
 
 def classify_dummy(answer: str) -> str:
     """Test-only heuristic assertion. Deterministic; real judgment is the model path."""
-    if _UNCERTAIN_RE.search(answer):
-        return "uncertain"
-    if _DENIAL_RE.match(answer.strip()):
-        return "explicitly-denied"
-    return "present"
+    return {
+        "present-like": "present",
+        "denial-like": "explicitly-denied",
+        "uncertain-like": "uncertain",
+    }.get(polarity(answer), "present")
 
 
 def dummy_extract(objective: str, segments: list[dict], answer: str) -> ExtractionResult:

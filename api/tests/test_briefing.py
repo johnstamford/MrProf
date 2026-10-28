@@ -58,10 +58,29 @@ def _interview_state() -> dict:
     }
 
 
+def _coverage_for(objectives_statuses: dict) -> list[dict]:
+    from app.interview import PLAN_ORDER, load_topics
+
+    topics = load_topics()
+    return [
+        {
+            "objective": oid,
+            "title": topics[oid].get("title", oid),
+            "status": objectives_statuses.get(oid, "unasked"),
+            "turns": [1] if oid in objectives_statuses else [],
+            "note": "test",
+        }
+        for oid in PLAN_ORDER
+    ]
+
+
 def test_unit_briefing_separates_patient_from_system():
     from datetime import datetime, timezone
 
-    content = build_interview_briefing("AID12345", _interview_state(), 1, datetime.now(timezone.utc))
+    from app.interview import PLAN_ORDER
+
+    coverage = _coverage_for({PLAN_ORDER[0]: "thin"})
+    content = build_interview_briefing("AID12345", _interview_state(), coverage, [], 1, datetime.now(timezone.utc))
     assert content["turns_answered"] == 1
     # Patient section carries verbatim Q/A only — no objectives/reasons.
     assert set(content["statements"][0]) == {"turn", "question", "answer"}
@@ -69,7 +88,7 @@ def test_unit_briefing_separates_patient_from_system():
     # System section carries planning metadata — no answers.
     assert set(content["system_notes"][0]) == {"turn", "objective", "reason", "model_provider", "model_name"}
     assert "answer" not in content["system_notes"][0]
-    # One planned topic touched with a thin answer: the rest are unasked gaps.
+    # One thin topic + thirteen unasked: all fourteen are gaps.
     from app.interview import PLAN_ORDER, load_topics
 
     topics = load_topics()
@@ -78,8 +97,8 @@ def test_unit_briefing_separates_patient_from_system():
     assert content["coverage"][0]["turns"] == [1]
     assert all(c["status"] == "unasked" for c in content["coverage"][1:])
     assert content["contradictions"] == []
-    assert content["skill_version"] == "skill-v0.3-draft"
-    assert content["topic_version"] == "topics-v0.3-draft"
+    assert content["skill_version"] == "skill-v0.4-draft"
+    assert content["topic_version"] == "topics-v0.4-draft"
     # No diagnostic, probability, or severity language.
     blob = " ".join([content["banner"], content["completion_note"]]).lower()
     for banned in ("you have adhd", "probability", "severity", "mild", "moderate", "severe", "%"):
@@ -96,9 +115,9 @@ async def _run_full_journey(client, created) -> None:
     )
     assert res.status_code == 200
     version = res.json()["version"]
-    from app.interview import MAX_TURNS
+    from app.interview import PLAN_ORDER
 
-    for _ in range(MAX_TURNS):
+    for _ in range(len(PLAN_ORDER)):
         res = await client.post(
             f"{base}/interview/answer",
             json={
@@ -110,9 +129,19 @@ async def _run_full_journey(client, created) -> None:
         )
         assert res.status_code == 200
         version = res.json()["version"]
-        if res.json()["completed"]:
-            break
-    assert res.json()["completed"] is True
+    # Round 1 done: batch assessment runs, no question pending yet.
+    assert res.json()["completed"] is False and res.json()["question"] is None
+    assert res.json()["status"] == "assessing"
+
+    import asyncio
+
+    for _ in range(30):
+        poll = await client.get(f"{base}/interview/assessment", headers=headers)
+        assert poll.status_code == 200
+        if poll.json()["status"] == "complete":
+            return
+        await asyncio.sleep(0.2)
+    raise AssertionError("batch assessment did not complete")
 
 
 async def test_briefing_lifecycle(client):
@@ -136,7 +165,7 @@ async def test_briefing_lifecycle(client):
     assert [c["objective"] for c in body["coverage"]] == list(PLAN_ORDER)
     assert all(c["status"] == "covered" for c in body["coverage"])
     assert body["contradictions"] == []
-    assert body["skill_version"] == "skill-v0.3-draft"
+    assert body["skill_version"] == "skill-v0.4-draft"
     # Reopen returns the same versioned briefing.
     second = await client.get(f"{base}/interview/report", headers=headers)
     assert second.json() == body

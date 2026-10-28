@@ -191,9 +191,10 @@ async def test_transcript_and_evidence_lifecycle(client):
         headers=headers,
     )
     assert first.status_code == 200, first.text
+    assert first.json()["completed"] is False  # round 1 continues, no analysis yet
     version = first.json()["version"]
 
-    # Transcript preserves wording and formatting independently of evidence.
+    # Transcript preserves wording and formatting; nothing extracted yet.
     t = (await client.get(f"{base}/interview/transcript", headers=headers)).json()
     texts = [s["text"] for s in t["segments"]]
     assert any("stay focused" in x for x in texts)
@@ -203,8 +204,53 @@ async def test_transcript_and_evidence_lifecycle(client):
     assert ids == ["T1-Q1", "T1-A1", "T1-A2", "T2-Q1"]
     assert [s["line"] for s in t["segments"]] == [1, 2, 3, 4]
     assert t["lines"] == 4
+    ev = (await client.get(f"{base}/interview/evidence", headers=headers)).json()
+    assert ev["turns"] == []
+
+    # Same-key replay neither duplicates transcript segments nor changes state.
+    replay = await client.post(
+        f"{base}/interview/answer",
+        json={"answer_text": multi, "base_version": version - 1, "idempotency_key": first_key},
+        headers=headers,
+    )
+    assert replay.status_code == 200 and replay.json()["replayed"] is True
+    t2 = (await client.get(f"{base}/interview/transcript", headers=headers)).json()
+    assert len(t2["segments"]) == len(t["segments"])
+
+
+async def _run_batch(client, base, headers, assessment_id: str) -> dict:
+    """Run the end-of-round batch job inline (hermetic dummy path)."""
+    from app.assessment import run_round_assessment
+    from app.db import get_db
+    from app.routes.interview import _phrase_for_job
+
+    # Flip to assessing exactly as the answer endpoint does, then run the job.
+    db = get_db()
+    await db["assessments"].find_one_and_update(
+        {"_id": assessment_id}, {"$set": {"interview.status": "assessing"}}
+    )
+    return await run_round_assessment(db, assessment_id, _phrase_for_job)
+
+
+async def test_batch_assessment_writes_evidence(client):
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+
+    started = await client.post(
+        f"{base}/interview/start",
+        json={"base_version": 1, "idempotency_key": f"fk7-b-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    version = started.json()["version"]
+    body = await _answer(client, base, headers, "Starting paperwork and never finishing it.", version)
+    assert body["turn_answered"] == 1
+
+    summary = await _run_batch(client, base, headers, created["assessment_id"])
+    assert summary["assessed_turns"] == 1
 
     # Evidence cites exact existing spans with distinct assertions.
+    t = (await client.get(f"{base}/interview/transcript", headers=headers)).json()
     ev = (await client.get(f"{base}/interview/evidence", headers=headers)).json()
     assert len(ev["turns"]) == 1 and ev["turns"][0]["turn"] == 1
     assert ev["turns"][0]["taxonomy_version"] == TAXONOMY_VERSION
@@ -216,31 +262,30 @@ async def test_transcript_and_evidence_lifecycle(client):
     assert ev["turns"][0]["coverage"]["covered"] == [PLAN_ORDER[0]]
     assert PLAN_ORDER[0] not in ev["turns"][0]["coverage"]["gaps"]
 
-    # Same-key replay neither duplicates transcript segments nor evidence.
-    replay = await client.post(
-        f"{base}/interview/answer",
-        json={"answer_text": multi, "base_version": version - 1, "idempotency_key": first_key},
-        headers=headers,
-    )
-    assert replay.status_code == 200 and replay.json()["replayed"] is True
-    t2 = (await client.get(f"{base}/interview/transcript", headers=headers)).json()
-    assert len(t2["segments"]) == len(t["segments"])
+    # Re-running the job neither duplicates evidence nor versions.
+    summary2 = await _run_batch(client, base, headers, created["assessment_id"])
+    assert summary2["assessed_turns"] == 1
+    from app.db import get_db
+
+    doc = await get_db()["evidence"].find_one({"_id": f"{created['assessment_id']}:turn:1"})
+    assert doc is not None and len(doc["versions"]) == 1
     ev2 = (await client.get(f"{base}/interview/evidence", headers=headers)).json()
     assert len(ev2["turns"]) == 1
 
 
 async def test_answer_survives_extraction_failure(client, monkeypatch):
-    import app.routes.interview as ir
+    import app.assessment as am
 
     async def boom(*a, **k):
         from app.llm import LLMError
 
         raise LLMError("provider_error", "simulated extractor outage", status=502)
 
-    monkeypatch.setattr(ir, "extract_turn", boom)
+    monkeypatch.setattr(am, "extract_turn", boom)
     created = await _create(client)
     headers = _auth(created["password"])
     base = f"/assessments/{created['assessment_id']}"
+
     started = await client.post(
         f"{base}/interview/start",
         json={"base_version": 1, "idempotency_key": f"fk7-fail-{uuid.uuid4().hex[:8]}"},
@@ -249,11 +294,19 @@ async def test_answer_survives_extraction_failure(client, monkeypatch):
     version = started.json()["version"]
     body = await _answer(client, base, headers, "ordinary answer", version)
     assert body["turn_answered"] == 1 and body["completed"] is False
-    # Turn saved and next question produced; evidence simply pending.
+    # Turn saved and next question produced; evidence extraction happens later.
     nxt = (await client.get(f"{base}/interview/next", headers=headers)).json()
     assert nxt["question"]["turn"] == 2
     ev = (await client.get(f"{base}/interview/evidence", headers=headers)).json()
     assert ev["turns"] == []
+
+    # The batch job degrades per-turn: no evidence, coverage pending,
+    # follow-ups queued to recover the objective.
+    summary = await _run_batch(client, base, headers, created["assessment_id"])
+    assert summary["coverage"][0]["status"] == "pending"
+    assert summary["followups"] and summary["followups"][0]["objective"] == PLAN_ORDER[0]
+    ev2 = (await client.get(f"{base}/interview/evidence", headers=headers)).json()
+    assert ev2["turns"] == []
 
 
 async def test_transcript_evidence_auth_and_404(client):

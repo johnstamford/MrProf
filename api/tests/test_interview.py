@@ -15,14 +15,13 @@ os.environ.setdefault("MONGODB_DB", "mrprof")
 
 from app.interview import (  # noqa: E402
     FAMILIES,
-    MAX_PROBES,
+    MAX_FOLLOWUPS,
     MAX_TURNS,
     PLAN_ORDER,
     SKILL_VERSION,
     TOPIC_VERSION,
     _needs_detail_invite,
     build_prompt,
-    coverage_summary,
     family_tensions,
     plan_next,
 )
@@ -53,83 +52,101 @@ def _auth(password: str) -> dict:
     return {"Authorization": f"Bearer {password}"}
 
 
-def test_unit_planner_sequence():
+async def _poll_assessment(client, base: str, headers: dict, tries: int = 20) -> dict:
+    """Poll GET .../interview/assessment until followup or complete.
+
+    The batch job runs as a background task; with the dummy provider it
+    finishes in milliseconds, so this returns almost immediately.
+    """
+    import asyncio
+
+    for _ in range(tries):
+        res = await client.get(f"{base}/interview/assessment", headers=headers)
+        assert res.status_code == 200, res.text
+        body = res.json()
+        if body["status"] in ("followup", "complete"):
+            return body
+        await asyncio.sleep(0.2)
+    raise AssertionError(f"assessment stuck at {body['status']}")
+
+
+def test_unit_planner_round1_fixed_order():
     assert plan_next([])[0] == PLAN_ORDER[0] == "attention-focus"
     assert plan_next([{"objective": PLAN_ORDER[0], "answer": "x" * 40}])[0] == PLAN_ORDER[1]
     assert plan_next([{"objective": t, "answer": "y" * 40} for t in PLAN_ORDER[:5]])[0] == PLAN_ORDER[5]
-    assert plan_next(
-        [{"objective": t, "answer": "y" * 40} for t in PLAN_ORDER[:4]]
-    )[0] == PLAN_ORDER[4]
-    _, _, done_full, _ = plan_next([{"objective": t, "answer": "y" * 40} for t in PLAN_ORDER])
-    assert done_full is True
+    # Round 1 asks every objective once; no live probes mid-round.
+    full = [{"objective": t, "turn": i + 1, "answer": "y" * 40} for i, t in enumerate(PLAN_ORDER)]
+    obj, _, done, hint = plan_next(full, [])
+    assert done is True and hint is None and obj == ""
 
 
 def _turn(no: int, objective: str, answer: str, reason: str = "r") -> dict:
     return {"turn": no, "objective": objective, "reason": reason, "question": "q", "answer": answer}
 
 
-def test_unit_followup_for_thin_answer_bounded():
-    turns = [
-        _turn(1, PLAN_ORDER[0], "a substantive answer with plenty of detail in it yes"),
-        _turn(2, PLAN_ORDER[1], "bills"),
+def test_unit_planner_round2_consumes_queue():
+    asked = [{"objective": t, "turn": i + 1, "answer": "y" * 40} for i, t in enumerate(PLAN_ORDER)]
+    queue = [
+        {"objective": "forgetfulness", "reason": "Follow up forgetfulness", "tension": "t1"},
+        {"objective": "organization", "reason": "Follow up organization"},
     ]
-    obj, reason, done, hint = plan_next(turns)
-    assert (obj, done) == (PLAN_ORDER[1], False)
+    obj, reason, done, hint = plan_next(asked, queue)
+    assert (obj, done) == ("forgetfulness", False)
+    assert hint == {"kind": "followup", "tension": "t1"}
+    assert "tension" in reason or "Follow up" in reason
+    # After answering the first follow-up, the second is next.
+    asked.append({**_turn(15, "forgetfulness", "more detail here yes indeed"), "probe": "followup"})
+    obj, _, done, hint = plan_next(asked, queue)
+    assert (obj, done) == ("organization", False)
     assert hint == {"kind": "followup"}
-    assert reason.startswith("Follow up")
-    # Answering the follow-up thin again closes it: no second probe.
-    turns.append(_turn(3, PLAN_ORDER[1], "still short"))
-    obj, _, done, _ = plan_next(turns)
-    assert (obj, done) == (PLAN_ORDER[2], False)
+    # Queue exhausted -> complete.
+    asked.append({**_turn(16, "organization", "more detail here yes indeed"), "probe": "followup"})
+    obj, _, done, hint = plan_next(asked, queue)
+    assert done is True and hint is None
 
 
-def test_unit_no_followup_for_denial_or_uncertainty():
-    for ans in ("No", "No, that is fine", "I cannot recall", "dunno really"):
-        turns = [_turn(1, PLAN_ORDER[0], ans)]
-        obj, _, done, _ = plan_next(turns)
-        assert (obj, done) == (PLAN_ORDER[1], False), ans
-
-
-def test_unit_clarification_bounded_per_family():
+def test_unit_tension_detection_shape():
     t1 = _turn(1, "childhood-onset", "School was never a problem for me at all, really.")
     t2 = _turn(2, "persistence-course", "Over the years it has clearly been there a long time.")
     assert family_tensions([t1, t2]) == [
         {"family": "course", "present_turn": 2, "denial_turn": 1}
     ]
-    obj, reason, done, hint = plan_next([t1, t2])
-    assert (obj, done) == ("persistence-course", False)
-    assert reason.startswith("Clarify ") and hint is not None and "tension" in hint
-    # After one clarification for the family, the planner moves on.
-    t3 = _turn(3, "persistence-course", "To clarify: it has been constant for years.")
-    t3["probe"] = "clarify:course"
-    obj, _, done, hint = plan_next([t1, t2, t3])
-    assert (obj, done, hint) == (PLAN_ORDER[0], False, None)
+    assert family_tensions([t1]) == []
 
 
-def test_unit_completion_at_cap_and_probe_budget():
+def test_unit_completion_at_cap():
     turns = [
         _turn(i + 1, PLAN_ORDER[i % len(PLAN_ORDER)], "a substantive detailed answer indeed")
         for i in range(MAX_TURNS)
     ]
-    _, _, done, _ = plan_next(turns)
+    _, _, done, _ = plan_next(turns, [])
     assert done is True
-    # 14 openers + at most MAX_PROBES probes fit exactly.
-    assert MAX_TURNS == len(PLAN_ORDER) + MAX_PROBES
+    assert MAX_TURNS == len(PLAN_ORDER) + MAX_FOLLOWUPS
 
 
-def test_unit_coverage_summary_statuses():
+def test_unit_coverage_from_evidence_statuses():
+    from app.assessment import coverage_from_evidence
+
     turns = [
         _turn(1, "attention-focus", "a substantive detailed account of staying focused yes"),
         _turn(2, "organization", "No"),
         _turn(3, "task-completion", "I cannot recall any of that, sorry"),
         _turn(4, "forgetfulness", "keys"),
+        _turn(5, "restlessness", "I fidget quite a lot in long meetings, honestly"),
     ]
-    summary = {e["objective"]: e["status"] for e in coverage_summary(turns)}
+    ev = [
+        {"turn": 1, "versions": [{"observations": [{"code": "attention-focus", "assertion": "present"}]}]},
+        {"turn": 2, "versions": [{"observations": [{"code": "organization", "assertion": "explicitly-denied"}]}]},
+        {"turn": 3, "versions": [{"observations": [{"code": "task-completion", "assertion": "uncertain"}]}]},
+        {"turn": 4, "versions": [{"observations": [{"code": "forgetfulness", "assertion": "present"}]}]},
+    ]
+    summary = {e["objective"]: e["status"] for e in coverage_from_evidence(turns, ev)}
     assert summary["attention-focus"] == "covered"
     assert summary["organization"] == "denied"
     assert summary["task-completion"] == "unable"
-    assert summary["forgetfulness"] == "thin"
-    assert summary["restlessness"] == "unasked"
+    assert summary["forgetfulness"] == "thin"  # present assertion but thin text
+    assert summary["restlessness"] == "pending"  # answered, evidence missing
+    assert summary["impulsivity"] == "unasked"
     assert list(summary) == list(PLAN_ORDER)
 
 
@@ -265,7 +282,7 @@ async def test_start_answer_resume_complete(client):
     assert nxt.json()["version"] == 2
 
     version, last = 2, None
-    for i in range(MAX_TURNS):
+    for i in range(len(PLAN_ORDER)):
         key = f"fk5-ans-{uuid.uuid4().hex[:8]}"
         res = await client.post(
             f"{base}/interview/answer",
@@ -278,11 +295,12 @@ async def test_start_answer_resume_complete(client):
         if i == 0:
             # Topic finishes before moving on: second topic comes second.
             assert last["question"]["objective"] == PLAN_ORDER[1]
-        if last["completed"]:
-            break
-    assert last["completed"] is True and last["status"] == "complete"
-    assert last["question"] is None and last["turn_answered"] == len(PLAN_ORDER)
+    # Round 1 done: batch assessment runs, no question pending yet.
+    assert last["completed"] is False and last["question"] is None
+    assert last["status"] == "assessing" and last["turn_answered"] == len(PLAN_ORDER)
 
+    final = await _poll_assessment(client, base, headers)
+    assert final["status"] == "complete"
     nxt2 = await client.get(f"{base}/interview/next", headers=headers)
     assert nxt2.json()["completed"] is True and nxt2.json()["question"] is None
 
@@ -294,6 +312,48 @@ async def test_start_answer_resume_complete(client):
     )
     assert res.status_code == 409
     assert "secret" not in res.text and "hash" not in res.text.lower()
+
+
+async def test_round2_followup_flow(client):
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+
+    version = 2
+    thin = {"forgetfulness", "organization"}
+    for i, oid in enumerate(PLAN_ORDER):
+        ans = "x" if oid in thin else f"substantive detail for turn {i} yes indeed"
+        res = await client.post(
+            f"{base}/interview/answer",
+            json={"answer_text": ans, "base_version": version, "idempotency_key": f"fk5-r2-{uuid.uuid4().hex[:8]}"},
+            headers=headers,
+        )
+        assert res.status_code == 200, res.text
+        version = res.json()["version"]
+    assert res.json()["status"] == "assessing"
+
+    first = await _poll_assessment(client, base, headers)
+    assert first["status"] == "followup"
+    assert first["followups_total"] == 2 and first["question"] is not None
+    nxt = (await client.get(f"{base}/interview/next", headers=headers)).json()
+    assert nxt["question"]["text"] == first["question"]["text"]
+
+    for _ in range(2):
+        res = await client.post(
+            f"{base}/interview/answer",
+            json={"answer_text": "now with plenty of concrete detail yes", "base_version": version, "idempotency_key": f"fk5-r2b-{uuid.uuid4().hex[:8]}"},
+            headers=headers,
+        )
+        assert res.status_code == 200, res.text
+        version = res.json()["version"]
+        if res.json()["status"] == "assessing":
+            break
+    final = await _poll_assessment(client, base, headers)
+    assert final["status"] == "complete"
+    rep = await client.get(f"{base}/interview/report", headers=headers)
+    assert rep.status_code == 200
+    assert rep.json()["turns_answered"] == len(PLAN_ORDER) + 2
 
 
 async def test_answer_idempotent_and_conflict(client):

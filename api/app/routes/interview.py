@@ -1,34 +1,34 @@
-"""Feature 7: interview API with immutable transcripts + evidence extraction.
+"""Interview API: conversation rounds plus a batch assessment between them.
 
 Endpoints (all require the assessment Bearer secret; ID is lookup only):
-  POST /assessments/{id}/interview/start   begin interview -> Q1
-  POST /assessments/{id}/interview/answer  save answer -> extract -> next Q
+  POST /assessments/{id}/interview/start   begin round 1 -> Q1
+  POST /assessments/{id}/interview/answer  save answer -> next Q (or assessment)
   GET  /assessments/{id}/interview/next    read-only resume (no version change)
+  GET  /assessments/{id}/interview/assessment  poll the batch job; triggers it if needed
   GET  /assessments/{id}/interview/transcript  verbatim segments, read-only
   GET  /assessments/{id}/interview/evidence    versioned observations, read-only
 
-Concurrency/idempotency mirror the screening endpoint: writes match only
-the exact base_version with an unseen idempotency key; replays return the
-stored result; otherwise 409. Extraction runs after the atomic turn write
-and never blocks the interview loop: model failures leave the saved turn
-intact with evidence pending.
+Round 1 asks every objective once — a pure conversation, no analysis and
+no evidence written. Completing round 1 schedules the batch assessment
+job (after the response): per-turn extraction, deterministic synthesis
+(coverage, tensions, follow-up queue), then either a follow-up round or
+the final briefing. Concurrency/idempotency mirror the screening
+endpoint: writes match only the exact base_version with an unseen
+idempotency key; replays return the stored result; otherwise 409.
 """
 
 import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from pymongo.errors import DuplicateKeyError
 
 from .. import interview as planner
-from ..briefing import build_interview_briefing
+from ..assessment import run_round_assessment
 from ..db import get_db
-from ..extraction import extract_turn, upsert_evidence
 from ..interview import (
     ANSWER_MAX_LEN,
     HARD_TURN_CAP,
     MAX_TURNS,
-    PLAN_ORDER,
     SKILL_VERSION,
     TOPIC_VERSION,
 )
@@ -38,6 +38,7 @@ from ..models import (
     EvidenceTurnOut,
     InterviewAnswerRequest,
     InterviewAnswerResult,
+    InterviewAssessmentOut,
     InterviewBriefingOut,
     InterviewNextOut,
     InterviewQuestionOut,
@@ -45,7 +46,7 @@ from ..models import (
     InterviewStartResult,
     TranscriptOut,
 )
-from ..transcripts import segment_text
+from ..transcripts import append_turn_segments
 from .assessments import require_assessment
 
 router = APIRouter(prefix="/assessments", tags=["interview"])
@@ -118,97 +119,24 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
     return question, model_info, session_blob, probe
 
 
-async def _append_transcript(
-    assessment_id: str, turn: int, question: str, answer: str | None
-) -> list[dict]:
-    """Append Q/A segments for one turn. Append-only; replays dedupe by ID.
-
-    Returns the turn's segments for extraction. Transcript failures are
-    logged, never raised — the assessment write is the source of truth.
-    """
-    db = get_db()
-    doc = await db["transcripts"].find_one({"_id": assessment_id})
-    existing = {s["id"] for s in (doc.get("segments") if doc else [])} if doc else set()
-    start_line = (doc.get("lines", 0) + 1) if doc else 1
-    q_segs, line = segment_text(question, turn, "Q", start_line)
-    if existing and q_segs and all(s["id"] in existing for s in q_segs):
-        # Question already stored (normal case: written at start). Discard the
-        # re-segmentation so it cannot consume line numbers; answers continue
-        # exactly where the transcript left off.
-        q_segs = []
-        line = start_line
-    a_segs: list[dict] = []
-    if answer is not None:
-        a_segs, line = segment_text(answer, turn, "A", line)
-    turn_segs = q_segs + a_segs
-    fresh = [s for s in turn_segs if s["id"] not in existing]
-    now = _now()
-    try:
-        if doc is None:
-            await db["transcripts"].insert_one(
-                {
-                    "_id": assessment_id,
-                    "assessment_id": assessment_id,
-                    "skill_version": SKILL_VERSION,
-                    "topic_version": TOPIC_VERSION,
-                    "segments": fresh,
-                    "lines": line - 1,
-                    "created_at": now,
-                    "updated_at": now,
-                }
-            )
-        elif fresh:
-            await db["transcripts"].update_one(
-                {"_id": assessment_id},
-                {
-                    "$push": {"segments": {"$each": fresh}},
-                    "$set": {"lines": line - 1, "updated_at": now},
-                },
-            )
-    except DuplicateKeyError:
-        pass  # concurrent start won the insert; segments dedupe by ID below
-    except Exception as exc:  # noqa: BLE001 - transcript is secondary to the turn write
-        log.warning("transcript append failed for %s turn %d: %s", assessment_id, turn, type(exc).__name__)
-    return turn_segs
-
-
-async def _extract_and_store(
-    assessment_id: str, answered_turn: dict, history: list[dict], turn_segs: list[dict]
-) -> None:
-    """Run the extractor and upsert versioned evidence. Never raises."""
-    try:
-        result, info = await extract_turn(
-            objective=answered_turn["objective"],
-            segments=turn_segs,
-            answer=answered_turn["answer"] or "",
-            session_id=assessment_id,
-        )
-    except LLMError as exc:
-        log.warning(
-            "extraction pending for %s turn %d: %s", assessment_id, answered_turn["turn"], exc.code
-        )
-        return
-    except Exception as exc:  # noqa: BLE001 - extraction must not break the loop
-        log.warning(
-            "extraction failed for %s turn %d: %s", assessment_id, answered_turn["turn"], type(exc).__name__
-        )
-        return
-    covered = [t["objective"] for t in history]
-    gaps = [o for o in PLAN_ORDER if o not in covered]
-    try:
-        await upsert_evidence(
-            get_db(),
-            assessment_id=assessment_id,
-            turn=answered_turn["turn"],
-            result=result,
-            info=info,
-            covered=covered,
-            gaps=gaps,
-        )
-    except Exception as exc:  # noqa: BLE001 - turn already saved; evidence stays pending
-        log.warning(
-            "evidence store failed for %s turn %d: %s", assessment_id, answered_turn["turn"], type(exc).__name__
-        )
+async def _phrase_for_job(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None, tension: str | None = None) -> tuple:
+    """Phrase one question for the batch job. Returns (text, model_info, session)."""
+    cfg = load_config()
+    last_answer = history[-1].get("answer") if history else None
+    prompt = planner.build_prompt(
+        objective=objective, reason=reason, history=history, screening=screening,
+        last_answer=last_answer, tension=tension,
+    )
+    question, model_info, session_blob = await generate_next_question(
+        cfg=cfg,
+        instructions=planner.load_skill(),
+        prompt=prompt,
+        objective=objective,
+        reason=reason,
+        fallback_question=planner.fallback_question(objective),
+        session_id=assessment_id,
+    )
+    return question.question_text, model_info, session_blob
 
 
 @router.post("/{assessment_id}/interview/start", response_model=InterviewStartResult)
@@ -273,6 +201,11 @@ async def start_interview(
                     "turns": [],
                     "current": turn_doc,
                     "session": session_blob,
+                    "followups": [],
+                    "assessed_turns": 0,
+                    "rounds_done": 0,
+                    "assessment": None,
+                    "assessing_error": None,
                     "started_at": now,
                     "updated_at": now,
                 },
@@ -305,7 +238,10 @@ async def start_interview(
             status_code=409,
             detail={"error": "version_conflict", "current_version": current["version"]},
         )
-    await _append_transcript(result["_id"], 1, turn_doc["question"], None)
+    await append_turn_segments(
+        get_db(), result["_id"], 1, turn_doc["question"], None,
+        SKILL_VERSION, TOPIC_VERSION,
+    )
     return InterviewStartResult(
         assessment_id=result["_id"],
         version=result["version"],
@@ -356,13 +292,22 @@ async def submit_answer(
         "topic_version": pending["topic_version"],
     }
     new_history = history + [answered_turn]
+    queue = iv.get("followups") or []
+    assessed_turns = iv.get("assessed_turns", 0)
+    schedule_assessment = False
     if len(new_history) >= HARD_TURN_CAP or len(new_history) >= MAX_TURNS:
-        completed, next_turn_doc = True, None
+        completed, next_turn_doc = False, None
         session_blob = iv.get("session") or {"session_id": assessment_id}
+        schedule_assessment = True
     else:
         completed = False
-        objective, reason, done, hint = planner.plan_next(new_history)
-        if done:
+        objective, reason, done, hint = planner.plan_next(new_history, queue)
+        if done and assessed_turns != len(new_history):
+            # Round complete but not yet assessed -> run the batch job.
+            next_turn_doc = None
+            session_blob = iv.get("session") or {"session_id": assessment_id}
+            schedule_assessment = True
+        elif done:
             next_turn_doc = None
             completed = True
             session_blob = iv.get("session") or {"session_id": assessment_id}
@@ -392,7 +337,12 @@ async def submit_answer(
             }
     col = get_db()["assessments"]
     now = _now()
-    new_status = "complete" if completed else "active"
+    if schedule_assessment:
+        new_status = "assessing"
+    elif completed:
+        new_status = "complete"
+    else:
+        new_status = "followup" if queue else "active"
     result = await col.find_one_and_update(
         {
             "_id": doc["_id"],
@@ -431,31 +381,21 @@ async def submit_answer(
             detail={"error": "version_conflict", "current_version": current["version"]},
         )
     if completed:
-        # Versioned briefing write (replay path above never re-inserts).
-        reports = get_db()["reports"]
-        prior = await reports.count_documents({"assessment_id": doc["_id"], "kind": "interview"})
-        content = build_interview_briefing(result["_id"], result["interview"], prior + 1, now)
-        await reports.insert_one(
-            {
-                "assessment_id": doc["_id"],
-                "kind": "interview",
-                "report_version": prior + 1,
-                "answer_idem_key": body.idempotency_key,
-                "content": {**content, "completed_at": now},
-                "created_at": now,
-            }
-        )
-    turn_segs = await _append_transcript(
-        result["_id"], answered_turn["turn"], answered_turn["question"], answered_turn["answer"]
+        # Defensive: the batch job is the only briefing writer, so reaching
+        # here with assessed turns means it already ran and set complete.
+        pass
+    await append_turn_segments(
+        get_db(), result["_id"], answered_turn["turn"], answered_turn["question"], answered_turn["answer"],
+        SKILL_VERSION, TOPIC_VERSION,
     )
     if next_turn_doc is not None:
-        await _append_transcript(
-            result["_id"], next_turn_doc["turn"], next_turn_doc["question"], None
+        await append_turn_segments(
+            get_db(), result["_id"], next_turn_doc["turn"], next_turn_doc["question"], None,
+            SKILL_VERSION, TOPIC_VERSION,
         )
-    # Extraction runs after the response is sent: the next question is
-    # returned without waiting for the second model call. Evidence stays
-    # pending if extraction fails; it is read via GET .../evidence.
-    background.add_task(_extract_and_store, result["_id"], answered_turn, new_history, turn_segs)
+    if schedule_assessment:
+        # Batch evidence extraction + synthesis runs after the response.
+        background.add_task(run_round_assessment, get_db(), result["_id"], _phrase_for_job)
     return _answer_result_from_doc(result, result["version"])
 
 
@@ -481,6 +421,58 @@ async def get_next(doc: dict = Depends(require_assessment)) -> InterviewNextOut:
     if doc.get("interview") is None:
         raise HTTPException(status_code=404, detail="interview not started")
     return _next_out(doc)
+
+
+@router.get("/{assessment_id}/interview/assessment", response_model=InterviewAssessmentOut)
+async def get_assessment(
+    background: BackgroundTasks, doc: dict = Depends(require_assessment)
+) -> InterviewAssessmentOut:
+    """Poll the batch assessment: status assessing -> followup|complete.
+
+    If the assessment job never ran for the current turns (crash before the
+    background task), this endpoint triggers it idempotently; the atomic
+    claim inside the job prevents double runs.
+    """
+    from datetime import timedelta
+
+    iv = doc.get("interview")
+    if iv is None:
+        raise HTTPException(status_code=404, detail="interview not started")
+    status = iv.get("status", "active")
+    if status in ("assessing", "processing"):
+        stale = iv.get("updated_at")
+        if isinstance(stale, datetime) and stale.tzinfo is None:
+            stale = stale.replace(tzinfo=timezone.utc)
+        is_stale = (
+            status == "processing"
+            and isinstance(stale, datetime)
+            and (datetime.now(timezone.utc) - stale) > timedelta(minutes=5)
+        )
+        if status == "assessing" or is_stale:
+            if is_stale:
+                await get_db()["assessments"].find_one_and_update(
+                    {"_id": doc["_id"]},
+                    {"$set": {"interview.status": "assessing", "interview.updated_at": _now()}},
+                )
+            if iv.get("assessed_turns", 0) != len(iv.get("turns", [])):
+                background.add_task(run_round_assessment, get_db(), doc["_id"], _phrase_for_job)
+    fresh = await get_db()["assessments"].find_one({"_id": doc["_id"]})
+    assert fresh is not None
+    fiv = fresh.get("interview") or {}
+    summary = fiv.get("assessment") or {}
+    current = fiv.get("current")
+    followups = fiv.get("followups") or []
+    done = sum(1 for t in fiv.get("turns", []) if (t.get("probe") or "") == "followup")
+    return InterviewAssessmentOut(
+        assessment_id=doc["_id"],
+        status=fiv.get("status", "active"),
+        error=fiv.get("assessing_error"),
+        question=_question_out(current) if current and fiv.get("status") == "followup" else None,
+        followups_total=len(followups),
+        followups_done=min(done, len(followups)),
+        coverage=summary.get("coverage", []),
+        tensions=summary.get("tensions", []),
+    )
 
 
 @router.get("/{assessment_id}/interview/report", response_model=InterviewBriefingOut)

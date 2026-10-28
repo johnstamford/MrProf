@@ -45,7 +45,7 @@ function draftKey(code: string, turn: number) {
 
 export default function InterviewPage() {
   const router = useRouter();
-  const [phase, setPhase] = useState<"loading" | "ready" | "done">("loading");
+  const [phase, setPhase] = useState<"loading" | "ready" | "assessing" | "done">("loading");
   const [version, setVersion] = useState<number | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [turnsAnswered, setTurnsAnswered] = useState(0);
@@ -143,6 +143,54 @@ export default function InterviewPage() {
     setPhase("ready");
   }, [authHeaders, router]);
 
+  const pollAssessment = useCallback(async (): Promise<boolean> => {
+    const auth = authHeaders();
+    if (!auth) {
+      router.replace("/start");
+      return false;
+    }
+    const { session, headers } = auth;
+    const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+    for (let i = 0; i < 40; i++) {
+      const res = await fetch(`${base}/interview/assessment`, { headers });
+      if (!res.ok) {
+        setError("could not check the assessment — please try again");
+        return false;
+      }
+      const body = await res.json();
+      if (body.status === "followup" && body.question) {
+        const next = await fetch(`${base}/interview/next`, { headers });
+        if (!next.ok) {
+          setError("could not load the follow-up question — please try again");
+          return false;
+        }
+        const state = (await next.json()) as NextState;
+        setVersion(state.version);
+        setTurnsAnswered(state.turns_answered);
+        setQuestion(state.question);
+        setPhase("ready");
+        return true;
+      }
+      if (body.status === "complete") {
+        const rep = await fetch(`${base}/interview/report`, { headers });
+        if (!rep.ok) {
+          setError("interview finished but the briefing is missing — please reload");
+          return false;
+        }
+        setBriefing((await rep.json()) as Briefing);
+        setPhase("done");
+        return true;
+      }
+      if (body.status !== "assessing" && body.status !== "processing") {
+        setError(`unexpected interview status (${body.status}) — please reload`);
+        return false;
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+    setError("the assessment is taking too long — please reload to check again");
+    return false;
+  }, [authHeaders, router]);
+
   useEffect(() => {
     void load();
   }, [load]);
@@ -235,7 +283,16 @@ export default function InterviewPage() {
         setPhase("done");
         return;
       }
-      setQuestion(body.question as Question);
+      if (body.question) {
+        setQuestion(body.question as Question);
+        return;
+      }
+      // No question yet: the batch assessment is running. Poll for the
+      // follow-up round or the final briefing.
+      setPhase("assessing");
+      setSaving(false);
+      await pollAssessment();
+      return;
     } finally {
       setSaving(false);
     }
@@ -250,6 +307,21 @@ export default function InterviewPage() {
           <div>
             <p role="alert">{error}</p>
             <button onClick={() => { setError(""); void load(); }}>Try again</button>
+          </div>
+        )}
+      </main>
+    );
+  }
+
+  if (phase === "assessing") {
+    return (
+      <main>
+        <h1>MrProf — interview</h1>
+        <p role="status">Reviewing your answers to decide what to ask next — usually under a minute…</p>
+        {error && (
+          <div>
+            <p role="alert">{error}</p>
+            <button onClick={() => { setError(""); void pollAssessment(); }}>Check again</button>
           </div>
         )}
       </main>

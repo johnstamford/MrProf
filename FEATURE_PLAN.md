@@ -225,6 +225,11 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 **Depends on:** 6.
 
 **Status (27 Oct 2026): ✅ done — implemented and verified (taxonomy draft, not reviewed).**
+**Rework (28 Oct 2026): batch assessment.** Per-turn background extraction removed:
+round 1 writes transcript only; an end-of-round batch job extracts all turns
+in parallel, then synthesizes coverage/tensions/follow-ups deterministically
+in code (model only phrases). Same per-turn evidence docs preserved.
+`run_round_assessment` is idempotent (atomic claim, per-turn dedupe).
 - `transcripts` collection: append-only verbatim segments (`T{turn}-Q/A{n}` + global
   lines; paragraph breaks/lists preserved), written on start/answer with replay
   dedupe. `GET .../interview/transcript` read-only, 404 until start.
@@ -281,6 +286,12 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
   latency is now the top UX risk for the real-time interview — candidate
   for streaming/budget work before any real-user use.
 
+**Rework (28 Oct 2026): two-phase driver.** The driver now polls
+`GET .../interview/assessment` after round 1 (no question pending) until
+follow-up or complete, then works the follow-up queue. 5xx retried once
+with the same idempotency key; assess waits recorded separately from
+per-call latency. The 10-persona evaluation harness stays Feature 12 work.
+
 ## 9. Full planned adaptive interview coverage
 
 **Deliver:** Expanded clinical-topic mapping, YAML objectives, interview skills, gap prioritization, and bounded completion logic.
@@ -321,6 +332,16 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
   closes only the asked objective); screening-priority ordering still fixed
   order; topics/taxonomy still draft, not clinically reviewed. Longer journeys
   raise per-run hard-failure odds — mitigated by driver retry, not eliminated.
+
+**Rework (28 Oct 2026): conversation + batch assessment + follow-up round.**
+Round 1 asks all 14 objectives with no live analysis; a batch job extracts
+evidence, scores coverage, links tensions, and queues ≤6 follow-ups
+(deterministic code; model only phrases). Round 2 works the queue; a second
+batch finalizes. Live, fresh DB: 4/4 complete (17 turns each — tension and
+thin-answer follow-ups fired), full 17/17 evidence, zero pending warnings
+in the final batch, briefings show evidence-grounded coverage and clarified
+contradictions. Probe accounting moved from model-reason sniffing to a
+stored `probe` marker after a triple-clarification bug.
 
 ## 10. Interview quality and recovery controls
 

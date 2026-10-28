@@ -1,12 +1,13 @@
-"""Feature 9: interview briefing from stored interview state.
+"""Feature 9 rework: interview briefing from stored interview state.
 
+Two-phase flow. Round 1 is a conversation; a batch assessment then extracts
+evidence, scores coverage, and queues follow-ups; round 2 works the queue.
 Fixed template, no LLM. Patient statements (verbatim questions/answers)
 stay separate from system notes (per-question objective/reason). Coverage
-lists every planned objective with its status: covered by a substantive
-account, denied, unable to recall, thin, or unasked. Cross-turn tensions
-are listed with their turn references and whether they were clarified —
-retained, never silently merged. Gaps are documented, never treated as
-negative findings. Draft topics, not clinically reviewed. No diagnostic
+lists every planned objective with its evidence-grounded status. Cross-turn
+tensions are listed with turn references and whether a follow-up clarified
+them — retained, never silently merged. Gaps are documented, never treated
+as negative findings. Draft topics, not clinically reviewed. No diagnostic
 language.
 """
 
@@ -14,7 +15,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .interview import FAMILIES, PLAN_ORDER, coverage_summary, family_tensions, load_topics
+from .interview import FAMILIES, PLAN_ORDER, load_topics
 
 BRIEFING_BANNER = (
     "Draft-topics briefing (unreviewed). This summarizes what was reported "
@@ -30,26 +31,33 @@ COMPLETION_NOTE = (
 )
 
 
-def _clarified_families(turns: list[dict]) -> set[str]:
+def _clarified_families(turns: list[dict], tensions: list[dict]) -> set[str]:
+    """Families a round-2 follow-up revisited (probe followup in that family)."""
     out: set[str] = set()
-    for t in turns:
-        probe = t.get("probe") or ""
-        if probe.startswith("clarify:"):
-            out.add(probe.split(":", 1)[1])
+    by_objective = {t["objective"]: t for t in turns}
+    for tension in tensions:
+        for oid in FAMILIES.get(tension["family"], ()):
+            if (by_objective.get(oid) or {}).get("probe") == "followup":
+                out.add(tension["family"])
     return out
 
 
 def build_interview_briefing(
     assessment_id: str,
     interview: dict,
+    coverage: list[dict],
+    tensions: list[dict],
     report_version: int,
     completed_at: datetime,
 ) -> dict:
-    """Build the fixed briefing content dict from stored interview state."""
+    """Build the fixed briefing content dict from stored interview state.
+
+    coverage and tensions come from the batch assessment (evidence-grounded);
+    the builder only renders them.
+    """
     turns = interview.get("turns", [])
     topics = load_topics()
-    coverage = coverage_summary(turns)
-    clarified = _clarified_families(turns)
+    clarified = _clarified_families(turns, tensions)
     contradictions = [
         {
             "family": tension["family"],
@@ -58,12 +66,12 @@ def build_interview_briefing(
             "denial_turn": tension["denial_turn"],
             "clarified": tension["family"] in clarified,
             "note": (
-                "clarified in a later neutral question; both accounts retained"
+                "revisited in a round-2 follow-up; both accounts retained"
                 if tension["family"] in clarified
-                else "not clarified within the turn budget; both accounts retained"
+                else "not revisited in a follow-up; both accounts retained"
             ),
         }
-        for tension in family_tensions(turns)
+        for tension in tensions
     ]
     return {
         "assessment_id": assessment_id,
@@ -100,7 +108,7 @@ def build_interview_briefing(
                 ),
             }
             for entry in coverage
-            if entry["status"] in ("unasked", "thin")
+            if entry["status"] in ("unasked", "thin", "pending")
         ],
         "completed_at": completed_at,
     }

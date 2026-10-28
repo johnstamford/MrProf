@@ -183,11 +183,11 @@ class BriefingCoverage(BaseModel):
 
 class BriefingContradiction(BaseModel):
     family: str
-    areas: list[str]
+    areas: list[str] = Field(default_factory=list)
     present_turn: int
     denial_turn: int
-    clarified: bool
-    note: str
+    clarified: bool = False
+    note: str = ""
 
 
 class InterviewBriefingOut(BaseModel):
@@ -205,6 +205,17 @@ class InterviewBriefingOut(BaseModel):
     contradictions: list[BriefingContradiction] = Field(default_factory=list)
     gaps: list[BriefingGap]
     completed_at: datetime
+
+
+class InterviewAssessmentOut(BaseModel):
+    assessment_id: str
+    status: str
+    error: str | None = None
+    question: InterviewQuestionOut | None = None
+    followups_total: int = 0
+    followups_done: int = 0
+    coverage: list[BriefingCoverage] = Field(default_factory=list)
+    tensions: list[BriefingContradiction] = Field(default_factory=list)
 
 
 class TranscriptSegment(BaseModel):

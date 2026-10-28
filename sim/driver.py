@@ -20,6 +20,32 @@ def _new_key(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4().hex[:8]}"
 
 
+async def _await_question(client, base: str, auth: dict, deadline: float) -> tuple[str, dict | None]:
+    """Poll the batch assessment until a follow-up question or completion.
+
+    Returns ("question", q), ("complete", None), or ("timeout", None).
+    """
+    while True:
+        if time.monotonic() > deadline:
+            return "timeout", None
+        await asyncio.sleep(3)
+        res = await client.get(f"{base}/interview/assessment", headers=auth)
+        res.raise_for_status()
+        body = res.json()
+        if body["status"] == "followup" and body.get("question"):
+            return "question", body["question"]
+        if body["status"] == "complete":
+            return "complete", None
+        # status assessing/processing: keep polling; question arrives via next.
+        if body["status"] == "followup":
+            nxt = await client.get(f"{base}/interview/next", headers=auth)
+            nxt.raise_for_status()
+            nb = nxt.json()
+            if nb.get("completed") or not nb.get("question"):
+                continue
+            return "question", nb["question"]
+
+
 async def _post(client, url: str, payload: dict, headers: dict | None = None):
     """POST with one retry on 5xx using the SAME payload (same idempotency
     key) — the designed safe-retry path. 4xx still fails fast."""
@@ -89,6 +115,7 @@ async def run_journey(
     version = st.json()["version"]
     question = st.json()["question"]
 
+    assess_polls = 0
     while True:
         if len(turns) >= max_turns:
             stop_reason = "turn_cap"
@@ -119,12 +146,23 @@ async def run_journey(
         version = body["version"]
         if body["completed"]:
             break
-        question = body["question"]
+        question = body.get("question")
+        if question is None:
+            # Batch assessment running: poll until a follow-up or completion.
+            outcome, question = await _await_question(
+                client, f"{base}/assessments/{assessment_id}", auth, deadline
+            )
+            assess_polls += 1
+            if outcome == "complete":
+                break
+            if outcome == "timeout" or question is None:
+                stop_reason = "time_budget"
+                break
 
-    return _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at)
+    return _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls)
 
 
-def _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at) -> dict:
+def _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls: int = 0) -> dict:
     return {
         "assessment_id": assessment_id,
         "profile_id": persona["profile_id"],
@@ -133,6 +171,7 @@ def _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_rea
         "turns": turns,
         "stop_reason": stop_reason,
         "api_calls": len(latencies_ms),
+        "assess_polls": assess_polls,
         "latency_ms": {
             "mean": sum(latencies_ms) / len(latencies_ms) if latencies_ms else 0,
             "max": max(latencies_ms) if latencies_ms else 0,

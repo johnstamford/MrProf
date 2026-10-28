@@ -1,14 +1,11 @@
-"""Deterministic interview planner (v0.3 draft topics, Feature 9).
+"""Deterministic interview planner (v0.4 topics, Feature 9 rework).
 
-The planner selects objectives IN CODE. The LLM only phrases the question
-for the assigned objective — it never plans, scores, or diagnoses.
+Two-phase flow. Round 1 asks every objective once in fixed order — a pure
+conversation with no analysis and no evidence written. A batch assessment
+job then extracts evidence, links tension, and queues bounded follow-ups.
+Round 2 works through that queue; a second batch run finalizes.
 
-v0.3: fourteen experience-focused objectives covering reported behaviors,
-course over time, settings, impact, context, coping, and background. Each
-objective is asked once in fixed order; a bounded probe budget (follow-ups
-for thin answers, neutral clarification of cross-turn tension) fills the
-remaining turns up to MAX_TURNS. Topics close through substantive
-evidence, clear denial, or documented inability — never through pressure.
+The LLM only phrases questions — it never plans, scores, or diagnoses.
 Topics are explicitly NOT clinically reviewed.
 """
 
@@ -18,12 +15,11 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-SKILL_VERSION = "skill-v0.3-draft"
-TOPIC_VERSION = "topics-v0.3-draft"
-TOPICS_FILE = "v0.3.yaml"
+SKILL_VERSION = "skill-v0.4-draft"
+TOPIC_VERSION = "topics-v0.4-draft"
+TOPICS_FILE = "v0.4.yaml"
 
-# Fixed opener order. Probes (follow-ups/clarifications) interleave; every
-# objective is still asked at least once within the turn budget.
+# Round 1 asks every objective once, in fixed order.
 PLAN_ORDER = (
     "attention-focus",
     "organization",
@@ -40,19 +36,18 @@ PLAN_ORDER = (
     "strategies",
     "background-goals",
 )
-MAX_TURNS = 20
+ROUND1_TURNS = len(PLAN_ORDER)
+# Round 2 works a bounded follow-up queue set by the batch assessment.
+MAX_FOLLOWUPS = 6
+MAX_TURNS = ROUND1_TURNS + MAX_FOLLOWUPS
 HARD_TURN_CAP = 30
 ANSWER_MIN_LEN = 1
 ANSWER_MAX_LEN = 2000
 
-# Shared probe budget: follow-ups for thin answers + neutral clarifications
-# of cross-turn tension. 14 openers + 6 probes = MAX_TURNS.
-MAX_PROBES = 6
-MAX_CLARIFICATIONS = 2
-
-# Answers shorter than this invite one gentle follow-up for a concrete
+# Answers shorter than this get a gentle in-question invite for a concrete
 # detail. Genuine denials and stated uncertainty are exempt — they are
-# complete answers and must never be pressured for more.
+# complete answers and must never be pressured for more. Phrasing guidance
+# only; round 1 records nothing but the transcript.
 SHORT_ANSWER_LEN = 20
 _DENIAL_RE = re.compile(r"^(no|nope|never|none|nothing|not really)\b", re.IGNORECASE)
 _DENIAL_PHRASES = (
@@ -159,30 +154,12 @@ def _needs_detail_invite(last_answer: str | None) -> bool:
     return polarity(last_answer) == "thin"
 
 
-def _probe_kind(turn: dict) -> str | None:
-    """Deterministic probe marker stored on each turn (independent of the
-    model-phrased reason text). One of None, "followup", "clarify:<family>"."""
-    return turn.get("probe")
-
-
-def _probes_used(turns: list[dict]) -> int:
-    return sum(1 for t in turns if _probe_kind(t) is not None)
-
-
-def _clarified_families(turns: list[dict]) -> set[str]:
-    out: set[str] = set()
-    for t in turns:
-        probe = _probe_kind(t)
-        if probe and probe.startswith("clarify:"):
-            out.add(probe.split(":", 1)[1])
-    return out
-
-
 def family_tensions(turns: list[dict]) -> list[dict]:
     """Detect families with both present-like and denial-like answers.
 
     Returns [{family, present_turn, denial_turn}] in fixed family order.
-    Pure polarity heuristic; contradiction judgment stays with the clinician.
+    Pure polarity heuristic used by the batch assessment; contradiction
+    judgment stays with the clinician.
     """
     tensions: list[dict] = []
     for family, members in FAMILIES.items():
@@ -203,57 +180,33 @@ def family_tensions(turns: list[dict]) -> list[dict]:
     return tensions
 
 
-def plan_next(turns: list[dict]) -> tuple[str, str, bool, dict | None]:
+def plan_next(
+    turns: list[dict], followups: list[dict] | None = None
+) -> tuple[str, str, bool, dict | None]:
     """Return (objective_id, reason, complete, hint). Pure function of turns.
 
-    hint is None or {"tension": ...} for neutral clarification phrasing.
-    Priority: turn cap > clarification of new tension (bounded) > follow-up
-    for a thin last answer (bounded) > next unasked objective > complete.
+    Round 1 asks every objective once in fixed order. Round 2 works through
+    the follow-up queue set by the batch assessment (each item: objective,
+    reason, optional tension). hint carries tension text for neutral
+    clarification phrasing, else None. No live analysis: probe decisions
+    were made by the batch job.
     """
+    followups = followups or []
     n = len(turns)
     if n >= MAX_TURNS:
         return "", f"interview complete at cap ({n} answered turns)", True, None
     asked = [t["objective"] for t in turns]
     unasked = [o for o in PLAN_ORDER if o not in asked]
-    probes = _probes_used(turns)
-    budget_left = MAX_PROBES - probes
-
-    if budget_left > 0 and unasked and turns:
-        clarified = _clarified_families(turns)
-        clarifications = sum(1 for t in turns if (_probe_kind(t) or "").startswith("clarify:"))
-        if clarifications < MAX_CLARIFICATIONS:
-            for tension in family_tensions(turns):
-                if tension["family"] not in clarified:
-                    obj = turns[-1]["objective"]
-                    reason = (
-                        f"Clarify (family: {tension['family']}) tension between turn "
-                        f"{tension['denial_turn']} (denied difficulty) and turn "
-                        f"{tension['present_turn']} (described difficulty); one neutral "
-                        f"question, accept either account"
-                    )
-                    hint = {
-                        "kind": "clarify",
-                        "family": tension["family"],
-                        "tension": (
-                            f"in turn {tension['denial_turn']} no difficulty was reported, "
-                            f"but turn {tension['present_turn']} described difficulty"
-                        ),
-                    }
-                    return obj, reason, False, hint
-        last = turns[-1]
-        if _needs_detail_invite(last.get("answer")) and asked.count(last["objective"]) == 1:
-            title = load_topics()[last["objective"]].get("title", last["objective"])
-            reason = (
-                f"Follow up {last['objective']} (turn {last['turn']} was very brief): "
-                f"invite one concrete detail or example about {title}, once, no pressure"
-            )
-            return last["objective"], reason, False, {"kind": "followup"}
-
-    if not unasked:
-        return "", f"all {len(PLAN_ORDER)} objectives explored after {n} answered turns", True, None
-    obj = unasked[0]
-    title = load_topics()[obj].get("title", obj)
-    return obj, f"cover {title} ({obj}) in fixed order", False, None
+    if unasked:
+        obj = unasked[0]
+        title = load_topics()[obj].get("title", obj)
+        return obj, f"cover {title} ({obj}) in fixed order", False, None
+    consumed = sum(1 for t in turns if (t.get("probe") or "") == "followup")
+    if consumed < len(followups):
+        item = followups[consumed]
+        hint = {"kind": "followup", "tension": item.get("tension")} if item.get("tension") else {"kind": "followup"}
+        return item["objective"], item["reason"], False, hint
+    return "", f"all objectives and {len(followups)} follow-ups explored after {n} answered turns", True, None
 
 
 def coverage_summary(turns: list[dict]) -> list[dict]:

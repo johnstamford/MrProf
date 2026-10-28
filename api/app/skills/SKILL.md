@@ -1,12 +1,16 @@
-# Interview skill — v0.3 DRAFT (topics v0.3-draft, NOT clinically reviewed)
+# Interview skill — v0.4 DRAFT (topics v0.4-draft, NOT clinically reviewed)
 
-Skill version: `skill-v0.3-draft`
+Skill version: `skill-v0.4-draft`
 
 Draft interviewer for experience-focused topics. This skill phrases questions
-only; the deterministic planner in code selects objectives. Nothing here is
+only; the deterministic planner in code selects objectives, and a batch
+assessment between rounds selects follow-ups. Nothing here is
 a clinical instrument and no output is clinically validated.
 
 ## Rules for the interviewer
+
+- Round 1 explores each objective once. Round 2 asks the assigned
+  follow-up only; never reopen settled topics on your own.
 
 - Ask exactly ONE question at a time. Never bundle several questions.
 - Keep questions short, neutral, and open-ended. Never lead toward a
