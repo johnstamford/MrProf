@@ -297,6 +297,7 @@ export default function InterviewPage() {
     <main>
       <h1>MrProf — interview</h1>
       <p>Draft interview, one question at a time — there is no time limit. Topics are a first draft, not a clinical assessment.</p>
+      <p>The more detail you give — a few sentences with a concrete example — the better your briefing will be. Short answers are still accepted: a plain no, or “I can’t remember”, is a valid answer.</p>
       <p>Question {question ? question.turn : "…"} · {turnsAnswered} answered so far</p>
       {question && (
         <section>
@@ -305,6 +306,7 @@ export default function InterviewPage() {
             Your answer{" "}
             <textarea value={answer} onChange={(e) => onType(e.target.value)} rows={4} cols={60} disabled={saving} />
           </label>
+          <p>A few sentences with an example make for a much better briefing than a few words.</p>
           <div>
             <button onClick={submit} disabled={saving}>{saving ? "Thinking…" : "Save and continue →"}</button>
           </div>

@@ -12,6 +12,7 @@ Topics are explicitly NOT clinically reviewed.
 
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 from pathlib import Path
 
@@ -32,6 +33,17 @@ MAX_TURNS = len(PLAN_ORDER)
 HARD_TURN_CAP = 30
 ANSWER_MIN_LEN = 1
 ANSWER_MAX_LEN = 2000
+
+# Answers shorter than this get one gentle invite for a concrete detail.
+# Genuine denials and stated uncertainty are exempt — they are complete
+# answers and must never be pressured for more.
+SHORT_ANSWER_LEN = 20
+_DENIAL_RE = re.compile(r"^(no|nope|never|none|nothing|not really)\b", re.IGNORECASE)
+_UNCERTAIN_RE = re.compile(
+    r"(don't know|do not know|can't remember|cannot remember|not sure|unsure"
+    r"|dunno|no idea|can't recall|cannot recall)",
+    re.IGNORECASE,
+)
 
 
 @lru_cache(maxsize=1)
@@ -89,7 +101,8 @@ def build_prompt(
     reason: str,  # noqa: ARG001 - kept for explicit logging parity
     history: list[dict],
     screening: dict | None,
-) -> str:
+    last_answer: str | None = None,
+) -> list[str]:
     lines = [
         f"Assigned objective: {objective}. Ask ONE question for this objective only.",
     ]
@@ -109,5 +122,27 @@ def build_prompt(
             lines.append(f"A{t.get('turn')}: {t.get('answer', '')[:300]}")
     else:
         lines.append("This is the first question.")
+    if _needs_detail_invite(last_answer):
+        lines.append(
+            "The previous answer was very brief. Invite one concrete detail or "
+            "example for this objective, once, without pressuring. A short question "
+            "add-on is enough; do not lecture about answer length."
+        )
     lines.append('Reply with JSON ONLY: {"question_text","objective","reason"}.')
     return lines
+
+
+def _needs_detail_invite(last_answer: str | None) -> bool:
+    """True when the last answer is so short it cannot support a briefing.
+
+    Genuine denials and stated uncertainty are exempt: they are complete
+    answers and must never be pressured for more.
+    """
+    if not last_answer:
+        return False
+    text = last_answer.strip()
+    if len(text) >= SHORT_ANSWER_LEN:
+        return False
+    if _DENIAL_RE.match(text) or _UNCERTAIN_RE.search(text):
+        return False
+    return True

@@ -228,8 +228,19 @@ async def extract_turn(
     agent, session = build_agent(cfg, extractor_instructions(), session_id)
     last_error: LLMError | None = None
     current = prompt
-    for attempt in (1, 2):
-        text, _, _ = await run_agent_text(cfg, agent, session, current, dict(extractor_info), session_id)
+    for attempt in (1, 2, 3):
+        try:
+            text, _, _ = await run_agent_text(
+                cfg, agent, session, current, dict(extractor_info), session_id,
+                timeout_s=cfg.extractor_timeout_s,
+            )
+        except LLMError as exc:
+            # Same transient policy as the interviewer: one retry on a
+            # timeout/provider blip (same prompt), then give up gracefully.
+            if exc.code in ("timeout", "provider_error") and attempt == 1:
+                log.warning("transient extractor failure, retrying once: %s", exc.code)
+                continue
+            raise
         try:
             data = json.loads(text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip())
             result = ExtractionResult.model_validate(data)
@@ -238,6 +249,8 @@ async def extract_turn(
             last_error = (
                 exc if isinstance(exc, LLMError) else LLMError("malformed_output", f"Extractor output invalid: {exc}")
             )
+            if attempt == 3:
+                break
             current = (
                 "Your previous reply was not valid JSON with an observations array "
                 "using exact quotes. Reply with JSON ONLY.\n\n" + prompt

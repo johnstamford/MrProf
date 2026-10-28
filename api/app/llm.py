@@ -13,6 +13,8 @@ Provider model (env, server-side only — never exposed to the frontend):
                                    templates for the food/hobbies flow test.
   LLM_MODEL / LLM_BASE_URL / LLM_API_KEY configure the real path.
   LLM_TIMEOUT_S (default 20), LLM_MAX_TOKENS (default 300) bound cost/time.
+  LLM_EXTRACT_TIMEOUT_S (default 60) bounds the background evidence
+  extractor separately — it emits long JSON off the critical path.
   NOTE: max_tokens is intentionally NOT passed as a ChatOptions hint — the
   current OpenAI-compatible endpoint returns empty text when any max_tokens
   hint is sent (verified live Oct 2026). Tokens are bounded in practice by
@@ -40,6 +42,7 @@ log = logging.getLogger("mrprof")
 
 SUPPORTED_PROVIDERS = ("dummy", "openai-compatible")
 DEFAULT_TIMEOUT_S = 20
+DEFAULT_EXTRACT_TIMEOUT_S = 60
 DEFAULT_MAX_TOKENS = 300
 
 
@@ -51,6 +54,9 @@ class LLMConfig(BaseModel):
     timeout_s: int = DEFAULT_TIMEOUT_S
     max_tokens: int = DEFAULT_MAX_TOKENS
     json_mode: str = "json_object"
+    # Extraction emits long JSON and runs off the critical path
+    # (BackgroundTasks), so it gets its own generous bound.
+    extractor_timeout_s: int = DEFAULT_EXTRACT_TIMEOUT_S
 
 
 class LLMQuestion(BaseModel):
@@ -85,6 +91,7 @@ def load_config() -> LLMConfig:
         timeout_s=_int("LLM_TIMEOUT_S", DEFAULT_TIMEOUT_S),
         max_tokens=_int("LLM_MAX_TOKENS", DEFAULT_MAX_TOKENS),
         json_mode=(os.environ.get("LLM_JSON_MODE", "json_object") or "json_object").strip().lower(),
+        extractor_timeout_s=_int("LLM_EXTRACT_TIMEOUT_S", DEFAULT_EXTRACT_TIMEOUT_S),
     )
 
 
@@ -251,28 +258,31 @@ async def run_agent_text(
     prompt: str,
     model_info: dict,
     session_id: str,
+    timeout_s: int | None = None,
 ) -> tuple[str, dict, dict]:
     """One bounded agent call. Returns (text, model_info, session_blob).
 
     Raises LLMError (timeout / provider_error); never leaks keys or answers.
-    When cfg.json_mode is "json_object", response_format is passed as a
-    ChatOptions hint so the endpoint returns JSON directly. Validation is
+    timeout_s overrides cfg.timeout_s for callers (like extraction) that
+    need a different bound. When cfg.json_mode is "json_object",
+    response_format is passed as a ChatOptions hint; validation is
     unchanged — the hint only avoids the malformed-regen retry.
     """
     import time
 
+    bound = timeout_s or cfg.timeout_s
     started = time.monotonic()
     options: dict = (
         {"response_format": {"type": "json_object"}} if cfg.json_mode == "json_object" else {}
     )
     try:
         response = await asyncio.wait_for(
-            agent.run(prompt, session=session, options=options), timeout=cfg.timeout_s
+            agent.run(prompt, session=session, options=options), timeout=bound
         )
     except (asyncio.TimeoutError, TimeoutError):
         raise LLMError(
             "timeout",
-            f"Model request timed out after {cfg.timeout_s}s. "
+            f"Model request timed out after {bound}s. "
             "No state was changed; retry with the same idempotency key.",
             status=502,
         )

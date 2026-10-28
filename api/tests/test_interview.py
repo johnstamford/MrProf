@@ -13,7 +13,15 @@ from httpx import ASGITransport, AsyncClient
 
 os.environ.setdefault("MONGODB_DB", "mrprof")
 
-from app.interview import MAX_TURNS, PLAN_ORDER, SKILL_VERSION, TOPIC_VERSION, plan_next  # noqa: E402
+from app.interview import (  # noqa: E402
+    MAX_TURNS,
+    PLAN_ORDER,
+    SKILL_VERSION,
+    TOPIC_VERSION,
+    _needs_detail_invite,
+    build_prompt,
+    plan_next,
+)
 from app.llm import is_dummy, load_config, parse_llm_json  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -50,6 +58,27 @@ def test_unit_planner_sequence():
     )[0] == PLAN_ORDER[4]
     _, _, done_full = plan_next([{"objective": t, "answer": "x"} for t in PLAN_ORDER])
     assert done_full is True
+
+
+def test_unit_detail_invite_targets_thin_answers_only():
+    assert _needs_detail_invite(None) is False
+    assert _needs_detail_invite("") is False
+    assert _needs_detail_invite("bills") is True
+    assert _needs_detail_invite("dunno really") is False  # uncertainty exempt
+    assert _needs_detail_invite("No, starting tasks is fine.") is False  # denial exempt
+    assert _needs_detail_invite("No") is False  # bare denial still exempt
+    assert _needs_detail_invite(
+        "This month I missed two deadlines because I kept putting off starting."
+    ) is False
+    short = build_prompt(objective="impact-life", reason="r", history=[], screening=None, last_answer="bills")
+    assert any("very brief" in line for line in short)
+    exempt = build_prompt(objective="impact-life", reason="r", history=[], screening=None, last_answer="No")
+    assert not any("very brief" in line for line in exempt)
+    normal = build_prompt(
+        objective="impact-life", reason="r", history=[], screening=None,
+        last_answer="This month I missed two deadlines because I kept putting off starting.",
+    )
+    assert not any("very brief" in line for line in normal)
 
 
 def test_unit_dummy_config_and_strict_parse():

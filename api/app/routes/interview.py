@@ -93,8 +93,10 @@ def _replay_result(doc: dict, key: str) -> dict | None:
 async def _generate(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None) -> tuple:
     """Run the InterviewAgent for the planner-assigned objective."""
     cfg = load_config()
+    last_answer = history[-1].get("answer") if history else None
     prompt = planner.build_prompt(
-        objective=objective, reason=reason, history=history, screening=screening
+        objective=objective, reason=reason, history=history, screening=screening,
+        last_answer=last_answer,
     )
     return await generate_next_question(
         cfg=cfg,

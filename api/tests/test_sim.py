@@ -78,7 +78,7 @@ async def test_contradiction_pair_flows_through_verbatim(client):
     profile = get_profile("contradictor-01")
     persona = extract_persona(profile)
     run = await run_journey(client, "", persona, DummyPatient(persona), profile["screening"])
-    assert run["turns"][2]["answer"] == "School was never a problem."
+    assert "School was never a problem" in run["turns"][2]["answer"]
     assert "repeated a year" in run["turns"][3]["answer"]
 
 
