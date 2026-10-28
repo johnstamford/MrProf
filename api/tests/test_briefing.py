@@ -69,13 +69,17 @@ def test_unit_briefing_separates_patient_from_system():
     # System section carries planning metadata — no answers.
     assert set(content["system_notes"][0]) == {"turn", "objective", "reason", "model_provider", "model_name"}
     assert "answer" not in content["system_notes"][0]
-    # One of six draft topics covered: the other five are gaps.
+    # One planned topic touched with a thin answer: the rest are unasked gaps.
     from app.interview import PLAN_ORDER, load_topics
 
     topics = load_topics()
-    assert [g["area"] for g in content["gaps"]] == [topics[oid]["title"] for oid in PLAN_ORDER[1:]]
-    assert content["skill_version"] == "skill-v0.2-draft"
-    assert content["topic_version"] == "topics-v0.2-draft"
+    assert [g["area"] for g in content["gaps"]] == [topics[oid]["title"] for oid in PLAN_ORDER]
+    assert content["coverage"][0]["status"] == "thin"
+    assert content["coverage"][0]["turns"] == [1]
+    assert all(c["status"] == "unasked" for c in content["coverage"][1:])
+    assert content["contradictions"] == []
+    assert content["skill_version"] == "skill-v0.3-draft"
+    assert content["topic_version"] == "topics-v0.3-draft"
     # No diagnostic, probability, or severity language.
     blob = " ".join([content["banner"], content["completion_note"]]).lower()
     for banned in ("you have adhd", "probability", "severity", "mild", "moderate", "severe", "%"):
@@ -92,7 +96,9 @@ async def _run_full_journey(client, created) -> None:
     )
     assert res.status_code == 200
     version = res.json()["version"]
-    for _ in range(6):
+    from app.interview import MAX_TURNS
+
+    for _ in range(MAX_TURNS):
         res = await client.post(
             f"{base}/interview/answer",
             json={
@@ -104,6 +110,8 @@ async def _run_full_journey(client, created) -> None:
         )
         assert res.status_code == 200
         version = res.json()["version"]
+        if res.json()["completed"]:
+            break
     assert res.json()["completed"] is True
 
 
@@ -120,10 +128,15 @@ async def test_briefing_lifecycle(client):
     first = await client.get(f"{base}/interview/report", headers=headers)
     assert first.status_code == 200
     body = first.json()
-    assert body["report_version"] == 1 and body["turns_answered"] == 6
-    assert len(body["statements"]) == 6 and len(body["system_notes"]) == 6
-    assert body["gaps"] == []  # full run covers every draft topic
-    assert body["skill_version"] == "skill-v0.2-draft"
+    from app.interview import PLAN_ORDER
+
+    assert body["report_version"] == 1 and body["turns_answered"] == len(PLAN_ORDER)
+    assert len(body["statements"]) == len(PLAN_ORDER) and len(body["system_notes"]) == len(PLAN_ORDER)
+    assert body["gaps"] == []  # full run asks every planned objective
+    assert [c["objective"] for c in body["coverage"]] == list(PLAN_ORDER)
+    assert all(c["status"] == "covered" for c in body["coverage"])
+    assert body["contradictions"] == []
+    assert body["skill_version"] == "skill-v0.3-draft"
     # Reopen returns the same versioned briefing.
     second = await client.get(f"{base}/interview/report", headers=headers)
     assert second.json() == body

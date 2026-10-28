@@ -96,7 +96,7 @@ def test_unit_quote_validation_accepts_exact_rejects_altered():
     good = ExtractionResult(
         observations=[
             ExtractedObservation(
-                code="attention-tasks", assertion="present", segment_id="T1-A1", quote="Starting paperwork."
+                code="task-completion", assertion="present", segment_id="T1-A1", quote="Starting paperwork."
             )
         ]
     )
@@ -104,10 +104,10 @@ def test_unit_quote_validation_accepts_exact_rejects_altered():
     assert validate_observations(codes, _segs(), good).observations[0].review_status == "pending"
 
     for bad_obs in (
-        {"code": "attention-tasks", "assertion": "present", "segment_id": "T1-A1", "quote": "Starting  paperwork."},
-        {"code": "attention-tasks", "assertion": "present", "segment_id": "T9-Z9", "quote": "Starting paperwork."},
+        {"code": "task-completion", "assertion": "present", "segment_id": "T1-A1", "quote": "Starting  paperwork."},
+        {"code": "task-completion", "assertion": "present", "segment_id": "T9-Z9", "quote": "Starting paperwork."},
         {"code": "nope-code", "assertion": "present", "segment_id": "T1-A1", "quote": "Starting paperwork."},
-        {"code": "attention-tasks", "assertion": "sometimes", "segment_id": "T1-A1", "quote": "Starting paperwork."},
+        {"code": "task-completion", "assertion": "sometimes", "segment_id": "T1-A1", "quote": "Starting paperwork."},
     ):
         with pytest.raises(LLMError):
             validate_observations(
@@ -124,14 +124,14 @@ def test_unit_contradictions_retained_not_merged():
     both = ExtractionResult(
         observations=[
             ExtractedObservation(
-                code="impact-life",
+                code="impact-work",
                 assertion="present",
                 segment_id="T1-A1",
                 quote="Starting paperwork.",
                 links=[ObservationLink(kind="possible-contradiction", turn=2, note="Turn 2 denies impact.")],
             ),
             ExtractedObservation(
-                code="impact-life", assertion="explicitly-denied", segment_id="T1-A2", quote="I never finish it."
+                code="impact-work", assertion="explicitly-denied", segment_id="T1-A2", quote="I never finish it."
             ),
         ]
     )
@@ -143,7 +143,7 @@ def test_unit_contradictions_retained_not_merged():
 
 
 def test_unit_dummy_extract_quotes_exact_segment():
-    res = dummy_extract("attention-tasks", _segs(), "Starting paperwork.\n\nI never finish it.")
+    res = dummy_extract("task-completion", _segs(), "Starting paperwork.\n\nI never finish it.")
     assert len(res.observations) == 1
     obs = res.observations[0]
     assert obs.segment_id == "T1-A1" and obs.quote == "Starting paperwork."
@@ -196,7 +196,7 @@ async def test_transcript_and_evidence_lifecycle(client):
     # Transcript preserves wording and formatting independently of evidence.
     t = (await client.get(f"{base}/interview/transcript", headers=headers)).json()
     texts = [s["text"] for s in t["segments"]]
-    assert any("What kinds of tasks" in x for x in texts)
+    assert any("stay focused" in x for x in texts)
     assert "First point here." in texts
     assert "Second point:\n- one\n- two" in texts
     ids = [s["id"] for s in t["segments"]]

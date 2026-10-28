@@ -1,0 +1,65 @@
+# Interview topics — v0.3 DRAFT (NOT clinically reviewed)
+version: topics-v0.3-draft
+note: Fourteen experience-focused objectives covering reported behaviors,
+  course over time, settings, impact, context, coping, and background.
+  Open-ended and non-leading by design: no diagnostic language, no suggested
+  causation, no compound questions. A bounded probe budget allows follow-ups
+  for thin answers and neutral clarification of cross-turn tension.
+  Draft for review — coverage and stop rules stay provisional until clinical review.
+objectives:
+  - id: attention-focus
+    title: Sustaining attention
+    goal: Elicit an open-ended account of staying focused and being distracted during ordinary activities.
+    opener: "Think about an ordinary day. What is it like for you to stay focused on one thing?"
+  - id: organization
+    title: Organization and time
+    goal: Elicit an open-ended account of organizing tasks, time, and belongings.
+    opener: "How do you find organizing your time, your tasks, or your belongings?"
+  - id: task-completion
+    title: Starting and finishing tasks
+    goal: Elicit an open-ended account of getting started, staying with, and finishing tasks.
+    opener: "What kinds of tasks are hardest for you to start or finish?"
+  - id: forgetfulness
+    title: Forgetfulness in daily life
+    goal: Elicit an open-ended account of forgetting appointments, obligations, or where things are.
+    opener: "Do you ever forget appointments, obligations, or where you put things? What is that like?"
+  - id: restlessness
+    title: Restlessness and staying with one thing
+    goal: Elicit an open-ended account of restlessness or difficulty staying with one activity.
+    opener: "When you need to sit still or stay with one thing, what is that like for you?"
+  - id: impulsivity
+    title: Acting quickly and patience
+    goal: Elicit an open-ended account of acting on impulse, interrupting, or waiting. Accept denials plainly.
+    opener: "How are you with waiting your turn, or holding back when you want to jump in?"
+  - id: childhood-onset
+    title: Childhood and school years
+    goal: Elicit what is remembered of childhood and school. Accept cannot-remember without pressing.
+    opener: "Thinking back to childhood and school, what do you remember about yourself as a child?"
+  - id: persistence-course
+    title: How things changed over time
+    goal: Elicit duration, persistence, and change over time. Accept cannot-remember without pressing.
+    opener: "How have these kinds of experiences changed over the years, as far as you can tell?"
+  - id: settings
+    title: Different settings
+    goal: Elicit whether experiences differ between settings such as home and work or study.
+    opener: "Are these experiences different depending on where you are — for example at home versus work or study?"
+  - id: impact-work
+    title: Impact on work or study
+    goal: Elicit a concrete recent example of impact on work or study, without suggesting causation.
+    opener: "Can you describe a recent time when these experiences affected your work or studies?"
+  - id: impact-relationships
+    title: Impact on relationships and daily life
+    goal: Elicit a concrete recent example of impact on relationships or daily life, without suggesting causation.
+    opener: "How do these experiences affect the people around you, or your day-to-day life outside work?"
+  - id: context-factors
+    title: Sleep, stress, mood, and health context
+    goal: Elicit factors the person links with better or worse periods, without suggesting causation.
+    opener: "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?"
+  - id: strategies
+    title: Strategies and support
+    goal: Elicit routines, reminders, help from others, or workarounds the person uses.
+    opener: "What do you do to cope with or work around these experiences — routines, reminders, help from others?"
+  - id: background-goals
+    title: Background and goals
+    goal: Elicit presenting concerns, goals for the assessment, previous assessments, and family history if offered.
+    opener: "What brings you to this assessment now, and is there anything about your background you think is relevant?"

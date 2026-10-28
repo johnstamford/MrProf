@@ -173,6 +173,23 @@ class BriefingGap(BaseModel):
     status: str
 
 
+class BriefingCoverage(BaseModel):
+    objective: str
+    title: str
+    status: str
+    turns: list[int]
+    note: str
+
+
+class BriefingContradiction(BaseModel):
+    family: str
+    areas: list[str]
+    present_turn: int
+    denial_turn: int
+    clarified: bool
+    note: str
+
+
 class InterviewBriefingOut(BaseModel):
     assessment_id: str
     report_version: int
@@ -184,6 +201,8 @@ class InterviewBriefingOut(BaseModel):
     turns_answered: int
     statements: list[BriefingStatement]
     system_notes: list[BriefingSystemNote]
+    coverage: list[BriefingCoverage] = Field(default_factory=list)
+    contradictions: list[BriefingContradiction] = Field(default_factory=list)
     gaps: list[BriefingGap]
     completed_at: datetime
 

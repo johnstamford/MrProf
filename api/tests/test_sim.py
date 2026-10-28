@@ -50,11 +50,11 @@ def test_persona_validation_clean_and_violations():
     assert any("lost uncertainty" in i for i in issues)
 
     persona = extract_persona(get_profile("vague-01"))
-    persona["script"]["attention-tasks"] = {"answer": "x", "basis": "fact:99"}
+    persona["script"]["task-completion"] = {"answer": "x", "basis": "fact:99"}
     assert any("out of range" in i for i in validate_persona(persona, get_profile("vague-01")))
 
     persona = extract_persona(get_profile("vague-01"))
-    persona["script"]["attention-tasks"] = {"answer": "x", "basis": "made-up"}
+    persona["script"]["task-completion"] = {"answer": "x", "basis": "made-up"}
     assert any("untraceable" in i for i in validate_persona(persona, get_profile("vague-01")))
 
 
@@ -66,8 +66,9 @@ async def test_dummy_journey_completes_with_isolation(client, profile_id):
     patient = DummyPatient(persona)
     run = await run_journey(client, "", persona, patient, profile["screening"])
     assert run["stop_reason"] == "complete"
-    assert len(run["turns"]) == 6
-    assert run["patient_calls"] == 6
+    # 14 openers; a bounded probe fires only for thin answers or tension.
+    assert len(run["turns"]) in (14, 15)
+    assert run["patient_calls"] == len(run["turns"])
     # Isolation: driver payload shape fixed; patient words only, never briefs.
     assert ALLOWED_ANSWER_KEYS == {"answer_text", "base_version", "idempotency_key"}
     for t in run["turns"]:
@@ -78,8 +79,9 @@ async def test_contradiction_pair_flows_through_verbatim(client):
     profile = get_profile("contradictor-01")
     persona = extract_persona(profile)
     run = await run_journey(client, "", persona, DummyPatient(persona), profile["screening"])
-    assert "School was never a problem" in run["turns"][2]["answer"]
-    assert "repeated a year" in run["turns"][3]["answer"]
+    by_objective = {t["objective"]: t["answer"] for t in run["turns"]}
+    assert "School was never a problem" in by_objective["childhood-onset"]
+    assert "repeated a year" in by_objective["impact-work"]
 
 
 async def test_artifacts_sealed(tmp_path, client):
@@ -107,4 +109,4 @@ async def test_artifacts_sealed(tmp_path, client):
     ref = json.loads((dest / "reference_transcript.json").read_text())
     assert ref["ground_truth_facts"] == profile["facts"]
     results = json.loads((dest / "results.json").read_text())
-    assert results["stop_reason"] == "complete" and results["turns"] == 6
+    assert results["stop_reason"] == "complete" and results["turns"] in (14, 15)

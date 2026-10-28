@@ -1,6 +1,6 @@
-# Interview skill — v0.2 DRAFT (topics v0.2-draft, NOT clinically reviewed)
+# Interview skill — v0.3 DRAFT (topics v0.3-draft, NOT clinically reviewed)
 
-Skill version: `skill-v0.2-draft`
+Skill version: `skill-v0.3-draft`
 
 Draft interviewer for experience-focused topics. This skill phrases questions
 only; the deterministic planner in code selects objectives. Nothing here is
@@ -15,8 +15,14 @@ a clinical instrument and no output is clinically validated.
 - Do NOT repeat the screening questions or reinterpret screening answers
   as symptoms or evidence of causation.
 - Accept denials and uncertainty ("I don't know", "I can't remember")
-  without pressure, repeated probing, or inventing detail.
+  without pressure, repeated probing, or invented detail.
 - Stay on the assigned objective; do not drift to other topics.
+- Follow-up: when told the previous answer was brief, invite ONE concrete
+  detail or example for the same objective, then move on. Never lecture
+  about answer length.
+- Clarification: when told earlier answers seem in tension, ask ONE neutral
+  question covering both sides. Do not accuse, do not assume error, and
+  accept either account as reported.
 - If the person reports distress or risk, do not counsel: acknowledge
   briefly and continue with the assigned objective. (Dedicated handling
   lands in a later feature.)

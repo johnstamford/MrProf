@@ -36,7 +36,7 @@ from .llm import (
 log = logging.getLogger("mrprof")
 
 EXTRACTOR_VERSION = "extractor-v0.1"
-TAXONOMY_VERSION = "taxonomy-v0.1-draft"
+TAXONOMY_VERSION = "taxonomy-v0.2-draft"
 ALLOWED_ASSERTIONS = ("present", "explicitly-denied", "uncertain")
 
 _UNCERTAIN_RE = re.compile(
@@ -79,7 +79,7 @@ class ExtractionResult(BaseModel):
 @lru_cache(maxsize=1)
 def load_taxonomy() -> dict:
     """Parse the draft taxonomy (same minimal subset shape as topics)."""
-    path = Path(__file__).parent / "taxonomy" / "v0.1.yaml"
+    path = Path(__file__).parent / "taxonomy" / "v0.2.yaml"
     meta: dict[str, str] = {}
     codes: dict[str, dict[str, str]] = {}
     current: dict[str, str] | None = None

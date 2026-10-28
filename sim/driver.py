@@ -20,6 +20,22 @@ def _new_key(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4().hex[:8]}"
 
 
+async def _post(client, url: str, payload: dict, headers: dict | None = None):
+    """POST with one retry on 5xx using the SAME payload (same idempotency
+    key) — the designed safe-retry path. 4xx still fails fast."""
+    last = None
+    for attempt in (1, 2):
+        res = await client.post(url, json=payload, headers=headers)
+        if res.status_code < 500:
+            res.raise_for_status()
+            return res
+        last = res
+        await asyncio.sleep(2 * attempt)
+    assert last is not None
+    last.raise_for_status()
+    raise AssertionError("unreachable")
+
+
 async def run_journey(
     client,
     base: str,
@@ -49,10 +65,10 @@ async def run_journey(
     version = created.json()["version"]
 
     t0 = time.monotonic()
-    scr = await client.post(
-        f"{base}/assessments/{assessment_id}/screening",
-        json={"answers": screening, "base_version": version, "idempotency_key": _new_key("sim-scr")},
-        headers=auth,
+    scr = await _post(
+        client, f"{base}/assessments/{assessment_id}/screening",
+        {"answers": screening, "base_version": version, "idempotency_key": _new_key("sim-scr")},
+        auth,
     )
     latencies_ms.append((time.monotonic() - t0) * 1000)
     scr.raise_for_status()
@@ -63,10 +79,10 @@ async def run_journey(
         return _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at)
 
     t0 = time.monotonic()
-    st = await client.post(
-        f"{base}/assessments/{assessment_id}/interview/start",
-        json={"base_version": version, "idempotency_key": _new_key("sim-start")},
-        headers=auth,
+    st = await _post(
+        client, f"{base}/assessments/{assessment_id}/interview/start",
+        {"base_version": version, "idempotency_key": _new_key("sim-start")},
+        auth,
     )
     latencies_ms.append((time.monotonic() - t0) * 1000)
     st.raise_for_status()
@@ -85,8 +101,8 @@ async def run_journey(
         payload = {"answer_text": answer_text, "base_version": version, "idempotency_key": _new_key("sim-ans")}
         assert set(payload) == ALLOWED_ANSWER_KEYS, "driver isolation: answer payload keys fixed"
         t0 = time.monotonic()
-        res = await client.post(
-            f"{base}/assessments/{assessment_id}/interview/answer", json=payload, headers=auth
+        res = await _post(
+            client, f"{base}/assessments/{assessment_id}/interview/answer", payload, auth
         )
         latencies_ms.append((time.monotonic() - t0) * 1000)
         res.raise_for_status()

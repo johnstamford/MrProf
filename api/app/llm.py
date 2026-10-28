@@ -12,7 +12,7 @@ Provider model (env, server-side only — never exposed to the frontend):
   LLM_PROVIDER=dummy (default)     No network. Deterministic stub
                                    templates for the food/hobbies flow test.
   LLM_MODEL / LLM_BASE_URL / LLM_API_KEY configure the real path.
-  LLM_TIMEOUT_S (default 20), LLM_MAX_TOKENS (default 300) bound cost/time.
+  LLM_TIMEOUT_S (default 30), LLM_MAX_TOKENS (default 300) bound cost/time.
   LLM_EXTRACT_TIMEOUT_S (default 60) bounds the background evidence
   extractor separately — it emits long JSON off the critical path.
   NOTE: max_tokens is intentionally NOT passed as a ChatOptions hint — the
@@ -41,7 +41,7 @@ from pydantic import BaseModel, Field
 log = logging.getLogger("mrprof")
 
 SUPPORTED_PROVIDERS = ("dummy", "openai-compatible")
-DEFAULT_TIMEOUT_S = 20
+DEFAULT_TIMEOUT_S = 30
 DEFAULT_EXTRACT_TIMEOUT_S = 60
 DEFAULT_MAX_TOKENS = 300
 

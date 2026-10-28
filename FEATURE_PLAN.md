@@ -1,7 +1,7 @@
 # MrProf — Ordered Feature Plan
 
-Planning baseline: 26 October 2026. Features 1–8 are implemented and verified;
-features 9–14 below remain planned, not implemented.
+Planning baseline: 26 October 2026. Features 1–9 are implemented and verified;
+features 10–14 below remain planned, not implemented.
 
 Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focused, and update this plan with implementation status, verification evidence, and remaining limitations. Do not infer that a working prototype is clinically validated or ready for real-user data.
 
@@ -294,6 +294,33 @@ Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focu
 - Completed reports distinguish explored topics from missing evidence and clinician judgments still needed.
 
 **Depends on:** 7–8. Compare candidate changes using the synthetic runs.
+
+**Status (28 Oct 2026): ✅ done — implemented and verified (topics v0.3 draft, not reviewed).**
+- 14 objectives (`topics/v0.3.yaml`, `skill-v0.3-draft`, `taxonomy-v0.2-draft`):
+  6 reported behaviors, course (childhood-onset, persistence), settings +
+  work/relationship impact, context, coping, background-goals. Fixed opener
+  order; deterministic code planner, LLM only phrases.
+- Bounded probes (6 of 20 turns): 1 follow-up for thin answers (<20 chars;
+  denials/uncertainty exempt and close the topic), neutral clarification of
+  cross-turn family tension (max 1 per family, 2 total). Stop rules:
+  substantive / denied / unable / thin / unasked per objective.
+- Briefing now reports per-objective coverage, contradictions (turn refs +
+  clarified or not, both accounts retained), and gaps (unasked or thin).
+  Screening context still passed to the model; no repetition of screening Qs.
+- Probe accounting is a stored `probe` marker (None/followup/clarify:family),
+  not reason-prefix sniffing — model-phrased reasons broke prefix detection
+  (triple-clarification bug, caught by sims, fixed + regression-tested).
+- Sim driver retries 5xx once with the same idempotency key (designed path);
+  saved denier + contradictor runs. Interviewer timeout 20→30s after a
+  flaky spell (4 consecutive timeouts on one turn); extractor keeps its 60s.
+- `docker compose exec api pytest tests -q`: 47 passed (42 prior + 5 new
+  planner/probe tests), 1 skipped. Live: fresh DB, 4/4 journeys complete
+  (14/14/15/15 turns, ~10-17s/turn), 14-15/15 evidence docs each, zero
+  extraction warnings. Contradiction clarified live (course family, turns 7/8).
+- Remaining: multi-objective satisfaction is extractor-side only (planner
+  closes only the asked objective); screening-priority ordering still fixed
+  order; topics/taxonomy still draft, not clinically reviewed. Longer journeys
+  raise per-run hard-failure odds — mitigated by driver retry, not eliminated.
 
 ## 10. Interview quality and recovery controls
 

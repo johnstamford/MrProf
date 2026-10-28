@@ -14,12 +14,16 @@ from httpx import ASGITransport, AsyncClient
 os.environ.setdefault("MONGODB_DB", "mrprof")
 
 from app.interview import (  # noqa: E402
+    FAMILIES,
+    MAX_PROBES,
     MAX_TURNS,
     PLAN_ORDER,
     SKILL_VERSION,
     TOPIC_VERSION,
     _needs_detail_invite,
     build_prompt,
+    coverage_summary,
+    family_tensions,
     plan_next,
 )
 from app.llm import is_dummy, load_config, parse_llm_json  # noqa: E402
@@ -50,14 +54,83 @@ def _auth(password: str) -> dict:
 
 
 def test_unit_planner_sequence():
-    assert plan_next([])[0] == PLAN_ORDER[0] == "attention-tasks"
-    assert plan_next([{"objective": PLAN_ORDER[0], "answer": "x"}])[0] == PLAN_ORDER[1]
-    assert plan_next([{"objective": t, "answer": "x"} for t in PLAN_ORDER[:5]])[0] == PLAN_ORDER[5]
+    assert plan_next([])[0] == PLAN_ORDER[0] == "attention-focus"
+    assert plan_next([{"objective": PLAN_ORDER[0], "answer": "x" * 40}])[0] == PLAN_ORDER[1]
+    assert plan_next([{"objective": t, "answer": "y" * 40} for t in PLAN_ORDER[:5]])[0] == PLAN_ORDER[5]
     assert plan_next(
-        [{"objective": t, "answer": "x"} for t in PLAN_ORDER[:4]]
+        [{"objective": t, "answer": "y" * 40} for t in PLAN_ORDER[:4]]
     )[0] == PLAN_ORDER[4]
-    _, _, done_full = plan_next([{"objective": t, "answer": "x"} for t in PLAN_ORDER])
+    _, _, done_full, _ = plan_next([{"objective": t, "answer": "y" * 40} for t in PLAN_ORDER])
     assert done_full is True
+
+
+def _turn(no: int, objective: str, answer: str, reason: str = "r") -> dict:
+    return {"turn": no, "objective": objective, "reason": reason, "question": "q", "answer": answer}
+
+
+def test_unit_followup_for_thin_answer_bounded():
+    turns = [
+        _turn(1, PLAN_ORDER[0], "a substantive answer with plenty of detail in it yes"),
+        _turn(2, PLAN_ORDER[1], "bills"),
+    ]
+    obj, reason, done, hint = plan_next(turns)
+    assert (obj, done) == (PLAN_ORDER[1], False)
+    assert hint == {"kind": "followup"}
+    assert reason.startswith("Follow up")
+    # Answering the follow-up thin again closes it: no second probe.
+    turns.append(_turn(3, PLAN_ORDER[1], "still short"))
+    obj, _, done, _ = plan_next(turns)
+    assert (obj, done) == (PLAN_ORDER[2], False)
+
+
+def test_unit_no_followup_for_denial_or_uncertainty():
+    for ans in ("No", "No, that is fine", "I cannot recall", "dunno really"):
+        turns = [_turn(1, PLAN_ORDER[0], ans)]
+        obj, _, done, _ = plan_next(turns)
+        assert (obj, done) == (PLAN_ORDER[1], False), ans
+
+
+def test_unit_clarification_bounded_per_family():
+    t1 = _turn(1, "childhood-onset", "School was never a problem for me at all, really.")
+    t2 = _turn(2, "persistence-course", "Over the years it has clearly been there a long time.")
+    assert family_tensions([t1, t2]) == [
+        {"family": "course", "present_turn": 2, "denial_turn": 1}
+    ]
+    obj, reason, done, hint = plan_next([t1, t2])
+    assert (obj, done) == ("persistence-course", False)
+    assert reason.startswith("Clarify ") and hint is not None and "tension" in hint
+    # After one clarification for the family, the planner moves on.
+    t3 = _turn(3, "persistence-course", "To clarify: it has been constant for years.")
+    t3["probe"] = "clarify:course"
+    obj, _, done, hint = plan_next([t1, t2, t3])
+    assert (obj, done, hint) == (PLAN_ORDER[0], False, None)
+
+
+def test_unit_completion_at_cap_and_probe_budget():
+    turns = [
+        _turn(i + 1, PLAN_ORDER[i % len(PLAN_ORDER)], "a substantive detailed answer indeed")
+        for i in range(MAX_TURNS)
+    ]
+    _, _, done, _ = plan_next(turns)
+    assert done is True
+    # 14 openers + at most MAX_PROBES probes fit exactly.
+    assert MAX_TURNS == len(PLAN_ORDER) + MAX_PROBES
+
+
+def test_unit_coverage_summary_statuses():
+    turns = [
+        _turn(1, "attention-focus", "a substantive detailed account of staying focused yes"),
+        _turn(2, "organization", "No"),
+        _turn(3, "task-completion", "I cannot recall any of that, sorry"),
+        _turn(4, "forgetfulness", "keys"),
+    ]
+    summary = {e["objective"]: e["status"] for e in coverage_summary(turns)}
+    assert summary["attention-focus"] == "covered"
+    assert summary["organization"] == "denied"
+    assert summary["task-completion"] == "unable"
+    assert summary["forgetfulness"] == "thin"
+    assert summary["restlessness"] == "unasked"
+    assert list(summary) == list(PLAN_ORDER)
 
 
 def test_unit_detail_invite_targets_thin_answers_only():
@@ -182,7 +255,7 @@ async def test_start_answer_resume_complete(client):
     body = started["response"].json()
     assert body["version"] == 2 and body["stage"] == "interview"
     assert body["question"]["turn"] == 1 and body["question"]["objective"] == PLAN_ORDER[0]
-    assert "tasks" in body["question"]["text"].lower()
+    assert "focused" in body["question"]["text"].lower()
     assert body["question"]["model_provider"] == "dummy"
 
     nxt = await client.get(f"{base}/interview/next", headers=headers)
@@ -205,8 +278,10 @@ async def test_start_answer_resume_complete(client):
         if i == 0:
             # Topic finishes before moving on: second topic comes second.
             assert last["question"]["objective"] == PLAN_ORDER[1]
+        if last["completed"]:
+            break
     assert last["completed"] is True and last["status"] == "complete"
-    assert last["question"] is None and last["turn_answered"] == MAX_TURNS
+    assert last["question"] is None and last["turn_answered"] == len(PLAN_ORDER)
 
     nxt2 = await client.get(f"{base}/interview/next", headers=headers)
     assert nxt2.json()["completed"] is True and nxt2.json()["question"] is None

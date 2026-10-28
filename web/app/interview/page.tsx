@@ -23,6 +23,10 @@ type NextState = {
   completed: boolean;
 };
 
+type BriefingGap = { area: string; status: string };
+type BriefingCoverage = { objective: string; title: string; status: string; turns: number[]; note: string };
+type BriefingContradiction = { family: string; areas: string[]; present_turn: number; denial_turn: number; clarified: boolean; note: string };
+
 type Briefing = {
   report_version: number;
   banner: string;
@@ -30,7 +34,9 @@ type Briefing = {
   turns_answered: number;
   statements: { turn: number; question: string; answer: string }[];
   system_notes: { turn: number; objective: string; reason: string }[];
-  gaps: { area: string; status: string }[];
+  coverage: BriefingCoverage[];
+  contradictions: BriefingContradiction[];
+  gaps: BriefingGap[];
 };
 
 function draftKey(code: string, turn: number) {
@@ -277,7 +283,27 @@ export default function InterviewPage() {
           </ul>
         </section>
         <section>
-          <h2>Not covered in this short flow</h2>
+          <h2>Coverage — what was explored</h2>
+          <ul>
+            {(briefing.coverage ?? []).map((c) => (
+              <li key={c.objective}>{c.title} — {c.status} ({c.note}{c.turns.length ? `, turns ${c.turns.join(", ")}` : ""})</li>
+            ))}
+          </ul>
+        </section>
+        {(briefing.contradictions ?? []).length > 0 && (
+          <section>
+            <h2>Accounts in tension (both retained)</h2>
+            <ul>
+              {briefing.contradictions.map((c) => (
+                <li key={c.family}>
+                  {c.areas.join(" / ")}: turn {c.denial_turn} reported no difficulty, turn {c.present_turn} described difficulty — {c.note}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <section>
+          <h2>Not covered in this interview</h2>
           <p>{briefing.completion_note}</p>
           <ul>
             {briefing.gaps.map((g) => (

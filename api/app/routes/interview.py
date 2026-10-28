@@ -90,15 +90,21 @@ def _replay_result(doc: dict, key: str) -> dict | None:
     return None
 
 
-async def _generate(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None) -> tuple:
-    """Run the InterviewAgent for the planner-assigned objective."""
+async def _generate(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None, hint: dict | None = None) -> tuple:
+    """Run the InterviewAgent for the planner-assigned objective.
+
+    Returns (question, model_info, session_blob, probe) where probe is the
+    deterministic marker (None, "followup", or "clarify:<family>") stored on
+    the turn for stop-rule accounting.
+    """
     cfg = load_config()
     last_answer = history[-1].get("answer") if history else None
+    hint = hint or {}
     prompt = planner.build_prompt(
         objective=objective, reason=reason, history=history, screening=screening,
-        last_answer=last_answer,
+        last_answer=last_answer, tension=hint.get("tension"),
     )
-    return await generate_next_question(
+    question, model_info, session_blob = await generate_next_question(
         cfg=cfg,
         instructions=planner.load_skill(),
         prompt=prompt,
@@ -107,6 +113,9 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
         fallback_question=planner.fallback_question(objective),
         session_id=assessment_id,
     )
+    kind = hint.get("kind")
+    probe = f"clarify:{hint['family']}" if kind == "clarify" else (kind if kind == "followup" else None)
+    return question, model_info, session_blob, probe
 
 
 async def _append_transcript(
@@ -224,9 +233,9 @@ async def start_interview(
             status_code=409,
             detail={"error": "interview_already_started", "current_version": doc["version"]},
         )
-    objective, reason, _ = planner.plan_next([])
+    objective, reason, _, _ = planner.plan_next([])
     try:
-        question, model_info, session_blob = await _generate(
+        question, model_info, session_blob, _ = await _generate(
             assessment_id, objective, reason, [], doc.get("screening")
         )
     except LLMError as exc:
@@ -239,6 +248,7 @@ async def start_interview(
         "reason": question.reason,
         "question": question.question_text,
         "answer": None,
+        "probe": None,
         "model_provider": model_info["provider"],
         "model_name": model_info["model"],
         "skill_version": SKILL_VERSION,
@@ -339,6 +349,7 @@ async def submit_answer(
         "question": pending["question"],
         "answer": answer[:ANSWER_MAX_LEN],
         "answered_at": _now(),
+        "probe": pending.get("probe"),
         "model_provider": pending["model_provider"],
         "model_name": pending["model_name"],
         "skill_version": pending["skill_version"],
@@ -350,15 +361,16 @@ async def submit_answer(
         session_blob = iv.get("session") or {"session_id": assessment_id}
     else:
         completed = False
-        objective, reason, done = planner.plan_next(new_history)
+        objective, reason, done, hint = planner.plan_next(new_history)
         if done:
             next_turn_doc = None
             completed = True
             session_blob = iv.get("session") or {"session_id": assessment_id}
         else:
             try:
-                question, model_info, session_blob = await _generate(
-                    assessment_id, objective, reason, new_history, doc.get("screening")
+                question, model_info, session_blob, probe = await _generate(
+                    assessment_id, objective, reason, new_history, doc.get("screening"),
+                    hint=hint,
                 )
             except LLMError as exc:
                 # No write happened: the saved answer is untouched, the same
@@ -372,6 +384,7 @@ async def submit_answer(
                 "reason": question.reason,
                 "question": question.question_text,
                 "answer": None,
+                "probe": probe,
                 "model_provider": model_info["provider"],
                 "model_name": model_info["model"],
                 "skill_version": SKILL_VERSION,
