@@ -17,6 +17,10 @@ Provider model (env, server-side only — never exposed to the frontend):
   current OpenAI-compatible endpoint returns empty text when any max_tokens
   hint is sent (verified live Oct 2026). Tokens are bounded in practice by
   the short-question contract (max 200 chars) plus strict JSON validation.
+  LLM_JSON_MODE (default json_object): pass response_format json_object so
+  the endpoint emits JSON directly; "off" disables the hint. Strict
+  JSON+Pydantic validation stays on either way — the hint only cuts the
+  malformed-regen path, it never relaxes validation.
 
 Structured output is enforced by strict JSON parsing + Pydantic
 validation. Malformed output triggers one regeneration retry, then an
@@ -46,6 +50,7 @@ class LLMConfig(BaseModel):
     api_key: str = ""
     timeout_s: int = DEFAULT_TIMEOUT_S
     max_tokens: int = DEFAULT_MAX_TOKENS
+    json_mode: str = "json_object"
 
 
 class LLMQuestion(BaseModel):
@@ -79,6 +84,7 @@ def load_config() -> LLMConfig:
         api_key=(os.environ.get("LLM_API_KEY", "") or "").strip(),
         timeout_s=_int("LLM_TIMEOUT_S", DEFAULT_TIMEOUT_S),
         max_tokens=_int("LLM_MAX_TOKENS", DEFAULT_MAX_TOKENS),
+        json_mode=(os.environ.get("LLM_JSON_MODE", "json_object") or "json_object").strip().lower(),
     )
 
 
@@ -249,13 +255,19 @@ async def run_agent_text(
     """One bounded agent call. Returns (text, model_info, session_blob).
 
     Raises LLMError (timeout / provider_error); never leaks keys or answers.
+    When cfg.json_mode is "json_object", response_format is passed as a
+    ChatOptions hint so the endpoint returns JSON directly. Validation is
+    unchanged — the hint only avoids the malformed-regen retry.
     """
     import time
 
     started = time.monotonic()
+    options: dict = (
+        {"response_format": {"type": "json_object"}} if cfg.json_mode == "json_object" else {}
+    )
     try:
         response = await asyncio.wait_for(
-            agent.run(prompt, session=session), timeout=cfg.timeout_s
+            agent.run(prompt, session=session, options=options), timeout=cfg.timeout_s
         )
     except (asyncio.TimeoutError, TimeoutError):
         raise LLMError(
