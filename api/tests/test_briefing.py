@@ -80,7 +80,9 @@ def test_unit_briefing_separates_patient_from_system():
     from app.interview import PLAN_ORDER
 
     coverage = _coverage_for({PLAN_ORDER[0]: "thin"})
-    content = build_interview_briefing("AID12345", _interview_state(), coverage, [], 1, datetime.now(timezone.utc))
+    content = build_interview_briefing(
+        "AID12345", _interview_state(), coverage, [], [], [], 1, datetime.now(timezone.utc)
+    )
     assert content["turns_answered"] == 1
     # Patient section carries verbatim Q/A only — no objectives/reasons.
     assert set(content["statements"][0]) == {"turn", "question", "answer"}
@@ -97,6 +99,11 @@ def test_unit_briefing_separates_patient_from_system():
     assert content["coverage"][0]["turns"] == [1]
     assert all(c["status"] == "unasked" for c in content["coverage"][1:])
     assert content["contradictions"] == []
+    # Per-topic section carries this topic's Q/A; no evidence passed, so none cited.
+    assert [t["objective"] for t in content["topics"]] == list(PLAN_ORDER)
+    assert content["topics"][0]["turns"][0]["question"] == "What kinds of tasks are hardest?"
+    assert content["topics"][0]["turns"][0]["observations"] == []
+    assert content["transcript"] == []
     assert content["skill_version"] == "skill-v0.4-draft"
     assert content["topic_version"] == "topics-v0.4-draft"
     # No diagnostic, probability, or severity language.
@@ -165,6 +172,11 @@ async def test_briefing_lifecycle(client):
     assert [c["objective"] for c in body["coverage"]] == list(PLAN_ORDER)
     assert all(c["status"] == "covered" for c in body["coverage"])
     assert body["contradictions"] == []
+    assert [t["objective"] for t in body["topics"]] == list(PLAN_ORDER)
+    assert all(len(t["turns"]) == 1 for t in body["topics"])
+    assert body["topics"][0]["turns"][0]["observations"], "expected cited observations"
+    assert body["transcript"] and all("line" in s for s in body["transcript"])
+    assert [s["line"] for s in body["transcript"]] == sorted(s["line"] for s in body["transcript"])
     assert body["skill_version"] == "skill-v0.4-draft"
     # Reopen returns the same versioned briefing.
     second = await client.get(f"{base}/interview/report", headers=headers)

@@ -284,7 +284,11 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
             )
         else:
             prior = await db["reports"].count_documents({"assessment_id": assessment_id, "kind": "interview"})
-            content = build_interview_briefing(assessment_id, iv, coverage, tensions, prior + 1, now)
+            transcripts_doc = await db["transcripts"].find_one({"_id": assessment_id})
+            content = build_interview_briefing(
+                assessment_id, iv, coverage, tensions, evidence_turns,
+                (transcripts_doc or {}).get("segments", []), prior + 1, now,
+            )
             await db["reports"].insert_one(
                 {
                     "assessment_id": assessment_id,

@@ -2,12 +2,12 @@
 
 Two-phase flow. Round 1 is a conversation; a batch assessment then extracts
 evidence, scores coverage, and queues follow-ups; round 2 works the queue.
-Fixed template, no LLM. Patient statements (verbatim questions/answers)
-stay separate from system notes (per-question objective/reason). Coverage
-lists every planned objective with its evidence-grounded status. Cross-turn
-tensions are listed with turn references and whether a follow-up clarified
-them — retained, never silently merged. Gaps are documented, never treated
-as negative findings. Draft topics, not clinically reviewed. No diagnostic
+Fixed template, no LLM. The report is organized per topic: each planned
+objective shows its questions, verbatim answers, and the evidence
+observations grounded in exact transcript spans — then the full transcript
+with line numbers, so every citation can be checked. Patient statements
+stay separate from system notes. Gaps are documented, never treated as
+negative findings. Draft topics, not clinically reviewed. No diagnostic
 language.
 """
 
@@ -47,16 +47,66 @@ def build_interview_briefing(
     interview: dict,
     coverage: list[dict],
     tensions: list[dict],
+    evidence_turns: list[dict],
+    segments: list[dict],
     report_version: int,
     completed_at: datetime,
 ) -> dict:
-    """Build the fixed briefing content dict from stored interview state.
+    """Build the fixed briefing content dict.
 
     coverage and tensions come from the batch assessment (evidence-grounded);
-    the builder only renders them.
+    the builder only renders them. evidence_turns are the stored evidence
+    docs (latest versions); segments are the full transcript segments with
+    stable line numbers. Every observation cites its segment and line.
     """
     turns = interview.get("turns", [])
     topics = load_topics()
+    line_by_segment = {s["id"]: s.get("line") for s in segments}
+    obs_by_turn: dict[int, list[dict]] = {}
+    for doc in evidence_turns:
+        latest = doc["versions"][-1]
+        obs_by_turn.setdefault(doc["turn"], []).extend(latest["observations"])
+    turns_by_objective: dict[str, list[dict]] = {}
+    for t in turns:
+        turns_by_objective.setdefault(t["objective"], []).append(t)
+
+    topic_entries = []
+    for entry in coverage:
+        oid = entry["objective"]
+        topic_turns = []
+        for t in turns_by_objective.get(oid, []):
+            observations = []
+            for obs in obs_by_turn.get(t["turn"], []):
+                if obs["code"] != oid:
+                    continue
+                observations.append(
+                    {
+                        "assertion": obs["assertion"],
+                        "quote": obs["quote"],
+                        "segment_id": obs["segment_id"],
+                        "line": line_by_segment.get(obs["segment_id"]),
+                        "criterion_links": obs.get("criterion_links", []),
+                        "review_status": obs.get("review_status", "pending"),
+                    }
+                )
+            topic_turns.append(
+                {
+                    "turn": t["turn"],
+                    "question": t["question"],
+                    "answer": t["answer"],
+                    "observations": observations,
+                }
+            )
+        topic_entries.append(
+            {
+                "objective": oid,
+                "title": entry["title"],
+                "status": entry["status"],
+                "note": entry["note"],
+                "turns": topic_turns,
+            }
+        )
+
     clarified = _clarified_families(turns, tensions)
     contradictions = [
         {
@@ -82,6 +132,7 @@ def build_interview_briefing(
         "banner": BRIEFING_BANNER,
         "completion_note": COMPLETION_NOTE,
         "turns_answered": len(turns),
+        "topics": topic_entries,
         "statements": [
             {"turn": t["turn"], "question": t["question"], "answer": t["answer"]}
             for t in turns
@@ -109,6 +160,17 @@ def build_interview_briefing(
             }
             for entry in coverage
             if entry["status"] in ("unasked", "thin", "pending")
+        ],
+        "transcript": [
+            {
+                "id": s["id"],
+                "turn": s["turn"],
+                "role": s["role"],
+                "n": s["n"],
+                "text": s["text"],
+                "line": s["line"],
+            }
+            for s in segments
         ],
         "completed_at": completed_at,
     }

@@ -372,6 +372,12 @@ stored `probe` marker after a triple-clarification bug.
 
 **Depends on:** 7 and 9–10.
 
+**Early slice (28 Oct 2026): topic-grouped briefing.** The interview briefing now
+renders per-topic sections (each objective: its questions, verbatim answers,
+and evidence observations with assertion, exact quote, segment ID, and line
+number) plus the full line-numbered transcript, so every citation is checkable
+in one document. Reviewer accept/amend/reject workflow still pending.
+
 ## 12. Independent evaluation and refinement
 
 **Deliver:** Ground-truth evaluation, fixed regression cases, benchmark summaries, and documented limitations.

@@ -26,17 +26,23 @@ type NextState = {
 type BriefingGap = { area: string; status: string };
 type BriefingCoverage = { objective: string; title: string; status: string; turns: number[]; note: string };
 type BriefingContradiction = { family: string; areas: string[]; present_turn: number; denial_turn: number; clarified: boolean; note: string };
+type BriefingObservation = { assertion: string; quote: string; segment_id: string; line: number | null };
+type BriefingTopicTurn = { turn: number; question: string; answer: string; observations: BriefingObservation[] };
+type BriefingTopic = { objective: string; title: string; status: string; note: string; turns: BriefingTopicTurn[] };
+type TranscriptSegment = { id: string; turn: number; role: string; n: number; text: string; line: number };
 
 type Briefing = {
   report_version: number;
   banner: string;
   completion_note: string;
   turns_answered: number;
+  topics: BriefingTopic[];
   statements: { turn: number; question: string; answer: string }[];
   system_notes: { turn: number; objective: string; reason: string }[];
   coverage: BriefingCoverage[];
   contradictions: BriefingContradiction[];
   gaps: BriefingGap[];
+  transcript: TranscriptSegment[];
 };
 
 function draftKey(code: string, turn: number) {
@@ -334,15 +340,27 @@ export default function InterviewPage() {
         <h1>MrProf — interview briefing</h1>
         <p>{briefing.banner}</p>
         <section>
-          <h2>What you reported</h2>
-          <ol>
-            {briefing.statements.map((s) => (
-              <li key={s.turn}>
-                <p>Q{s.turn}: {s.question}</p>
-                <p>A{s.turn}: {s.answer}</p>
-              </li>
-            ))}
-          </ol>
+          <h2>What you reported, by topic</h2>
+          {(briefing.topics ?? []).map((t) => (
+            <section key={t.objective}>
+              <h3>{t.title} — {t.status} ({t.note})</h3>
+              {t.turns.map((s) => (
+                <div key={s.turn}>
+                  <p>Q{s.turn}: {s.question}</p>
+                  <p>A{s.turn}: {s.answer}</p>
+                  {s.observations.length > 0 && (
+                    <ul>
+                      {s.observations.map((o, i) => (
+                        <li key={i}>
+                          [{o.assertion}] “{o.quote}” ({o.segment_id}{o.line != null ? `, line ${o.line}` : ""})
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </section>
+          ))}
         </section>
         <section>
           <h2>How each question was chosen (system notes — not what you said)</h2>
@@ -382,6 +400,16 @@ export default function InterviewPage() {
               <li key={g.area}>{g.area} — {g.status}</li>
             ))}
           </ul>
+        </section>
+        <section>
+          <h2>Full transcript (line-numbered)</h2>
+          <ol>
+            {(briefing.transcript ?? []).map((s) => (
+              <li key={s.id}>
+                [line {s.line}] {s.role === "Q" ? "Interviewer" : "You"}: {s.text}
+              </li>
+            ))}
+          </ol>
         </section>
         <p>
           <button onClick={() => router.push("/report")}>← Back to screening report</button>{" "}

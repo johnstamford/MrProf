@@ -190,6 +190,39 @@ class BriefingContradiction(BaseModel):
     note: str = ""
 
 
+class TranscriptSegment(BaseModel):
+    id: str
+    turn: int
+    role: str
+    n: int
+    text: str
+    line: int
+
+
+class BriefingTopicObservation(BaseModel):
+    assertion: str
+    quote: str
+    segment_id: str
+    line: int | None = None
+    criterion_links: list[dict] = Field(default_factory=list)
+    review_status: str = "pending"
+
+
+class BriefingTopicTurn(BaseModel):
+    turn: int
+    question: str
+    answer: str
+    observations: list[BriefingTopicObservation] = Field(default_factory=list)
+
+
+class BriefingTopic(BaseModel):
+    objective: str
+    title: str
+    status: str
+    note: str
+    turns: list[BriefingTopicTurn] = Field(default_factory=list)
+
+
 class InterviewBriefingOut(BaseModel):
     assessment_id: str
     report_version: int
@@ -199,11 +232,13 @@ class InterviewBriefingOut(BaseModel):
     banner: str
     completion_note: str
     turns_answered: int
+    topics: list[BriefingTopic] = Field(default_factory=list)
     statements: list[BriefingStatement]
     system_notes: list[BriefingSystemNote]
     coverage: list[BriefingCoverage] = Field(default_factory=list)
     contradictions: list[BriefingContradiction] = Field(default_factory=list)
     gaps: list[BriefingGap]
+    transcript: list[TranscriptSegment] = Field(default_factory=list)
     completed_at: datetime
 
 
@@ -216,15 +251,6 @@ class InterviewAssessmentOut(BaseModel):
     followups_done: int = 0
     coverage: list[BriefingCoverage] = Field(default_factory=list)
     tensions: list[BriefingContradiction] = Field(default_factory=list)
-
-
-class TranscriptSegment(BaseModel):
-    id: str
-    turn: int
-    role: str
-    n: int
-    text: str
-    line: int
 
 
 class TranscriptOut(BaseModel):
