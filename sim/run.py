@@ -60,7 +60,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run a synthetic patient journey.")
     parser.add_argument("--profile", required=True, help="profile id (see sim/profiles.py)")
     parser.add_argument("--live", action="store_true",
-                        help="LLM roleplay patient (costs model calls; interviewer uses server config)")    parser.add_argument("--base", default="http://localhost:8000", help="API base URL")
+                        help="LLM roleplay patient (costs model calls; interviewer uses server config)")
+    parser.add_argument("--base", default="http://localhost:8000", help="API base URL")
     parser.add_argument("--out", default="sim/runs", help="artifact output dir")
     args = parser.parse_args(argv)
     live = args.live or os.environ.get("SIM_LIVE") == "1"

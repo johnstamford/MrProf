@@ -13,6 +13,10 @@ Provider model (env, server-side only — never exposed to the frontend):
                                    templates for the food/hobbies flow test.
   LLM_MODEL / LLM_BASE_URL / LLM_API_KEY configure the real path.
   LLM_TIMEOUT_S (default 20), LLM_MAX_TOKENS (default 300) bound cost/time.
+  NOTE: max_tokens is intentionally NOT passed as a ChatOptions hint — the
+  current OpenAI-compatible endpoint returns empty text when any max_tokens
+  hint is sent (verified live Oct 2026). Tokens are bounded in practice by
+  the short-question contract (max 200 chars) plus strict JSON validation.
 
 Structured output is enforced by strict JSON parsing + Pydantic
 validation. Malformed output triggers one regeneration retry, then an
@@ -194,10 +198,13 @@ async def generate_next_question(
             last_error = exc
             if attempt == 3:
                 break
+            # prompt may be a single string or a list of lines (build_prompt);
+            # the repair instruction needs a string either way.
+            base = prompt if isinstance(prompt, str) else "\n".join(prompt)
             current_prompt = (
                 "Your previous reply was not valid JSON with keys "
                 "question_text/objective/reason. Reply with JSON ONLY, no other text.\n\n"
-                + prompt
+                + base
             )
             log.warning("malformed model output (attempt %d), retrying", attempt)
     assert last_error is not None
@@ -243,6 +250,9 @@ async def run_agent_text(
 
     Raises LLMError (timeout / provider_error); never leaks keys or answers.
     """
+    import time
+
+    started = time.monotonic()
     try:
         response = await asyncio.wait_for(
             agent.run(prompt, session=session), timeout=cfg.timeout_s
@@ -271,4 +281,5 @@ async def run_agent_text(
     usage = getattr(response, "usage_details", None)
     if usage is not None:
         model_info["usage"] = str(usage)[:500]
+    log.info("model call ok in %.1fs", time.monotonic() - started)
     return (response.text or "").strip(), model_info, session_blob

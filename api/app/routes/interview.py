@@ -17,7 +17,7 @@ intact with evidence pending.
 import logging
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pymongo.errors import DuplicateKeyError
 
 from .. import interview as planner
@@ -307,6 +307,7 @@ async def start_interview(
 async def submit_answer(
     assessment_id: str,
     body: InterviewAnswerRequest,
+    background: BackgroundTasks,
     doc: dict = Depends(require_assessment),
 ) -> InterviewAnswerResult:
     answer = body.answer_text.strip()
@@ -436,7 +437,10 @@ async def submit_answer(
         await _append_transcript(
             result["_id"], next_turn_doc["turn"], next_turn_doc["question"], None
         )
-    await _extract_and_store(result["_id"], answered_turn, new_history, turn_segs)
+    # Extraction runs after the response is sent: the next question is
+    # returned without waiting for the second model call. Evidence stays
+    # pending if extraction fails; it is read via GET .../evidence.
+    background.add_task(_extract_and_store, result["_id"], answered_turn, new_history, turn_segs)
     return _answer_result_from_doc(result, result["version"])
 
 
