@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { loadSession } from "../lib/session";
 
-/** Assessment ID banner rendered on every screen via the root layout. */
+/** Assessment ID banner rendered in the site header via the root layout. */
 export default function AssessmentHeader() {
   const pathname = usePathname();
   const [code, setCode] = useState<string | null>(null);
@@ -27,11 +27,14 @@ export default function AssessmentHeader() {
   }
 
   return (
-    <header>
-      <p>
-        Assessment ID: <code>{code}</code>{" "}
-        <button onClick={copy}>{copied ? "Copied" : "Copy"}</button>
-      </p>
-    </header>
+    <p className="text-sm text-ink-soft">
+      Assessment ID: <code className="rounded bg-cream px-1.5 py-0.5 font-mono text-[13px]">{code}</code>{" "}
+      <button
+        onClick={copy}
+        className="rounded-full border border-line px-2.5 py-0.5 text-xs text-ink-soft hover:border-primary hover:text-primary"
+      >
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </p>
   );
 }

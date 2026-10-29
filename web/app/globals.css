@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #faf9f7;
+  --color-cream: #f2eee6;
+  --color-ink: #14201d;
+  --color-ink-soft: #43524e;
+  --color-ink-faint: #6b7a75;
+  --color-primary: #0e7c6b;
+  --color-primary-deep: #0a5a4e;
+  --color-primary-tint: #e2f0eb;
+  --color-uncertain: #b7791f;
+  --color-uncertain-tint: #faf0d8;
+  --color-tension: #b23a48;
+  --color-tension-tint: #f9e7e9;
+  --color-line: #e3ddd0;
+  --color-card: #ffffff;
+
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", serif;
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible keyboard focus everywhere */
+:where(a, button, input, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Transcript line highlight when jumped to from an evidence card */
+.transcript-line {
+  scroll-margin-top: 5rem;
+}
+.transcript-line:target {
+  background-color: var(--color-primary-tint);
+  border-radius: 0.5rem;
+}
+
+/* Calm loading spinner (interview + assessing states) */
+.mrprof-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--color-line);
+  border-top-color: var(--color-primary);
+  animation: mrprof-spin 0.9s linear infinite;
+}
+@keyframes mrprof-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Auto-growing interview textarea */
+.autogrow {
+  field-sizing: content;
+  min-height: 7rem;
+}
+
+/* Print: take-to-doctor output. Hide navigation/chrome, keep evidence. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  main {
+    max-width: none !important;
+  }
+  details.print-open > summary {
+    list-style: none;
+  }
+  details.print-open > summary::-webkit-details-marker {
+    display: none;
+  }
+}
