@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { loadSession } from "../../lib/session";
 
 const QUESTIONS = [
@@ -31,8 +32,10 @@ export default function ScreeningPage() {
   const router = useRouter();
   const [version, setVersion] = useState<number | null>(null);
   const [answers, setAnswers] = useState<string[]>(Array(6).fill(""));
+  const [step, setStep] = useState(0);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const session = loadSession();
@@ -54,12 +57,27 @@ export default function ScreeningPage() {
         `/api/assessments/${encodeURIComponent(session.code)}/screening`,
         { headers: { Authorization: `Bearer ${session.password}` } },
       );
-      if (s.ok) setAnswers((await s.json()).answers as string[]);
+      if (s.ok) {
+        const saved = (await s.json()).answers as string[];
+        setAnswers(saved);
+        const firstUnanswered = saved.findIndex((a) => !a);
+        setStep(firstUnanswered === -1 ? 5 : firstUnanswered);
+      }
     })();
+    return () => {
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    };
   }, [router]);
 
-  function setAnswer(i: number, key: string) {
-    setAnswers((prev) => prev.map((v, j) => (j === i ? key : v)));
+  function choose(key: string) {
+    setAnswers((prev) => prev.map((v, j) => (j === step ? key : v)));
+    setError("");
+    // Auto-advance so each question gets its own calm moment; the last
+    // question stays put so the user explicitly saves.
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    if (step < QUESTIONS.length - 1) {
+      advanceTimer.current = setTimeout(() => setStep((s) => Math.min(s + 1, QUESTIONS.length - 1)), 280);
+    }
   }
 
   async function next() {
@@ -104,33 +122,96 @@ export default function ScreeningPage() {
     }
   }
 
+  const answered = answers.filter(Boolean).length;
+
   return (
-    <main>
-      <h1>MrProf — screening questions</h1>
-      <p>{INSTRUCTIONS}</p>
-      <section>
-        {QUESTIONS.map((q, i) => (
-          <fieldset key={i}>
-            <legend>Q{i + 1}. {q}</legend>
-            {RESPONSES.map((r) => (
-              <label key={r.key}>
-                <input
-                  type="radio"
-                  name={`q${i}`}
-                  checked={answers[i] === r.key}
-                  onChange={() => setAnswer(i, r.key)}
-                />{" "}
-                {r.label}
-              </label>
-            ))}
-          </fieldset>
-        ))}
-        <button onClick={next} disabled={saving}>{saving ? "Saving…" : "Next →"}</button>
+    <div className="mx-auto max-w-2xl pt-10 sm:pt-14">
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Screening questions</h1>
+      <p className="mt-3 text-sm leading-relaxed text-ink-soft sm:text-base">{INSTRUCTIONS}</p>
+
+      {/* Progress: counts only, never percentages */}
+      <div className="mt-6" role="status" aria-label={`Question ${step + 1} of 6, ${answered} of 6 answered`}>
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-semibold">
+            {step + 1} of 6
+          </span>
+          <span className="text-ink-faint">{answered} of 6 answered</span>
+        </div>
+        <div className="mt-2 flex gap-1.5" aria-hidden>
+          {QUESTIONS.map((_, i) => (
+            <span
+              key={i}
+              className={`h-2 flex-1 rounded-full ${i < step || (i === step && answers[i]) ? "bg-primary" : i === step ? "bg-primary/40" : "bg-line"}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      <section aria-label={`Question ${step + 1}`} className="mt-6 rounded-2xl border border-line bg-card p-5 sm:p-8" key={step}>
+        <fieldset>
+          <legend className="font-serif text-xl font-semibold leading-snug sm:text-2xl">
+            {QUESTIONS[step]}
+          </legend>
+          <div className="mt-5 space-y-2.5" role="radiogroup" aria-label={`Answers for question ${step + 1}`}>
+            {RESPONSES.map((r) => {
+              const selected = answers[step] === r.key;
+              return (
+                <label
+                  key={r.key}
+                  className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-base font-medium transition-colors ${
+                    selected
+                      ? "border-primary bg-primary-tint text-ink"
+                      : "border-line bg-paper text-ink-soft hover:border-primary/60"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`q${step}`}
+                    value={r.key}
+                    checked={selected}
+                    onChange={() => choose(r.key)}
+                    className="h-5 w-5 shrink-0 accent-[#0E7C6B]"
+                  />
+                  <span className="flex-1">{r.label}</span>
+                  {selected && <Check className="h-5 w-5 shrink-0 text-primary" aria-hidden />}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <div className="mt-6 flex items-center justify-between gap-3">
+          <button
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={step === 0}
+            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-semibold text-ink-soft hover:text-ink disabled:opacity-30"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden /> Back
+          </button>
+          {step < QUESTIONS.length - 1 ? (
+            <button
+              onClick={() => setStep((s) => Math.min(s + 1, QUESTIONS.length - 1))}
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary-tint"
+            >
+              Skip for now <ArrowRight className="h-4 w-4" aria-hidden />
+            </button>
+          ) : (
+            <button
+              onClick={next}
+              disabled={saving}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-deep disabled:opacity-60"
+            >
+              {saving ? "Saving…" : "Save and see my report"} <ArrowRight className="h-4 w-4" aria-hidden />
+            </button>
+          )}
+        </div>
       </section>
-      {error && <p role="alert">{error}</p>}
-      <footer>
-        <small>{ATTRIBUTION}</small>
+
+      {error && <p role="alert" className="mt-4 rounded-xl border border-tension/40 bg-tension-tint px-4 py-3 text-sm font-medium">{error}</p>}
+
+      <footer className="mt-8 border-t border-line pt-4">
+        <p className="text-xs leading-relaxed text-ink-faint"><small>{ATTRIBUTION}</small></p>
       </footer>
-    </main>
+    </div>
   );
 }

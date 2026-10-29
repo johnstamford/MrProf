@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ArrowRight, Download, Printer } from "lucide-react";
 import { loadSession } from "../../lib/session";
 
 type Answer = { n: string; question: string; answer: string; counted: boolean };
@@ -38,35 +39,81 @@ export default function ReportPage() {
     })();
   }, []);
 
-  if (error) return <main><h1>MrProf — screening report</h1><p role="alert">{error}</p></main>;
-  if (!report) return <main><h1>MrProf — screening report</h1><p>Loading…</p></main>;
+  if (error)
+    return (
+      <div className="mx-auto max-w-2xl pt-10">
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">Screening report</h1>
+        <p role="alert" className="mt-4 rounded-xl border border-tension/40 bg-tension-tint px-4 py-3 text-sm font-medium">{error}</p>
+      </div>
+    );
+  if (!report)
+    return (
+      <div className="mx-auto max-w-2xl pt-10">
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">Screening report</h1>
+        <p role="status" className="mt-4 text-ink-soft">Loading…</p>
+      </div>
+    );
+
+  const jsonHref = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(report, null, 2))}`;
 
   return (
-    <main>
-      <h1>MrProf — screening report</h1>
-      <p>
-        Score {report.score} of 6 ({report.scoring_method} method, cutoff {report.cutoff}).
-      </p>
-      <p>{report.explanation}</p>
-      <section>
-        <h2>Your answers</h2>
-        <ul>
+    <div className="mx-auto max-w-2xl pt-10 sm:pt-14">
+      <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">Screening report</h1>
+
+      <section aria-label="Score" className="mt-6 rounded-2xl border border-line bg-card p-5 sm:p-6">
+        <p className="text-sm text-ink-soft">
+          Score <strong className="font-serif text-3xl text-ink">{report.score}</strong>
+          <span className="text-ink"> of 6</span> ({report.scoring_method} method, cutoff {report.cutoff}).
+        </p>
+        <p className="mt-3 leading-relaxed text-ink-soft">{report.explanation}</p>
+      </section>
+
+      <section aria-label="Your answers" className="mt-4 rounded-2xl border border-line bg-card p-5 sm:p-6">
+        <h2 className="font-serif text-xl font-semibold">Your answers</h2>
+        <ul className="mt-3 space-y-2.5">
           {report.answers.map((a) => (
-            <li key={a.n}>Q{a.n}. {a.question} — {a.answer}</li>
+            <li key={a.n} className="flex gap-3 rounded-xl bg-paper px-3.5 py-2.5 text-sm leading-relaxed">
+              <span className="font-mono text-xs leading-6 text-ink-faint">Q{a.n}</span>
+              <span>
+                {a.question} — <strong>{a.answer}</strong>
+              </span>
+            </li>
           ))}
         </ul>
       </section>
-      <section>
-        <h2>What happens next</h2>
-        <p>{report.next_section.intro}</p>
-        <ul>
+
+      <section aria-label="What happens next" className="mt-4 rounded-2xl border border-line bg-card p-5 sm:p-6">
+        <h2 className="font-serif text-xl font-semibold">What happens next</h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft sm:text-base">{report.next_section.intro}</p>
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-relaxed text-ink-soft sm:text-base">
           {report.next_section.topics.map((t) => (
             <li key={t}>{t}</li>
           ))}
         </ul>
-        <p>{report.interview_offer.note}</p>
-        <button onClick={() => router.push("/interview")}>Continue to interview →</button>
+        <p className="mt-3 text-sm leading-relaxed text-ink-soft sm:text-base">{report.interview_offer.note}</p>
+        <button
+          onClick={() => router.push("/interview")}
+          className="no-print mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-deep"
+        >
+          Continue to interview <ArrowRight className="h-4 w-4" aria-hidden />
+        </button>
       </section>
-    </main>
+
+      <div className="no-print mt-4 flex flex-wrap gap-3">
+        <a
+          href={jsonHref}
+          download="mrprof-screening-report.json"
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-sm font-medium text-ink-soft hover:border-primary hover:text-primary"
+        >
+          <Download className="h-4 w-4" aria-hidden /> Download JSON
+        </a>
+        <button
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-sm font-medium text-ink-soft hover:border-primary hover:text-primary"
+        >
+          <Printer className="h-4 w-4" aria-hidden /> Print / save PDF
+        </button>
+      </div>
+    </div>
   );
 }

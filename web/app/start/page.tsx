@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ArrowRight, KeyRound, PlusCircle } from "lucide-react";
 import { saveSession } from "../../lib/session";
 
 type Created = { assessment_id: string; version: number; stage: string };
@@ -80,74 +81,126 @@ export default function StartPage() {
   }
 
   return (
-    <main>
-      <h1>MrProf — ADHD screening and evidence briefing</h1>
-      <section>
-        <h2>What is this?</h2>
-        <p>
+    <div className="mx-auto max-w-2xl pt-10 sm:pt-14">
+      <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
+        ADHD screening and evidence briefing
+      </h1>
+      <section aria-label="What is this" className="mt-5 rounded-2xl border border-line bg-card p-5 sm:p-6">
+        <h2 className="font-serif text-xl font-semibold">What is this?</h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft sm:text-base">
           MrProf helps you complete a 6-question ADHD screening questionnaire and,
           if you choose, answer follow-up questions about your experiences. You keep
           two reports: a screening summary and an evidence briefing with exact quotes
           from your answers.
         </p>
-        <p>
-          This is a draft research prototype — it does not diagnose anything, and a
-          result below the screening threshold does not rule anything out. Only a
-          qualified clinician can determine what explains your experiences.
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft sm:text-base">
+          This is a draft research prototype — it organizes what you report so a
+          clinician can review it. A result below the screening threshold does not
+          rule anything out. Only a qualified clinician can determine what explains
+          your experiences.
         </p>
       </section>
-      <section>
-        <h2>How it works</h2>
-        <ol>
+
+      <section aria-label="How it works" className="mt-4 rounded-2xl border border-line bg-card p-5 sm:p-6">
+        <h2 className="font-serif text-xl font-semibold">How it works</h2>
+        <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-ink-soft sm:text-base">
           <li>Answer 6 screening questions (a few minutes).</li>
           <li>Get your screening report immediately — either result can continue.</li>
           <li>Optionally continue to the interview: one question at a time, in your own words.</li>
           <li>Get your evidence briefing with supporting quotes.</li>
         </ol>
-        <p>Both stages together take most people around 20–30 minutes. There is no time limit, and you can close the browser and resume later with your code and password.</p>
+        <p className="mt-3 text-sm leading-relaxed text-ink-soft">Both stages together take most people around 20–30 minutes. There is no time limit, and you can close the browser and resume later with your code and password.</p>
       </section>
-      <section>
-        <h2>New assessment</h2>
-        <label>Choose a password (min 10 characters){" "}
-          <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" />
-        </label>{" "}
-        <button onClick={start}>Start</button>
-        {created && (
-          <div>
-            <h3>Save your assessment details</h3>
-            <p>Assessment code: <code>{created.assessment_id}</code></p>
-            <p role="alert">
-              Write down your assessment code and password somewhere safe.
-              You need both to get back to your assessment — without them it
-              cannot be retrieved, and there is no password reset.
-            </p>
-            <button onClick={() => goToScreening(created.assessment_id, newPassword)}>
-              I have saved my code and password — continue →
-            </button>
-          </div>
-        )}
-      </section>
-      <section>
-        <h2>Resume</h2>
-        <label>Assessment code <input value={id} onChange={(e) => setId(e.target.value)} /></label>{" "}
-        <label>Password <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" /></label>{" "}
-        <button onClick={resume}>Resume</button>
-        {fetched && (
-          <div>
-            <h3>Assessment found</h3>
-            <p>{resumeNote || "Assessment found."}</p>
-            <p role="alert">
-              Keep your assessment code and password somewhere safe.
-              You need both to get back to your assessment — without them it
-              cannot be retrieved, and there is no password reset.
-            </p>
-            <button onClick={() => goTo(fetched.assessment_id, password, resumeTarget)}>
-              Continue to {resumeTarget === "/interview" ? "interview" : "screening"} →
-            </button>
-          </div>
-        )}
-      </section>
-      {error && <p role="alert">{error}</p>}
-    </main>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <section aria-label="New assessment" className="rounded-2xl border border-line bg-card p-5">
+          <h2 className="flex items-center gap-2 font-serif text-lg font-semibold">
+            <PlusCircle className="h-5 w-5 text-primary" aria-hidden /> New assessment
+          </h2>
+          <label className="mt-3 block text-sm font-medium">
+            Choose a password (min 10 characters)
+            <input
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              type="password"
+              autoComplete="new-password"
+              className="mt-1.5 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-base"
+            />
+          </label>
+          <button
+            onClick={start}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-deep"
+          >
+            Start
+          </button>
+          {created && (
+            <div className="mt-4 rounded-xl bg-cream p-4">
+              <h3 className="font-semibold">Save your assessment details</h3>
+              <p className="mt-1 text-sm">Assessment code: <code className="rounded bg-card px-1.5 py-0.5 font-mono">{created.assessment_id}</code></p>
+              <p role="alert" className="mt-2 text-sm leading-relaxed">
+                Write down your assessment code and password somewhere safe.
+                You need both to get back to your assessment — without them it
+                cannot be retrieved, and there is no password reset.
+              </p>
+              <button
+                onClick={() => goToScreening(created.assessment_id, newPassword)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-deep"
+              >
+                I have saved my code and password — continue <ArrowRight className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+          )}
+        </section>
+
+        <section aria-label="Resume" className="rounded-2xl border border-line bg-card p-5">
+          <h2 className="flex items-center gap-2 font-serif text-lg font-semibold">
+            <KeyRound className="h-5 w-5 text-primary" aria-hidden /> Resume
+          </h2>
+          <label className="mt-3 block text-sm font-medium">
+            Assessment code
+            <input
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              autoComplete="off"
+              className="mt-1.5 w-full rounded-xl border border-line bg-paper px-3 py-2.5 font-mono text-base uppercase"
+            />
+          </label>
+          <label className="mt-3 block text-sm font-medium">
+            Password
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              autoComplete="current-password"
+              className="mt-1.5 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-base"
+            />
+          </label>
+          <button
+            onClick={resume}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary-tint"
+          >
+            Resume
+          </button>
+          {fetched && (
+            <div className="mt-4 rounded-xl bg-cream p-4">
+              <h3 className="font-semibold">Assessment found</h3>
+              <p className="mt-1 text-sm">{resumeNote || "Assessment found."}</p>
+              <p role="alert" className="mt-2 text-sm leading-relaxed">
+                Keep your assessment code and password somewhere safe.
+                You need both to get back to your assessment — without them it
+                cannot be retrieved, and there is no password reset.
+              </p>
+              <button
+                onClick={() => goTo(fetched.assessment_id, password, resumeTarget)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-deep"
+              >
+                Continue to {resumeTarget === "/interview" ? "interview" : "screening"} <ArrowRight className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
+      {error && <p role="alert" className="mt-4 rounded-xl border border-tension/40 bg-tension-tint px-4 py-3 text-sm font-medium">{error}</p>}
+    </div>
   );
 }

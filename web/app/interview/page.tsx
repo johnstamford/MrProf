@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { loadSession } from "../../lib/session";
+import BriefingView, { type Briefing } from "../../components/briefing";
 
 type Question = {
   turn: number;
@@ -21,28 +23,6 @@ type NextState = {
   turns_answered: number;
   question: Question | null;
   completed: boolean;
-};
-
-type BriefingGap = { area: string; status: string };
-type BriefingCoverage = { objective: string; title: string; status: string; turns: number[]; note: string };
-type BriefingContradiction = { family: string; areas: string[]; present_turn: number; denial_turn: number; clarified: boolean; note: string };
-type BriefingObservation = { assertion: string; quote: string; segment_id: string; line: number | null };
-type BriefingTopicTurn = { turn: number; question: string; answer: string; observations: BriefingObservation[] };
-type BriefingTopic = { objective: string; title: string; status: string; note: string; turns: BriefingTopicTurn[] };
-type TranscriptSegment = { id: string; turn: number; role: string; n: number; text: string; line: number };
-
-type Briefing = {
-  report_version: number;
-  banner: string;
-  completion_note: string;
-  turns_answered: number;
-  topics: BriefingTopic[];
-  statements: { turn: number; question: string; answer: string }[];
-  system_notes: { turn: number; objective: string; reason: string }[];
-  coverage: BriefingCoverage[];
-  contradictions: BriefingContradiction[];
-  gaps: BriefingGap[];
-  transcript: TranscriptSegment[];
 };
 
 function draftKey(code: string, turn: number) {
@@ -337,7 +317,7 @@ export default function InterviewPage() {
     try {
       const { session, headers } = auth;
       const base = `/api/assessments/${encodeURIComponent(session.code)}`;
-      const post = async (v: number, key: string) =>
+      const post = (v: number, key: string) =>
         fetch(`${base}/interview/answer`, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...headers },
@@ -442,16 +422,24 @@ export default function InterviewPage() {
 
   if (phase === "loading") {
     return (
-      <main>
-        <h1>MrProf — interview</h1>
-        <p role="status">Starting your interview — this can take a few seconds…</p>
-        {error && (
-          <div>
-            <p role="alert">{error}</p>
-            <button onClick={() => { setError(""); void load(); }}>Try again</button>
-          </div>
-        )}
-      </main>
+      <div className="mx-auto max-w-2xl pt-10">
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">Interview</h1>
+        <div className="mt-6 rounded-2xl border border-line bg-card p-6 text-center">
+          <div className="mrprof-spinner mx-auto" role="status" aria-label="Starting your interview" />
+          <p role="status" className="mt-4 text-ink-soft">Starting your interview — this can take a few seconds…</p>
+          {error && (
+            <div className="mt-4">
+              <p role="alert" className="text-sm font-medium text-tension">{error}</p>
+              <button
+                onClick={() => { setError(""); void load(); }}
+                className="mt-3 rounded-full border border-primary px-5 py-2 text-sm font-semibold text-primary hover:bg-primary-tint"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     );
   }
 
@@ -464,146 +452,104 @@ export default function InterviewPage() {
           ? "Deciding what to ask next…"
           : "Reviewing your answers to decide what to ask next…";
     return (
-      <main>
-        <style>{`.mrprof-spinner{width:28px;height:28px;border-radius:50%;border:3px solid #ccc;border-top-color:#333;animation:mrprof-spin 0.9s linear infinite;margin:12px 0}@keyframes mrprof-spin{to{transform:rotate(360deg)}}`}</style>
-        <h1>MrProf — interview</h1>
-        <div className="mrprof-spinner" role="status" aria-label={msg} />
-        <p role="status"><strong>{msg}</strong></p>
-        <p>Your answers are saved — this usually takes under a minute…</p>
-        {error && (
-          <div>
-            <p role="alert">{error}</p>
-            <button onClick={() => { setError(""); setAssessProgress(null); void pollAssessment(); }}>Check again</button>
-          </div>
-        )}
-      </main>
+      <div className="mx-auto max-w-2xl pt-10">
+        <h1 className="font-serif text-3xl font-semibold tracking-tight">Interview</h1>
+        <div className="mt-6 rounded-2xl border border-line bg-card p-6 text-center">
+          <div className="mrprof-spinner mx-auto" role="status" aria-label={msg} />
+          <p role="status" className="mt-4 font-semibold">{msg}</p>
+          <p className="mt-2 text-sm text-ink-soft">Your answers are saved — this usually takes under a minute…</p>
+          {error && (
+            <div className="mt-4">
+              <p role="alert" className="text-sm font-medium text-tension">{error}</p>
+              <button
+                onClick={() => { setError(""); setAssessProgress(null); void pollAssessment(); }}
+                className="mt-3 rounded-full border border-primary px-5 py-2 text-sm font-semibold text-primary hover:bg-primary-tint"
+              >
+                Check again
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     );
   }
 
   if (phase === "done" && briefing) {
-    const covered = (briefing.coverage ?? []).filter((c) => c.status === "covered").length;
-    const total = (briefing.coverage ?? []).length || (briefing.topics ?? []).length;
     return (
-      <main>
-        <h1>MrProf — interview briefing</h1>
-        <p>{briefing.banner}</p>
-        <p>
-          {briefing.turns_answered} answers across {total} topics
-          {covered ? ` — ${covered} with a detailed account` : ""}.
-          Everything below comes from what you wrote; quotes are exact and line-numbered so each point can be checked.
+      <div className="pt-8 sm:pt-12">
+        <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
+          Your interview briefing
+        </h1>
+        <div className="mt-4">
+          <BriefingView briefing={briefing} />
+        </div>
+        <p className="no-print mt-8 flex flex-wrap gap-3 border-t border-line pt-6">
+          <button
+            onClick={() => router.push("/report")}
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-semibold text-ink-soft hover:border-primary hover:text-primary"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden /> Back to screening report
+          </button>
+          <button
+            onClick={() => router.push("/start")}
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-semibold text-ink-soft hover:border-primary hover:text-primary"
+          >
+            Start / resume page <ArrowRight className="h-4 w-4" aria-hidden />
+          </button>
         </p>
-        <section>
-          <h2>What you reported</h2>
-          {(briefing.topics ?? []).map((t) => (
-            <section key={t.objective}>
-              <h3>{t.title} — {t.status} ({t.note})</h3>
-              {t.turns.map((s) => (
-                <div key={s.turn}>
-                  <p><strong>Asked:</strong> {s.question}</p>
-                  <p><strong>You said:</strong> {s.answer}</p>
-                  {s.observations.length > 0 && (
-                    <ul>
-                      {s.observations.map((o, i) => (
-                        <li key={i}>
-                          [{o.assertion}] “{o.quote}” ({o.segment_id}{o.line != null ? `, line ${o.line}` : ""})
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
-            </section>
-          ))}
-        </section>
-        <section>
-          <h2>Gaps and open questions</h2>
-          <p>{briefing.completion_note}</p>
-          {(briefing.contradictions ?? []).length > 0 && (
-            <div>
-              <h3>Accounts in tension (both retained)</h3>
-              <ul>
-                {briefing.contradictions.map((c) => (
-                  <li key={c.family}>
-                    {c.areas.join(" / ")}: turn {c.denial_turn} reported no difficulty, turn {c.present_turn} described difficulty — {c.note}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <ul>
-            {briefing.gaps.map((g) => (
-              <li key={g.area}>{g.area} — {g.status}</li>
-            ))}
-          </ul>
-        </section>
-        <details>
-          <summary>Full transcript (line-numbered) — open to check any quote</summary>
-          <ol>
-            {(briefing.transcript ?? []).map((s) => (
-              <li key={s.id}>
-                [line {s.line}] {s.role === "Q" ? "Interviewer" : "You"}: {s.text}
-              </li>
-            ))}
-          </ol>
-        </details>
-        <details>
-          <summary>How this was gathered (system notes — not what you said)</summary>
-          <ul>
-            {briefing.system_notes.map((n) => (
-              <li key={n.turn}>
-                Q{n.turn}: topic <code>{n.objective}</code> — {n.reason}
-              </li>
-            ))}
-          </ul>
-          <h3>Coverage — what was explored</h3>
-          <ul>
-            {(briefing.coverage ?? []).map((c) => (
-              <li key={c.objective}>{c.title} — {c.status} ({c.note}{c.turns.length ? `, turns ${c.turns.join(", ")}` : ""})</li>
-            ))}
-          </ul>
-        </details>
-        <p>
-          <button onClick={() => router.push("/report")}>← Back to screening report</button>{" "}
-          <button onClick={() => router.push("/start")}>Start / resume page</button>
-        </p>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main>
-      <style>{`.mrprof-spinner{width:28px;height:28px;border-radius:50%;border:3px solid #ccc;border-top-color:#333;animation:mrprof-spin 0.9s linear infinite;margin:12px 0}@keyframes mrprof-spin{to{transform:rotate(360deg)}}`}</style>
-      <h1>MrProf — interview</h1>
-      <p>Draft interview, one question at a time — there is no time limit. Topics are a first draft, not a clinical assessment.</p>
-      <p>The more detail you give — a few sentences with a concrete example — the better your briefing will be. Short answers are still accepted: a plain no, or “I can’t remember”, is a valid answer.</p>
-      <p>Question {question ? question.turn : "…"} · {turnsAnswered} answered so far</p>
+    <div className="mx-auto max-w-2xl pt-10 sm:pt-14">
+      <h1 className="font-serif text-3xl font-semibold tracking-tight">Interview</h1>
+      <p className="mt-3 text-sm leading-relaxed text-ink-soft sm:text-base">
+        One question at a time — there is no time limit, and topics are a first draft,
+        not a clinical assessment. Short answers are accepted: a plain no, or
+        “I can’t remember”, is a valid answer.
+      </p>
+      <p className="mt-4 text-sm font-medium text-ink-soft" role="status">
+        Question {question ? question.turn : "…"} · {turnsAnswered} answered so far
+      </p>
       {saving ? (
-        <section aria-live="polite">
-          <div className="mrprof-spinner" role="status" aria-label={STAGES[stage]} />
-          <p role="status"><strong>{STAGES[stage]}</strong></p>
-          <p>
+        <section aria-live="polite" className="mt-4 rounded-2xl border border-line bg-card p-6 text-center">
+          <div className="mrprof-spinner mx-auto" role="status" aria-label={STAGES[stage]} />
+          <p role="status" className="mt-4 font-semibold">{STAGES[stage]}</p>
+          <p className="mt-2 text-primary" aria-hidden>
             {[0, 1, 2].map((i) => (
               <span key={i}>{i <= stage ? "● " : "○ "}</span>
             ))}
           </p>
-          <p>Your answer is safe — you can wait, this usually takes a few seconds…</p>
+          <p className="mt-2 text-sm text-ink-soft">Your answer is safe — you can wait, this usually takes a few seconds…</p>
         </section>
       ) : (
       question && (
-        <section>
-          <p><strong>{question.text}</strong></p>
-          <label>
-            Your answer{" "}
-            <textarea value={answer} onChange={(e) => onType(e.target.value)} rows={4} cols={60} />
+        <section aria-label={`Question ${question.turn}`} className="mt-4 rounded-2xl border border-line bg-card p-5 sm:p-8">
+          <p className="font-serif text-xl font-semibold leading-snug sm:text-2xl">{question.text}</p>
+          <label className="mt-5 block">
+            <span className="text-sm font-semibold">Your answer</span>
+            <textarea
+              value={answer}
+              onChange={(e) => onType(e.target.value)}
+              rows={4}
+              cols={60}
+              className="autogrow mt-2 w-full rounded-2xl border border-line bg-paper px-4 py-3 text-base leading-relaxed"
+              placeholder="A few sentences with an example make for a much better briefing than a few words."
+            />
           </label>
-          <p>A few sentences with an example make for a much better briefing than a few words.</p>
-          <div>
-            <button onClick={submit}>Save and continue →</button>
+          <div className="mt-4">
+            <button
+              onClick={submit}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-deep"
+            >
+              Save and continue <ArrowRight className="h-4 w-4" aria-hidden />
+            </button>
           </div>
         </section>
       )
       )}
-      {error && <p role="alert">{error}</p>}
-    </main>
+      {error && <p role="alert" className="mt-4 rounded-xl border border-tension/40 bg-tension-tint px-4 py-3 text-sm font-medium">{error}</p>}
+    </div>
   );
 }

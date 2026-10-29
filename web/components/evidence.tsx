@@ -131,7 +131,7 @@ export function TopicRail({
   );
 }
 
-export type CoverageEntry = { objective: string; title: string; status: string; note: string };
+export type CoverageEntry = { objective: string; title: string; status: string; note: string; turns?: number[] };
 
 /** Coverage summary: counts only, never percentages. */
 export function CoverageBar({ coverage }: { coverage: CoverageEntry[] }) {
