@@ -163,6 +163,14 @@ def tension_member_deny(members: tuple[str, ...], coverage: dict) -> str:
     return members[0]
 
 
+async def write_assess_progress(db, assessment_id: str, done: int, total: int) -> None:
+    """Record batch-extraction progress for the assessing UI. Best-effort."""
+    await db["assessments"].update_one(
+        {"_id": assessment_id},
+        {"$set": {"interview.assess_progress": {"done": done, "total": total}}},
+    )
+
+
 async def _extract_missing(db, assessment_id: str, turns: list[dict]) -> list[dict]:
     """Extract observations for turns without evidence docs (bounded parallel)."""
     tdoc = await db["transcripts"].find_one({"_id": assessment_id})
@@ -171,31 +179,41 @@ async def _extract_missing(db, assessment_id: str, turns: list[dict]) -> list[di
     for s in segments:
         by_turn.setdefault(s["turn"], []).append(s)
     sem = asyncio.Semaphore(EXTRACT_CONCURRENCY)
+    total = len(turns)
+    done = 0
+    lock = asyncio.Lock()
 
     async def _one(turn: dict) -> None:
-        tn = turn["turn"]
-        if await db["evidence"].find_one({"_id": f"{assessment_id}:turn:{tn}"}):
-            return
-        turn_segs = by_turn.get(tn, [])
-        if not turn_segs:
-            log.warning("assessment has no transcript segments for %s turn %d", assessment_id, tn)
-            return
-        async with sem:
-            try:
-                result, info = await extract_turn(
-                    objective=turn["objective"],
-                    segments=turn_segs,
-                    answer=turn.get("answer") or "",
-                    session_id=assessment_id,
-                )
-            except Exception as exc:  # noqa: BLE001 - pending is a valid outcome
-                log.warning("assessment extraction pending for %s turn %d: %s", assessment_id, tn, type(exc).__name__)
+        nonlocal done
+        try:
+            tn = turn["turn"]
+            if await db["evidence"].find_one({"_id": f"{assessment_id}:turn:{tn}"}):
                 return
-        covered = sorted({t["objective"] for t in turns if t["turn"] <= tn})
-        gaps = [o for o in PLAN_ORDER if o not in {t["objective"] for t in turns}]
-        await upsert_evidence(db, assessment_id=assessment_id, turn=tn, result=result, info=info, covered=covered, gaps=gaps)
+            turn_segs = by_turn.get(tn, [])
+            if not turn_segs:
+                log.warning("assessment has no transcript segments for %s turn %d", assessment_id, tn)
+                return
+            async with sem:
+                try:
+                    result, info = await extract_turn(
+                        objective=turn["objective"],
+                        segments=turn_segs,
+                        answer=turn.get("answer") or "",
+                        session_id=assessment_id,
+                    )
+                except Exception as exc:  # noqa: BLE001 - pending is a valid outcome
+                    log.warning("assessment extraction pending for %s turn %d: %s", assessment_id, tn, type(exc).__name__)
+                    return
+            covered = sorted({t["objective"] for t in turns if t["turn"] <= tn})
+            gaps = [o for o in PLAN_ORDER if o not in {t["objective"] for t in turns}]
+            await upsert_evidence(db, assessment_id=assessment_id, turn=tn, result=result, info=info, covered=covered, gaps=gaps)
+        finally:
+            async with lock:
+                done += 1
+                await write_assess_progress(db, assessment_id, done, total)
 
     await asyncio.gather(*(_one(t) for t in turns))
+    await write_assess_progress(db, assessment_id, total, total)
     return await db["evidence"].find({"assessment_id": assessment_id}).sort("turn", 1).to_list(100)
 
 
@@ -228,6 +246,7 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
         current = await db["assessments"].find_one({"_id": assessment_id})
         return (current.get("interview") or {}).get("assessment") or {"status": "unknown"}
 
+    await write_assess_progress(db, assessment_id, 0, len(turns))
     now = datetime.now(timezone.utc)
     try:
         evidence_turns = await _extract_missing(db, assessment_id, turns)

@@ -13,6 +13,11 @@ Provider model (env, server-side only — never exposed to the frontend):
                                    templates for the food/hobbies flow test.
   LLM_MODEL / LLM_BASE_URL / LLM_API_KEY configure the real path.
   LLM_TIMEOUT_S (default 30), LLM_MAX_TOKENS (default 300) bound cost/time.
+  LLM_REASONING_EFFORT (default minimal): the interviewer asks for bounded
+  reasoning on the critical path (measured ~2x faster than the default
+  ~1000 thinking tokens, valid JSON preserved). "off" omits the hint for
+  endpoints that reject it. The background extractor keeps full reasoning
+  for evidence quality.
   LLM_EXTRACT_TIMEOUT_S (default 60) bounds the background evidence
   extractor separately — it emits long JSON off the critical path.
   NOTE: max_tokens is intentionally NOT passed as a ChatOptions hint — the
@@ -54,6 +59,7 @@ class LLMConfig(BaseModel):
     timeout_s: int = DEFAULT_TIMEOUT_S
     max_tokens: int = DEFAULT_MAX_TOKENS
     json_mode: str = "json_object"
+    reasoning_effort: str = "minimal"
     # Extraction emits long JSON and runs off the critical path
     # (BackgroundTasks), so it gets its own generous bound.
     extractor_timeout_s: int = DEFAULT_EXTRACT_TIMEOUT_S
@@ -91,6 +97,7 @@ def load_config() -> LLMConfig:
         timeout_s=_int("LLM_TIMEOUT_S", DEFAULT_TIMEOUT_S),
         max_tokens=_int("LLM_MAX_TOKENS", DEFAULT_MAX_TOKENS),
         json_mode=(os.environ.get("LLM_JSON_MODE", "json_object") or "json_object").strip().lower(),
+        reasoning_effort=(os.environ.get("LLM_REASONING_EFFORT", "minimal") or "minimal").strip().lower(),
         extractor_timeout_s=_int("LLM_EXTRACT_TIMEOUT_S", DEFAULT_EXTRACT_TIMEOUT_S),
     )
 
@@ -134,6 +141,20 @@ def _strip_fences(text: str) -> str:
             lines = lines[:-1]
         t = "\n".join(lines).strip()
     return t
+
+
+def chat_options(cfg: LLMConfig, effort: str | None) -> dict:
+    """Build the ChatOptions hint dict. Validation is unchanged either way.
+
+    effort "off"/"" omits the reasoning hint (for endpoints that reject it);
+    None means full default reasoning (background extraction).
+    """
+    options: dict = (
+        {"response_format": {"type": "json_object"}} if cfg.json_mode == "json_object" else {}
+    )
+    if effort and effort != "off":
+        options["reasoning"] = {"effort": effort}
+    return options
 
 
 def parse_llm_json(text: str, objective: str) -> LLMQuestion:
@@ -198,7 +219,8 @@ async def generate_next_question(
     for attempt in (1, 2, 3):
         try:
             text, model_info, session_blob = await run_agent_text(
-                cfg, agent, session, current_prompt, model_info, session_id
+                cfg, agent, session, current_prompt, model_info, session_id,
+                effort=cfg.reasoning_effort,
             )
         except LLMError as exc:
             if exc.code in ("timeout", "provider_error") and attempt == 1:
@@ -259,12 +281,14 @@ async def run_agent_text(
     model_info: dict,
     session_id: str,
     timeout_s: int | None = None,
+    effort: str | None = None,
 ) -> tuple[str, dict, dict]:
     """One bounded agent call. Returns (text, model_info, session_blob).
 
     Raises LLMError (timeout / provider_error); never leaks keys or answers.
     timeout_s overrides cfg.timeout_s for callers (like extraction) that
-    need a different bound. When cfg.json_mode is "json_object",
+    need a different bound. effort sets the reasoning hint via chat_options;
+    None keeps full default reasoning. When cfg.json_mode is "json_object",
     response_format is passed as a ChatOptions hint; validation is
     unchanged — the hint only avoids the malformed-regen retry.
     """
@@ -272,9 +296,7 @@ async def run_agent_text(
 
     bound = timeout_s or cfg.timeout_s
     started = time.monotonic()
-    options: dict = (
-        {"response_format": {"type": "json_object"}} if cfg.json_mode == "json_object" else {}
-    )
+    options = chat_options(cfg, effort)
     try:
         response = await asyncio.wait_for(
             agent.run(prompt, session=session, options=options), timeout=bound

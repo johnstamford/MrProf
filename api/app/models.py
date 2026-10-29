@@ -251,6 +251,8 @@ class InterviewAssessmentOut(BaseModel):
     followups_done: int = 0
     coverage: list[BriefingCoverage] = Field(default_factory=list)
     tensions: list[BriefingContradiction] = Field(default_factory=list)
+    extracted: int = 0
+    extract_total: int = 0
 
 
 class TranscriptOut(BaseModel):

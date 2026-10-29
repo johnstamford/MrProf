@@ -15,6 +15,7 @@ os.environ.setdefault("MONGODB_DB", "mrprof")
 
 from app.interview import (  # noqa: E402
     FAMILIES,
+    INLINE_PROBE_BUDGET,
     MAX_FOLLOWUPS,
     MAX_TURNS,
     PLAN_ORDER,
@@ -105,6 +106,50 @@ def test_unit_planner_round2_consumes_queue():
     assert done is True and hint is None
 
 
+def test_unit_inline_probe_thin_answer():
+    asked = [_turn(1, PLAN_ORDER[0], "bills")]
+    obj, reason, done, hint = plan_next(asked, [])
+    assert (obj, done) == (PLAN_ORDER[0], False)
+    assert hint == {"kind": "inline"}
+    assert "concrete detail" in reason
+
+
+def test_unit_inline_probe_exemptions():
+    # Denials, uncertainty, and substantive answers move on — never probed.
+    for ans in ("No", "I cannot recall any of that, sorry", "a substantive detailed answer indeed"):
+        asked = [_turn(1, PLAN_ORDER[0], ans)]
+        obj, _, done, hint = plan_next(asked, [])
+        assert (obj, done, hint) == (PLAN_ORDER[1], False, None)
+
+
+def test_unit_inline_probe_once_per_objective_and_budget():
+    asked = [
+        _turn(1, PLAN_ORDER[0], "bills"),
+        {**_turn(2, PLAN_ORDER[0], "still short"), "probe": "inline"},
+        _turn(3, PLAN_ORDER[1], "x"),
+    ]
+    # PLAN_ORDER[0] already probed; PLAN_ORDER[1] thin and unprobed -> probe it.
+    obj, _, done, hint = plan_next(asked, [])
+    assert (obj, done, hint) == (PLAN_ORDER[1], False, {"kind": "inline"})
+
+    asked = []
+    for i in range(3):
+        asked.append(_turn(len(asked) + 1, PLAN_ORDER[i], "thin"))
+        asked.append({**_turn(len(asked) + 1, PLAN_ORDER[i], "more detail here yes"), "probe": "inline"})
+    asked.append(_turn(len(asked) + 1, PLAN_ORDER[3], "thin"))
+    # Budget (3) exhausted -> move on even for thin answers.
+    obj, _, done, hint = plan_next(asked, [])
+    assert (obj, done, hint) == (PLAN_ORDER[4], False, None)
+
+
+def test_unit_inline_probe_suppressed_in_round2():
+    asked = [_turn(i + 1, t, "y" * 40) for i, t in enumerate(PLAN_ORDER)]
+    asked[-1] = _turn(len(PLAN_ORDER), PLAN_ORDER[-1], "x")  # thin last answer
+    queue = [{"objective": "forgetfulness", "reason": "Follow up"}]
+    obj, _, done, hint = plan_next(asked, queue)
+    assert (obj, done, hint) == ("forgetfulness", False, {"kind": "followup"})
+
+
 def test_unit_tension_detection_shape():
     t1 = _turn(1, "childhood-onset", "School was never a problem for me at all, really.")
     t2 = _turn(2, "persistence-course", "Over the years it has clearly been there a long time.")
@@ -121,7 +166,7 @@ def test_unit_completion_at_cap():
     ]
     _, _, done, _ = plan_next(turns, [])
     assert done is True
-    assert MAX_TURNS == len(PLAN_ORDER) + MAX_FOLLOWUPS
+    assert MAX_TURNS == len(PLAN_ORDER) + INLINE_PROBE_BUDGET + MAX_FOLLOWUPS
 
 
 def test_unit_coverage_from_evidence_statuses():
@@ -169,6 +214,16 @@ def test_unit_detail_invite_targets_thin_answers_only():
         last_answer="This month I missed two deadlines because I kept putting off starting.",
     )
     assert not any("very brief" in line for line in normal)
+
+
+def test_unit_reasoning_effort_options():
+    from app.llm import LLMConfig, chat_options, load_config
+
+    assert load_config().reasoning_effort == "minimal"
+    assert chat_options(LLMConfig(), "minimal")["reasoning"] == {"effort": "minimal"}
+    assert "reasoning" not in chat_options(LLMConfig(), None)
+    assert "reasoning" not in chat_options(LLMConfig(), "off")
+    assert chat_options(LLMConfig(json_mode="off"), "minimal") == {"reasoning": {"effort": "minimal"}}
 
 
 def test_unit_dummy_config_and_strict_parse():
@@ -301,6 +356,7 @@ async def test_start_answer_resume_complete(client):
 
     final = await _poll_assessment(client, base, headers)
     assert final["status"] == "complete"
+    assert final["extract_total"] == len(PLAN_ORDER) and final["extracted"] == len(PLAN_ORDER)
     nxt2 = await client.get(f"{base}/interview/next", headers=headers)
     assert nxt2.json()["completed"] is True and nxt2.json()["question"] is None
 
@@ -314,24 +370,168 @@ async def test_start_answer_resume_complete(client):
     assert "secret" not in res.text and "hash" not in res.text.lower()
 
 
+async def test_assess_progress_writer(client):
+    from app.assessment import write_assess_progress
+    from app.db import get_db
+
+    created = await _create(client)
+    await _start(client, created, version=1)
+    await write_assess_progress(get_db(), created["assessment_id"], 3, 14)
+    doc = await get_db()["assessments"].find_one({"_id": created["assessment_id"]})
+    assert doc["interview"]["assess_progress"] == {"done": 3, "total": 14}
+
+    headers = _auth(created["password"])
+    res = await client.get(
+        f"/assessments/{created['assessment_id']}/interview/assessment", headers=headers
+    )
+    assert res.status_code == 200
+    assert res.json()["extracted"] == 3 and res.json()["extract_total"] == 14
+
+
+async def _set_prefetch(client, created, prefetch: dict | None) -> None:
+    from app.db import get_db
+
+    await get_db()["assessments"].update_one(
+        {"_id": created["assessment_id"]}, {"$set": {"interview.prefetch": prefetch}}
+    )
+
+
+def _marker_prefetch(for_turn: int, objective: str, text: str = "PREFETCHED MARKER QUESTION") -> dict:
+    return {
+        "for_turn": for_turn,
+        "objective": objective,
+        "reason": "prefetch test",
+        "question": text,
+        "answer": None,
+        "probe": None,
+        "model_provider": "dummy",
+        "model_name": "dummy-stub",
+        "skill_version": "skill-v0.4-draft",
+        "topic_version": "topics-v0.4-draft",
+        "session": {"session_id": "test"},
+    }
+
+
+async def test_prefetch_consumed_instantly(client):
+    from app.db import get_db
+    from app.interview import PLAN_ORDER
+
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+    await _set_prefetch(client, created, _marker_prefetch(2, PLAN_ORDER[1]))
+
+    res = await client.post(
+        f"{base}/interview/answer",
+        json={"answer_text": "a substantive answer with detail", "base_version": 2, "idempotency_key": f"fk5-pre-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["question"]["text"] == "PREFETCHED MARKER QUESTION"
+    assert body["question"]["objective"] == PLAN_ORDER[1]
+    doc = await get_db()["assessments"].find_one({"_id": created["assessment_id"]})
+    # Consumed. A background prefetch for the question after next (turn 3)
+    # may or may not have landed yet — either is correct.
+    pre = doc["interview"]["prefetch"]
+    assert pre is None or (pre["for_turn"] == 3 and pre["objective"] == PLAN_ORDER[2])
+
+
+async def test_prefetch_mismatch_falls_back_live(client):
+    from app.interview import PLAN_ORDER
+
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+    await _set_prefetch(client, created, _marker_prefetch(2, "wrong-objective"))
+
+    res = await client.post(
+        f"{base}/interview/answer",
+        json={"answer_text": "a substantive answer with detail", "base_version": 2, "idempotency_key": f"fk5-pre-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["question"]["objective"] == PLAN_ORDER[1]
+    assert body["question"]["text"] != "PREFETCHED MARKER QUESTION"
+
+
+async def test_prefetch_task_writes_next(client):
+    from app.db import get_db
+    from app.interview import PLAN_ORDER
+    from app.routes.interview import _prefetch_task
+
+    created = await _create(client)
+    await _start(client, created, version=1)
+    await _set_prefetch(client, created, None)
+    await _prefetch_task(created["assessment_id"], 0, 1)
+    doc = await get_db()["assessments"].find_one({"_id": created["assessment_id"]})
+    pre = doc["interview"]["prefetch"]
+    assert pre["for_turn"] == 2 and pre["objective"] == PLAN_ORDER[1]
+    assert pre["question"]
+
+
+async def test_prefetch_trigger_endpoint(client):
+    from app.interview import PLAN_ORDER
+
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+
+    assert (await client.post(f"{base}/interview/prefetch")).status_code == 401
+    await _set_prefetch(client, created, _marker_prefetch(2, PLAN_ORDER[1]))
+    res = await client.post(f"{base}/interview/prefetch", headers=headers)
+    assert res.status_code == 200 and res.json() == {"scheduled": False}
+    await _set_prefetch(client, created, None)
+    res = await client.post(f"{base}/interview/prefetch", headers=headers)
+    assert res.status_code == 200 and res.json() == {"scheduled": True}
+
+
 async def test_round2_followup_flow(client):
+    from app.db import get_db
+
     created = await _create(client)
     headers = _auth(created["password"])
     base = f"/assessments/{created['assessment_id']}"
     await _start(client, created, version=1)
 
     version = 2
-    thin = {"forgetfulness", "organization"}
-    for i, oid in enumerate(PLAN_ORDER):
-        ans = "x" if oid in thin else f"substantive detail for turn {i} yes indeed"
+    thin_targets = {"forgetfulness", "organization"}
+    probed = set()
+    last = None
+    # Round 1: answer whatever is pending. Thin once per target (probe
+    # answers stay thin too, so the batch still queues round-2 follow-ups
+    # and the one-probe-per-objective rule is exercised).
+    for _ in range(30):
+        nxt = (await client.get(f"{base}/interview/next", headers=headers)).json()
+        if nxt["completed"] or nxt["question"] is None:
+            break
+        oid = nxt["question"]["objective"]
+        if oid in thin_targets and oid not in probed:
+            ans = "x"
+            probed.add(oid)
+        elif oid in thin_targets:
+            ans = "y"
+        else:
+            ans = f"substantive detail about {oid} yes indeed"
         res = await client.post(
             f"{base}/interview/answer",
             json={"answer_text": ans, "base_version": version, "idempotency_key": f"fk5-r2-{uuid.uuid4().hex[:8]}"},
             headers=headers,
         )
         assert res.status_code == 200, res.text
-        version = res.json()["version"]
-    assert res.json()["status"] == "assessing"
+        last = res.json()
+        version = last["version"]
+        if last["status"] == "assessing":
+            break
+    assert last is not None and last["status"] == "assessing"
+
+    doc = await get_db()["assessments"].find_one({"_id": created["assessment_id"]})
+    inline_objectives = {t["objective"] for t in doc["interview"]["turns"] if (t.get("probe") or "") == "inline"}
+    assert thin_targets <= inline_objectives  # both thin answers probed immediately
 
     first = await _poll_assessment(client, base, headers)
     assert first["status"] == "followup"
@@ -353,7 +553,7 @@ async def test_round2_followup_flow(client):
     assert final["status"] == "complete"
     rep = await client.get(f"{base}/interview/report", headers=headers)
     assert rep.status_code == 200
-    assert rep.json()["turns_answered"] == len(PLAN_ORDER) + 2
+    assert rep.json()["turns_answered"] == len(PLAN_ORDER) + 4  # 14 + 2 inline + 2 follow-up
 
 
 async def test_answer_idempotent_and_conflict(client):
@@ -411,3 +611,106 @@ async def test_validation_and_auth(client):
     assert bad.status_code == 422
     missing = await client.get(f"/assessments/{other['assessment_id']}/interview/next", headers=_auth(other["password"]))
     assert missing.status_code == 404
+
+
+def _parse_sse(text: str) -> list[tuple[str, str]]:
+    events: list[tuple[str, str]] = []
+    for part in text.split("\n\n"):
+        part = part.strip()
+        if not part:
+            continue
+        name, data = "message", ""
+        for line in part.splitlines():
+            if line.startswith("event:"):
+                name = line.split(":", 1)[1].strip()
+            elif line.startswith("data:"):
+                data += line.split(":", 1)[1].strip()
+        events.append((name, data))
+    return events
+
+
+async def test_answer_stream_staged_events_and_done(client):
+    import json
+
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+
+    # Live path: no prefetch stored, so the question is phrased inline.
+    await _set_prefetch(client, created, None)
+    key = f"fk5-stream-{uuid.uuid4().hex[:8]}"
+    res = await client.post(
+        f"{base}/interview/answer/stream",
+        json={"answer_text": "streamed answer with detail", "base_version": 2, "idempotency_key": key},
+        headers={**headers, "Accept": "text/event-stream"},
+    )
+    assert res.status_code == 200, res.text
+    assert "text/event-stream" in res.headers.get("content-type", "")
+    events = _parse_sse(res.text)
+    names = [n for n, _ in events]
+    assert names[0] == "received"
+    assert "phrasing" in names and names[-1] == "done"
+    done = json.loads(events[-1][1])
+    assert done["turn_answered"] == 1 and done["question"] is not None
+    assert "secret" not in res.text.lower() or "secret" not in done.get("question", {}).get("text", "")
+
+    # Prefetch path: a matching prefetch is consumed with no phrasing event.
+    from app.interview import PLAN_ORDER
+
+    await _set_prefetch(client, created, _marker_prefetch(3, PLAN_ORDER[2], text="STREAM PREFETCH MARKER"))
+    key2 = f"fk5-stream-{uuid.uuid4().hex[:8]}"
+    res2 = await client.post(
+        f"{base}/interview/answer/stream",
+        json={"answer_text": "second streamed answer with detail", "base_version": done["version"], "idempotency_key": key2},
+        headers={**headers, "Accept": "text/event-stream"},
+    )
+    assert res2.status_code == 200, res2.text
+    events2 = _parse_sse(res2.text)
+    names2 = [n for n, _ in events2]
+    assert names2[0] == "received" and names2[-1] == "done"
+    assert "phrasing" not in names2
+    assert json.loads(events2[-1][1])["question"]["text"] == "STREAM PREFETCH MARKER"
+
+
+async def test_answer_stream_replay_and_conflict(client):
+    import json
+
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+
+    key = f"fk5-stream-idem-{uuid.uuid4().hex[:8]}"
+    first = await client.post(
+        f"{base}/interview/answer/stream",
+        json={"answer_text": "first streamed answer", "base_version": 2, "idempotency_key": key},
+        headers=headers,
+    )
+    assert first.status_code == 200
+    replay = await client.post(
+        f"{base}/interview/answer/stream",
+        json={"answer_text": "first streamed answer", "base_version": 2, "idempotency_key": key},
+        headers=headers,
+    )
+    assert replay.status_code == 200
+    first_done = json.loads(_parse_sse(first.text)[-1][1])
+    replay_done = json.loads(_parse_sse(replay.text)[-1][1])
+    assert replay_done == {**first_done, "replayed": True}
+
+    stale = await client.post(
+        f"{base}/interview/answer/stream",
+        json={"answer_text": "stale", "base_version": 2, "idempotency_key": f"fk5-stream-stale-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert stale.status_code == 200
+    names = [n for n, _ in _parse_sse(stale.text)]
+    assert names[-1] == "error"
+
+    bad = await client.post(
+        f"{base}/interview/answer/stream",
+        json={"answer_text": "   ", "base_version": 3, "idempotency_key": f"fk5-stream-bad-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert bad.status_code == 422
+    assert (await client.post(f"{base}/interview/answer/stream", json={"answer_text": "x", "base_version": 3, "idempotency_key": "k-12345678"})).status_code == 401

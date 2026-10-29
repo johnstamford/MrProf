@@ -1,7 +1,9 @@
 """Deterministic interview planner (v0.4 topics, Feature 9 rework).
 
-Two-phase flow. Round 1 asks every objective once in fixed order — a pure
-conversation with no analysis and no evidence written. A batch assessment
+Two-phase flow with bounded inline probes. Round 1 asks every objective
+once in fixed order — a pure conversation with no analysis and no evidence
+written — plus at most INLINE_PROBE_BUDGET immediate same-objective probes
+for thin answers (short, not denials, not uncertainty). A batch assessment
 job then extracts evidence, links tension, and queues bounded follow-ups.
 Round 2 works through that queue; a second batch run finalizes.
 
@@ -39,7 +41,11 @@ PLAN_ORDER = (
 ROUND1_TURNS = len(PLAN_ORDER)
 # Round 2 works a bounded follow-up queue set by the batch assessment.
 MAX_FOLLOWUPS = 6
-MAX_TURNS = ROUND1_TURNS + MAX_FOLLOWUPS
+# Thin answers (short, not a denial, not uncertainty) get one immediate
+# same-objective probe in round 1 — struck while the context is fresh.
+# Denials and uncertainty are complete answers and are never probed.
+INLINE_PROBE_BUDGET = 3
+MAX_TURNS = ROUND1_TURNS + INLINE_PROBE_BUDGET + MAX_FOLLOWUPS
 HARD_TURN_CAP = 30
 ANSWER_MIN_LEN = 1
 ANSWER_MAX_LEN = 2000
@@ -185,16 +191,33 @@ def plan_next(
 ) -> tuple[str, str, bool, dict | None]:
     """Return (objective_id, reason, complete, hint). Pure function of turns.
 
-    Round 1 asks every objective once in fixed order. Round 2 works through
-    the follow-up queue set by the batch assessment (each item: objective,
-    reason, optional tension). hint carries tension text for neutral
-    clarification phrasing, else None. No live analysis: probe decisions
-    were made by the batch job.
+    Round 1 asks every objective once in fixed order, plus at most
+    INLINE_PROBE_BUDGET immediate same-objective probes for thin answers
+    (short, not a denial, not uncertainty — one probe per objective).
+    Round 2 works through the follow-up queue set by the batch assessment
+    (each item: objective, reason, optional tension). hint carries tension
+    text for neutral clarification phrasing, {"kind": "inline"} for an
+    inline probe, else None. Probe decisions are deterministic code over
+    the turns (including answer text for the thin check only); the model
+    only phrases.
     """
     followups = followups or []
     n = len(turns)
     if n >= MAX_TURNS:
         return "", f"interview complete at cap ({n} answered turns)", True, None
+    if not followups and turns:
+        last = turns[-1]
+        if polarity(last.get("answer")) == "thin":
+            used = sum(1 for t in turns if (t.get("probe") or "") == "inline")
+            probed = {t["objective"] for t in turns if (t.get("probe") or "") == "inline"}
+            if last["objective"] not in probed and used < INLINE_PROBE_BUDGET:
+                title = load_topics()[last["objective"]].get("title", last["objective"])
+                return (
+                    last["objective"],
+                    f"invite one concrete detail about {title} ({last['objective']}), once, no pressure",
+                    False,
+                    {"kind": "inline"},
+                )
     asked = [t["objective"] for t in turns]
     unasked = [o for o in PLAN_ORDER if o not in asked]
     if unasked:
