@@ -11,3 +11,4 @@ data/
 *.nsdump
 sim/runs/*/
 !sim/runs/.gitkeep
+*.tsbuildinfo
