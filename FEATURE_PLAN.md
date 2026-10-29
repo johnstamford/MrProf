@@ -3,6 +3,15 @@
 Planning baseline: 26 October 2026. Features 1–9 are implemented and verified;
 features 10–14 below remain planned, not implemented.
 
+Plan revision (29 Oct 2026, owner-agreed): priority is a hackathon win with a
+technically sound core plus a bounded 2-day real-user opening. Interview
+quality + reports/review first (F10a + F11-min), synthetic metrics from a small
+regression (F12-min), F13-min hardening for the opening, full clinical review
+deferred to post-hackathon. Topics v0.3 / taxonomy v0.2 stay labeled
+`draft — not clinically validated — interim psychology-student review only`.
+Working tree has uncommitted F10/F11 work-in-progress (see `git status`);
+`README.md` is still TBD and must be filled before judging.
+
 Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focused, and update this plan with implementation status, verification evidence, and remaining limitations. Do not infer that a working prototype is clinically validated or ready for real-user data.
 
 ## Milestones
@@ -347,14 +356,33 @@ stored `probe` marker after a triple-clarification bug.
 
 **Deliver:** Question validation, repetition limits, neutral clarification, interruption handling, and a defined risk-disclosure behavior for the intended deployment.
 
-**Acceptance:**
+Split (29 Oct 2026, owner-agreed): F10a is demo-critical and gates the
+hackathon + 2-day opening; F10b is deferred post-hackathon.
+
+**F10a — demo-critical (build now):**
+- Bounded validation/regen for repeated, leading, compound, off-objective,
+  already-answered questions.
+- Limited clarification, then recorded gap or clear user choice.
+- "Cannot remember" respected; uncertainty never converted into absence.
+- Resumable after model failures/interruptions (409 reload-and-retry, drafts).
+- Honest progress (`Question N`, batch-poll state surfaced); no fake countdown.
+- Static risk signpost, explicitly non-monitored, interim wording only.
+- Dual mode: full 14-objective journey for eval + short taster (~6 questions)
+  with gaps marked incomplete. Taster is a flag, not a forked topic set.
+
+**F10b — deferred post-hackathon:**
+- Full clinician-designed risk-disclosure workflow and interruption taxonomy.
+
+**Acceptance (F10a):**
 - Repeated, leading, compound, off-objective, and already-answered questions are handled through bounded validation/regeneration.
 - Unhelpful answers trigger limited clarification, then a recorded gap or a clear user choice.
 - “Cannot remember” is respected; uncertainty is not converted into absence or invented detail.
 - Failed model calls and interruptions leave a resumable assessment.
-- Synthetic risk scenarios follow a documented, clinician-designed process; no implication of live monitoring is made.
+- Static risk signpost present; no implication of live monitoring is made.
+- p95 turn latency + abandonment measured on taster vs full journey.
 
-**Depends on:** 9. Real-user release remains blocked on resolving the real-world response process in feature 13.
+**Depends on:** 9. Real-user release remains blocked on F13-min below;
+full clinical risk workflow (F10b) stays post-hackathon.
 
 ## 11. Final reports and basic clinician review
 
@@ -378,11 +406,26 @@ and evidence observations with assertion, exact quote, segment ID, and line
 number) plus the full line-numbered transcript, so every citation is checkable
 in one document. Reviewer accept/amend/reject workflow still pending.
 
+**F11-min (29 Oct 2026, owner-agreed hackathon scope):** ship topic-grouped
+briefing + visible denials/uncertainties/contradictions/gaps + reviewer
+annotate (accept/amend/reject writing only to `evidence.review_status`, never
+to `transcripts`/`screening`) + mandatory `UNREVIEWED — not
+clinician-approved` banner + printable HTML + JSON export. PDF and
+multi-patient dashboard explicitly deferred. Take-to-doctor copy gets interim
+psychology-student review before the 2-day opening, labeled as interim, not a
+clinical endorsement.
+
 ## 12. Independent evaluation and refinement
 
 **Deliver:** Ground-truth evaluation, fixed regression cases, benchmark summaries, and documented limitations.
 
 **Decision needed:** Metrics, denominators, and passing thresholds before treating a benchmark as a release gate. Initial sample proposal: 10 personas × 3 runs.
+
+**F12-min (29 Oct 2026, owner-agreed hackathon gate):** report 4 profiles × 2
+runs regression + thresholds: 100% quote-exactness, 0 banned-language hits,
+4/4 completion, latency/cost logged. The 10×3 proposal stays a future target.
+Fixtures and pass criteria frozen during eval; synthetic success ≠ clinical
+validity or real-user timing.
 
 **Acceptance:**
 - Measure discovered relevant facts, unsupported findings, citation support, contradictions, repetition, question counts, stopping behavior, failures, latency, and cost.
@@ -417,6 +460,13 @@ in one document. Reviewer accept/amend/reject workflow still pending.
 
 **Depends on:** 12 and the privacy/clinical decisions above. A synthetic-only demo can launch without claiming this milestone.
 
+**F13-min — bounded 2-day opening (29 Oct 2026, owner-agreed):** consent page
+(what is collected, Meta model via OpenAI-compatible endpoint, retention, who
+can access, no monitoring), manual delete-by-`assessment_id` verified across
+linked records, rate/input caps, Tunnel HTTPS + Mongo private, invite-link
+only with no report-sharing by default, public synthetic example briefing.
+Full retention/backup/policy and clinician risk workflow stay post-hackathon.
+
 ## 14. MVP polish and launch
 
 **Deliver:** Mobile/accessibility polish, honest progress messaging, reliable demo cases, setup/operating documentation, and an invitation-sharing flow if included.
@@ -432,7 +482,13 @@ in one document. Reviewer accept/amend/reject workflow still pending.
 
 **Depends on:** 13 for public real-user launch; 12 for a synthetic-data demonstration.
 
-**Milestone C:** Public MVP stretch goal, if the agreed readiness conditions are met.
+**Hackathon must-haves (29 Oct 2026):** `README.md` filled (one-command start,
+60-sec demo script: vague → follow-up → citation, limitations box), release
+notes listing interim review status (not clinical validation), taster +
+full-journey completion/abandonment numbers, final demo rehearsed on known
+synthetic scenarios.
+
+**Milestone C:** Public MVP stretch goal, if the agreed readiness conditions are met. For judging, Milestone C means F13-min 2-day opening only.
 
 ## Implementation handoff
 

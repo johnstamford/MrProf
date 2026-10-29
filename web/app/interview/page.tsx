@@ -59,6 +59,87 @@ export default function InterviewPage() {
   const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [stage, setStage] = useState(0);
+  const [assessProgress, setAssessProgress] = useState<{ done: number; total: number } | null>(null);
+
+  const STAGES = ["Saving your answer…", "Thinking…", "Preparing the next question…"];
+
+  // Advance the thinking-panel copy on a timer so the screen feels alive
+  // even when the proxy buffers the SSE stream and all events arrive at once.
+  // Stream events (when they arrive incrementally) jump the stage forward.
+  useEffect(() => {
+    if (!saving) return;
+    const id = setInterval(() => setStage((s) => Math.min(s + 1, STAGES.length - 1)), 5000);
+    return () => clearInterval(id);
+  }, [saving]);
+
+  type StreamDone = {
+    version: number;
+    turn_answered: number;
+    status: string;
+    question: Question | null;
+    completed: boolean;
+    replayed?: boolean;
+  };
+
+  function parseSseBuffer(buf: string): { events: { name: string; data: string }[]; rest: string } {
+    const events: { name: string; data: string }[] = [];
+    const parts = buf.split("\n\n");
+    const rest = parts.pop() ?? "";
+    for (const part of parts) {
+      const lines = part.split("\n");
+      let name = "message";
+      const dataLines: string[] = [];
+      for (const line of lines) {
+        if (line.startsWith("event:")) name = line.slice(6).trim();
+        else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
+      }
+      if (dataLines.length) events.push({ name, data: dataLines.join("\n") });
+    }
+    return { events, rest };
+  }
+
+  async function postStream(
+    base: string,
+    headers: Record<string, string>,
+    text: string,
+    v: number,
+    key: string,
+    onStage: (stage: string) => void,
+  ): Promise<StreamDone> {
+    const res = await fetch(`${base}/interview/answer/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "text/event-stream", ...headers },
+      body: JSON.stringify({ answer_text: text, base_version: v, idempotency_key: key }),
+    });
+    const ctype = res.headers.get("content-type") ?? "";
+    if (!res.ok || !res.body || !ctype.includes("text/event-stream")) {
+      throw new Error(`stream-unavailable:${res.status}`);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const { events, rest } = parseSseBuffer(buf);
+      buf = rest;
+      for (const ev of events) {
+        if (ev.name === "received") onStage("saved");
+        else if (ev.name === "phrasing") onStage("phrasing");
+        else if (ev.name === "assessing") onStage("assessing");
+        else if (ev.name === "done") return JSON.parse(ev.data) as StreamDone;
+        else if (ev.name === "error") throw new Error(`stream-error:${ev.data}`);
+      }
+    }
+    const { events } = parseSseBuffer(buf + "\n\n");
+    for (const ev of events) {
+      if (ev.name === "done") return JSON.parse(ev.data) as StreamDone;
+      if (ev.name === "error") throw new Error(`stream-error:${ev.data}`);
+    }
+    throw new Error("stream-incomplete");
+  }
 
   const authHeaders = useCallback(() => {
     const session = loadSession();
@@ -174,6 +255,7 @@ export default function InterviewPage() {
         setVersion(state.version);
         setTurnsAnswered(state.turns_answered);
         setQuestion(state.question);
+        setAssessProgress(null);
         setPhase("ready");
         return true;
       }
@@ -184,12 +266,16 @@ export default function InterviewPage() {
           return false;
         }
         setBriefing((await rep.json()) as Briefing);
+        setAssessProgress(null);
         setPhase("done");
         return true;
       }
       if (body.status !== "assessing" && body.status !== "processing") {
         setError(`unexpected interview status (${body.status}) — please reload`);
         return false;
+      }
+      if (typeof body.extract_total === "number" && body.extract_total > 0) {
+        setAssessProgress({ done: body.extracted ?? 0, total: body.extract_total });
       }
       await new Promise((r) => setTimeout(r, 3000));
     }
@@ -246,6 +332,8 @@ export default function InterviewPage() {
     }
     setError("");
     setSaving(true);
+    setStage(0);
+    const stageFor: Record<string, number> = { saved: 0, phrasing: 1, assessing: 2 };
     try {
       const { session, headers } = auth;
       const base = `/api/assessments/${encodeURIComponent(session.code)}`;
@@ -259,6 +347,76 @@ export default function InterviewPage() {
         typeof crypto !== "undefined" && "randomUUID" in crypto
           ? crypto.randomUUID()
           : `key-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const applyDone = async (body: StreamDone) => {
+        clearDraft(question.turn);
+        setAnswer("");
+        setVersion(body.version as number);
+        setTurnsAnswered(body.turn_answered as number);
+        if (body.completed) {
+          const rep = await fetch(`${base}/interview/report`, { headers });
+          if (!rep.ok) {
+            setError("saved, but the briefing is missing — please reload");
+            return;
+          }
+          setBriefing((await rep.json()) as Briefing);
+          setPhase("done");
+          return;
+        }
+        if (body.question) {
+          setQuestion(body.question as Question);
+          // Best-effort: have the server phrase the following question while
+          // the user reads this one. Failures fall back to the live path.
+          void fetch(`${base}/interview/prefetch`, { method: "POST", headers }).catch(() => {});
+          return;
+        }
+        // No question yet: the batch assessment is running. Poll for the
+        // follow-up round or the final briefing.
+        setPhase("assessing");
+        setSaving(false);
+        await pollAssessment();
+      };
+
+      // Stream first for staged progress; fall back to the sync endpoint.
+      const streamKey = newKey();
+      try {
+        const done = await postStream(base, headers, text, version, streamKey, (s) => {
+          const n = stageFor[s];
+          if (n !== undefined) setStage((cur) => Math.max(cur, n));
+        });
+        await applyDone(done);
+        return;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "";
+        if (msg.startsWith("stream-error:")) {
+          try {
+            const payload = JSON.parse(msg.slice("stream-error:".length)) as {
+              error?: string;
+              current_version?: number;
+            };
+            if (payload.error === "version_conflict") {
+              await load();
+              const fresh = loadSession();
+              if (!fresh) return;
+              const retryVersion = (
+                (await (await fetch(base, { headers })).json()) as { version: number }
+              ).version;
+              const res = await post(retryVersion, newKey());
+              if (!res.ok) {
+                setError("could not save — please try again");
+                return;
+              }
+              await applyDone((await res.json()) as StreamDone);
+              return;
+            }
+            setError("could not save — please try again");
+            return;
+          } catch {
+            // Malformed error payload: fall through to sync fallback.
+          }
+        }
+        // stream-unavailable / stream-incomplete / network: sync fallback below.
+      }
+
       let res = await post(version, newKey());
       if (res.status === 409) {
         // State moved on underneath us — reload and retry once.
@@ -274,30 +432,8 @@ export default function InterviewPage() {
         setError("could not save — please try again");
         return;
       }
-      const body = await res.json();
-      clearDraft(question.turn);
-      setAnswer("");
-      setVersion(body.version as number);
-      setTurnsAnswered(body.turn_answered as number);
-      if (body.completed) {
-        const rep = await fetch(`${base}/interview/report`, { headers });
-        if (!rep.ok) {
-          setError("saved, but the briefing is missing — please reload");
-          return;
-        }
-        setBriefing((await rep.json()) as Briefing);
-        setPhase("done");
-        return;
-      }
-      if (body.question) {
-        setQuestion(body.question as Question);
-        return;
-      }
-      // No question yet: the batch assessment is running. Poll for the
-      // follow-up round or the final briefing.
-      setPhase("assessing");
-      setSaving(false);
-      await pollAssessment();
+      const body = (await res.json()) as StreamDone;
+      await applyDone(body);
       return;
     } finally {
       setSaving(false);
@@ -320,14 +456,24 @@ export default function InterviewPage() {
   }
 
   if (phase === "assessing") {
+    const p = assessProgress;
+    const msg =
+      p && p.total > 0 && p.done < p.total
+        ? `Reviewing your answers… (${p.done} of ${p.total} checked)`
+        : p && p.total > 0
+          ? "Deciding what to ask next…"
+          : "Reviewing your answers to decide what to ask next…";
     return (
       <main>
+        <style>{`.mrprof-spinner{width:28px;height:28px;border-radius:50%;border:3px solid #ccc;border-top-color:#333;animation:mrprof-spin 0.9s linear infinite;margin:12px 0}@keyframes mrprof-spin{to{transform:rotate(360deg)}}`}</style>
         <h1>MrProf — interview</h1>
-        <p role="status">Reviewing your answers to decide what to ask next — usually under a minute…</p>
+        <div className="mrprof-spinner" role="status" aria-label={msg} />
+        <p role="status"><strong>{msg}</strong></p>
+        <p>Your answers are saved — this usually takes under a minute…</p>
         {error && (
           <div>
             <p role="alert">{error}</p>
-            <button onClick={() => { setError(""); void pollAssessment(); }}>Check again</button>
+            <button onClick={() => { setError(""); setAssessProgress(null); void pollAssessment(); }}>Check again</button>
           </div>
         )}
       </main>
@@ -335,19 +481,26 @@ export default function InterviewPage() {
   }
 
   if (phase === "done" && briefing) {
+    const covered = (briefing.coverage ?? []).filter((c) => c.status === "covered").length;
+    const total = (briefing.coverage ?? []).length || (briefing.topics ?? []).length;
     return (
       <main>
         <h1>MrProf — interview briefing</h1>
         <p>{briefing.banner}</p>
+        <p>
+          {briefing.turns_answered} answers across {total} topics
+          {covered ? ` — ${covered} with a detailed account` : ""}.
+          Everything below comes from what you wrote; quotes are exact and line-numbered so each point can be checked.
+        </p>
         <section>
-          <h2>What you reported, by topic</h2>
+          <h2>What you reported</h2>
           {(briefing.topics ?? []).map((t) => (
             <section key={t.objective}>
               <h3>{t.title} — {t.status} ({t.note})</h3>
               {t.turns.map((s) => (
                 <div key={s.turn}>
-                  <p>Q{s.turn}: {s.question}</p>
-                  <p>A{s.turn}: {s.answer}</p>
+                  <p><strong>Asked:</strong> {s.question}</p>
+                  <p><strong>You said:</strong> {s.answer}</p>
                   {s.observations.length > 0 && (
                     <ul>
                       {s.observations.map((o, i) => (
@@ -363,46 +516,28 @@ export default function InterviewPage() {
           ))}
         </section>
         <section>
-          <h2>How each question was chosen (system notes — not what you said)</h2>
-          <ul>
-            {briefing.system_notes.map((n) => (
-              <li key={n.turn}>
-                Q{n.turn}: topic <code>{n.objective}</code> — {n.reason}
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section>
-          <h2>Coverage — what was explored</h2>
-          <ul>
-            {(briefing.coverage ?? []).map((c) => (
-              <li key={c.objective}>{c.title} — {c.status} ({c.note}{c.turns.length ? `, turns ${c.turns.join(", ")}` : ""})</li>
-            ))}
-          </ul>
-        </section>
-        {(briefing.contradictions ?? []).length > 0 && (
-          <section>
-            <h2>Accounts in tension (both retained)</h2>
-            <ul>
-              {briefing.contradictions.map((c) => (
-                <li key={c.family}>
-                  {c.areas.join(" / ")}: turn {c.denial_turn} reported no difficulty, turn {c.present_turn} described difficulty — {c.note}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-        <section>
-          <h2>Not covered in this interview</h2>
+          <h2>Gaps and open questions</h2>
           <p>{briefing.completion_note}</p>
+          {(briefing.contradictions ?? []).length > 0 && (
+            <div>
+              <h3>Accounts in tension (both retained)</h3>
+              <ul>
+                {briefing.contradictions.map((c) => (
+                  <li key={c.family}>
+                    {c.areas.join(" / ")}: turn {c.denial_turn} reported no difficulty, turn {c.present_turn} described difficulty — {c.note}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <ul>
             {briefing.gaps.map((g) => (
               <li key={g.area}>{g.area} — {g.status}</li>
             ))}
           </ul>
         </section>
-        <section>
-          <h2>Full transcript (line-numbered)</h2>
+        <details>
+          <summary>Full transcript (line-numbered) — open to check any quote</summary>
           <ol>
             {(briefing.transcript ?? []).map((s) => (
               <li key={s.id}>
@@ -410,7 +545,23 @@ export default function InterviewPage() {
               </li>
             ))}
           </ol>
-        </section>
+        </details>
+        <details>
+          <summary>How this was gathered (system notes — not what you said)</summary>
+          <ul>
+            {briefing.system_notes.map((n) => (
+              <li key={n.turn}>
+                Q{n.turn}: topic <code>{n.objective}</code> — {n.reason}
+              </li>
+            ))}
+          </ul>
+          <h3>Coverage — what was explored</h3>
+          <ul>
+            {(briefing.coverage ?? []).map((c) => (
+              <li key={c.objective}>{c.title} — {c.status} ({c.note}{c.turns.length ? `, turns ${c.turns.join(", ")}` : ""})</li>
+            ))}
+          </ul>
+        </details>
         <p>
           <button onClick={() => router.push("/report")}>← Back to screening report</button>{" "}
           <button onClick={() => router.push("/start")}>Start / resume page</button>
@@ -421,23 +572,36 @@ export default function InterviewPage() {
 
   return (
     <main>
+      <style>{`.mrprof-spinner{width:28px;height:28px;border-radius:50%;border:3px solid #ccc;border-top-color:#333;animation:mrprof-spin 0.9s linear infinite;margin:12px 0}@keyframes mrprof-spin{to{transform:rotate(360deg)}}`}</style>
       <h1>MrProf — interview</h1>
       <p>Draft interview, one question at a time — there is no time limit. Topics are a first draft, not a clinical assessment.</p>
       <p>The more detail you give — a few sentences with a concrete example — the better your briefing will be. Short answers are still accepted: a plain no, or “I can’t remember”, is a valid answer.</p>
       <p>Question {question ? question.turn : "…"} · {turnsAnswered} answered so far</p>
-      {question && (
+      {saving ? (
+        <section aria-live="polite">
+          <div className="mrprof-spinner" role="status" aria-label={STAGES[stage]} />
+          <p role="status"><strong>{STAGES[stage]}</strong></p>
+          <p>
+            {[0, 1, 2].map((i) => (
+              <span key={i}>{i <= stage ? "● " : "○ "}</span>
+            ))}
+          </p>
+          <p>Your answer is safe — you can wait, this usually takes a few seconds…</p>
+        </section>
+      ) : (
+      question && (
         <section>
           <p><strong>{question.text}</strong></p>
           <label>
             Your answer{" "}
-            <textarea value={answer} onChange={(e) => onType(e.target.value)} rows={4} cols={60} disabled={saving} />
+            <textarea value={answer} onChange={(e) => onType(e.target.value)} rows={4} cols={60} />
           </label>
           <p>A few sentences with an example make for a much better briefing than a few words.</p>
           <div>
-            <button onClick={submit} disabled={saving}>{saving ? "Thinking…" : "Save and continue →"}</button>
+            <button onClick={submit}>Save and continue →</button>
           </div>
-          {saving && <p role="status">Waiting for the next question — usually a few seconds…</p>}
         </section>
+      )
       )}
       {error && <p role="alert">{error}</p>}
     </main>

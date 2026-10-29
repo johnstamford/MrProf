@@ -15,6 +15,7 @@ export default function StartPage() {
   const [password, setPassword] = useState("");
   const [fetched, setFetched] = useState<Fetched | null>(null);
   const [resumeTarget, setResumeTarget] = useState("/screening");
+  const [resumeNote, setResumeNote] = useState("");
   const [error, setError] = useState("");
 
   function goToScreening(code: string, pw: string) {
@@ -57,13 +58,54 @@ export default function StartPage() {
     // resumes on the interview page (pending question or briefing);
     // otherwise continue with the screening questions.
     const next = await fetch(`/api/assessments/${encodeURIComponent(code)}/interview/next`, { headers });
-    setResumeTarget(next.ok ? "/interview" : "/screening");
+    if (next.ok) {
+      const state = (await next.json()) as { completed?: boolean; question?: unknown };
+      setResumeTarget("/interview");
+      setResumeNote(
+        state.completed
+          ? "Interview complete — your reports are ready."
+          : state.question
+            ? "Interview in progress — pick up where you left off."
+            : "Interview in progress.",
+      );
+    } else {
+      setResumeTarget("/screening");
+      setResumeNote(
+        body.stage === "screening"
+          ? "Screening in progress."
+          : "Just started — begin with the screening questions.",
+      );
+    }
     // Stay on this screen: confirm the assessment ID and recovery warning first.
   }
 
   return (
     <main>
-      <h1>MrProf — start or resume</h1>
+      <h1>MrProf — ADHD screening and evidence briefing</h1>
+      <section>
+        <h2>What is this?</h2>
+        <p>
+          MrProf helps you complete a 6-question ADHD screening questionnaire and,
+          if you choose, answer follow-up questions about your experiences. You keep
+          two reports: a screening summary and an evidence briefing with exact quotes
+          from your answers.
+        </p>
+        <p>
+          This is a draft research prototype — it does not diagnose anything, and a
+          result below the screening threshold does not rule anything out. Only a
+          qualified clinician can determine what explains your experiences.
+        </p>
+      </section>
+      <section>
+        <h2>How it works</h2>
+        <ol>
+          <li>Answer 6 screening questions (a few minutes).</li>
+          <li>Get your screening report immediately — either result can continue.</li>
+          <li>Optionally continue to the interview: one question at a time, in your own words.</li>
+          <li>Get your evidence briefing with supporting quotes.</li>
+        </ol>
+        <p>Both stages together take most people around 20–30 minutes. There is no time limit, and you can close the browser and resume later with your code and password.</p>
+      </section>
       <section>
         <h2>New assessment</h2>
         <label>Choose a password (min 10 characters){" "}
@@ -93,7 +135,7 @@ export default function StartPage() {
         {fetched && (
           <div>
             <h3>Assessment found</h3>
-            <p>Assessment code: <code>{fetched.assessment_id}</code> (stage: {fetched.stage}, status: {fetched.status})</p>
+            <p>{resumeNote || "Assessment found."}</p>
             <p role="alert">
               Keep your assessment code and password somewhere safe.
               You need both to get back to your assessment — without them it
