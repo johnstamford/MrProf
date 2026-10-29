@@ -490,6 +490,89 @@ synthetic scenarios.
 
 **Milestone C:** Public MVP stretch goal, if the agreed readiness conditions are met. For judging, Milestone C means F13-min 2-day opening only.
 
+## 15. Frozen synthetic demo report set (NEW 29 Oct 2026, owner-agreed)
+
+**Deliver:** Four frozen, committed demo reports (vague / denier / contradictor /
+incomplete-recall) generated through the real API from `sim/profiles.py`, served
+read-only at `/demo`, each proving a different capability.
+
+**Acceptance:**
+- Generated via `sim/run.py` (dummy patient vs live server interviewer), never
+  hand-edited — quotes stay exact. Re-runs re-freeze the whole set with new
+  version stamps.
+- Each card: persona headline, screening strip (score/method labeled), what the
+  system did / did NOT conclude, model + `topics-vX` + taxonomy + date + turns +
+  latency/cost stamps.
+- Every surface watermarked `SYNTHETIC DEMO — not a real person`.
+- Personas refinable later (names/backstories) without changing the pipeline;
+  ground truth never leaks to the viewer beyond what the interview saw.
+- Public synthetic example doubles as the shareable artifact (invite-link only,
+  no personal report sharing).
+
+**Depends on:** 8–9. Feeds F11 demo viewer and F14 demo rehearsal.
+
+**Status (29 Oct 2026): ✅ done — implemented and verified.**
+- `sim/export_demo.py` drives all 4 profiles through the real API (ASGI,
+  `LLM_PROVIDER=dummy`, DummyPatient) and freezes `web/public/demo/<id>.json`
+  + `index.json` with `{meta, screening, briefing}`; demo assessments deleted
+  from the dev DB after export. Re-runs re-freeze with new stamps.
+- Frozen set verified: vague-01 score 3/14 turns, denier-01 0/15,
+  contradictor-01 3/15, recall-01 3/15; 14 topics each; 100% quote-exactness
+  (all quotes substrings of transcript); assertions show present/denied/
+  uncertain mix; contradictions retained with both turns; system copy clean of
+  banned language (test_report/test_briefing lists; "probably" in verbatim
+  patient answers is exempt).
+- `docker compose exec api pytest tests -q`: 60 passed, 1 skipped (backend untouched).
+
+## 16. Slick UI overhaul (NEW 29 Oct 2026, owner-agreed)
+
+**Deliver:** Calm clinical-premium design system replacing unstyled pages.
+Tailwind CSS + Lucide icons, no heavy component library.
+
+**Look:** paper `#FAF9F7`, ink `#14201D`, primary deep teal `#0E7C6B`, amber for
+uncertainty, rose for tension. Serif headings (clinical document) + Inter body.
+Cards `rounded-2xl`, hairline borders, generous whitespace. No purple AI gradients.
+
+**Acceptance:**
+- Tokens + shell + landing (`/`) — biggest visual jump: hero, Start / See example
+  reports CTAs, 3-step how-it-works, 4 demo cards, limitations strip.
+- `/demo` gallery + `/demo/[id]` viewer share components with the real briefing:
+  left topic rail (covered/denied/uncertain/gap dots), centre evidence cards
+  (serif quote, assertion chip, `line N · segment ID`, click → transcript
+  highlight), right coverage/tensions/gaps rail, metrics strip, transcript.
+- `/screening`: one question per screen, large tappable pills (wording untouched),
+  `N of 6` progress, auto-advance.
+- `/interview`: single focused column, large serif question, auto-growing
+  textarea, broad-area progress rail only, calm 3-step SSE indicator.
+- `/report` + briefing: same evidence-card system as demo, sticky UNREVIEWED
+  banner, print stylesheet (Ctrl-P = take-to-doctor PDF), JSON export.
+- Mobile pass + keyboard/labels/loading/failure states. `README.md` demo script
+  updated to match.
+
+**Build order:** (1) tokens + shell + landing, (2) start + screening,
+(3) report/demo viewer, (4) interview, (5) print + mobile.
+**Depends on:** 15 for demo content. Defer: PDF perfection, dashboard, accounts.
+
+**Status (29 Oct 2026): ✅ done — implemented and verified.**
+- Tailwind v4 (`tailwindcss` + `@tailwindcss/postcss`) + `lucide-react`;
+  `postcss.config.mjs`, `app/globals.css` tokens (paper/ink/teal/amber/rose,
+  serif system stack — no network fonts), shell with max-width + header/nav +
+  retained AssessmentHeader.
+- Landing `/` (hero, Start/See-example CTAs, 3 steps, 4 demo cards, limitations);
+  `/demo` gallery + `/demo/[id]` viewer (left topic rail, centre evidence cards
+  with anchor jump to transcript lines, right tensions/gaps/"what we did NOT
+  conclude" rail, metrics strip, collapsible line-numbered transcript).
+- `/start` (explainer + code/password flow kept), `/screening` (one question per
+  screen, large pills, `N of 6` progress, auto-advance; wording/instructions/
+  attribution byte-identical, 409/422 logic kept), `/interview` (logic untouched
+  — stream + sync fallback + 409 retry + prefetch + drafts; single column, serif
+  question, autogrow textarea, calm 3-step indicator), `/report` + briefing
+  (shared `components/evidence.tsx` + `components/briefing.tsx`, sticky
+  UNREVIEWED banner on briefing, print stylesheet, JSON download).
+- `npm run build` green, `tsc` clean; all 10 routes return 200 on the dev stack.
+- Remaining gaps: `README.md` demo script not yet updated; taster mode,
+  consent/delete/rate-limits stay out of scope.
+
 ## Implementation handoff
 
 For each feature, ask OpenCode to read the overview and this plan, inspect existing code, implement only the selected feature and necessary dependencies, and run focused verification against its acceptance criteria. Ask it to report changes, verification results, decisions, and incomplete items. Checkpoint working milestones in Git.
