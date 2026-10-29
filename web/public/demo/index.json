@@ -1,0 +1,42 @@
+{
+  "demos": [
+    {
+      "exported_at": "2026-10-29T23:42:15.488954+00:00",
+      "headline": "Vague short answers",
+      "id": "vague-01",
+      "proves": "Follow-ups turn thin answers into checkable evidence.",
+      "screening_method": "original-0-6",
+      "screening_score": 3,
+      "turns": 14
+    },
+    {
+      "exported_at": "2026-10-29T23:42:23.849009+00:00",
+      "headline": "Denies difficulties, offers an alternative explanation",
+      "id": "denier-01",
+      "proves": "Denials are recorded as denied \u2014 never flipped into absence of evidence.",
+      "screening_method": "original-0-6",
+      "screening_score": 0,
+      "turns": 15
+    },
+    {
+      "exported_at": "2026-10-29T23:42:32.362107+00:00",
+      "headline": "Gives conflicting accounts across turns",
+      "id": "contradictor-01",
+      "proves": "Contradictions stay visible, with both accounts retained.",
+      "screening_method": "original-0-6",
+      "screening_score": 3,
+      "turns": 15
+    },
+    {
+      "exported_at": "2026-10-29T23:42:40.622621+00:00",
+      "headline": "Incomplete recall with partial detail",
+      "id": "recall-01",
+      "proves": "\u201cI cannot remember\u201d is respected and logged as a gap, not a finding.",
+      "screening_method": "original-0-6",
+      "screening_score": 3,
+      "turns": 15
+    }
+  ],
+  "synthetic": true,
+  "watermark": "SYNTHETIC DEMO \u2014 not a real person"
+}

@@ -52,13 +52,13 @@ export function StatusDot({ status, label }: { status: string; label?: string })
 /** Assertion chip: reported present / explicitly denied / uncertain. */
 export function AssertionChip({ assertion }: { assertion: Assertion }) {
   const a = assertion.toLowerCase();
-  if (a === "denied")
+  if (a.includes("deni"))
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-cream px-2.5 py-0.5 text-xs font-medium text-ink-soft">
         <MinusCircle className="h-3.5 w-3.5" aria-hidden /> explicitly denied
       </span>
     );
-  if (a === "uncertain")
+  if (a.includes("uncertain"))
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-uncertain-tint px-2.5 py-0.5 text-xs font-medium text-uncertain">
         <AlertTriangle className="h-3.5 w-3.5" aria-hidden /> uncertain

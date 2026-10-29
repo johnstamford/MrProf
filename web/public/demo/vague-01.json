@@ -1,0 +1,961 @@
+{
+  "briefing": {
+    "assessment_id": "4785A5KJ",
+    "banner": "Draft-topics briefing (unreviewed). This summarizes what was reported in an interview using draft topics that are not clinically reviewed. It is not a clinical assessment. Only a qualified clinician can determine what explains a person's experiences.",
+    "completed_at": "2026-10-29T23:42:12.864000",
+    "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
+    "contradictions": [],
+    "coverage": [
+      {
+        "note": "substantive account recorded",
+        "objective": "attention-focus",
+        "status": "covered",
+        "title": "Sustaining attention",
+        "turns": [
+          1
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "organization",
+        "status": "covered",
+        "title": "Organization and time",
+        "turns": [
+          2
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "task-completion",
+        "status": "covered",
+        "title": "Starting and finishing tasks",
+        "turns": [
+          3
+        ]
+      },
+      {
+        "note": "could not recall or say; not pressed further",
+        "objective": "forgetfulness",
+        "status": "unable",
+        "title": "Forgetfulness in daily life",
+        "turns": [
+          4
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "restlessness",
+        "status": "covered",
+        "title": "Restlessness and staying with one thing",
+        "turns": [
+          5
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impulsivity",
+        "status": "covered",
+        "title": "Acting quickly and patience",
+        "turns": [
+          6
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "childhood-onset",
+        "status": "covered",
+        "title": "Childhood and school years",
+        "turns": [
+          7
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "persistence-course",
+        "status": "covered",
+        "title": "How things changed over time",
+        "turns": [
+          8
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "settings",
+        "status": "covered",
+        "title": "Different settings",
+        "turns": [
+          9
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impact-work",
+        "status": "covered",
+        "title": "Impact on work or study",
+        "turns": [
+          10
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impact-relationships",
+        "status": "covered",
+        "title": "Impact on relationships and daily life",
+        "turns": [
+          11
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "context-factors",
+        "status": "covered",
+        "title": "Sleep, stress, mood, and health context",
+        "turns": [
+          12
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "strategies",
+        "status": "covered",
+        "title": "Strategies and support",
+        "turns": [
+          13
+        ]
+      },
+      {
+        "note": "could not recall or say; not pressed further",
+        "objective": "background-goals",
+        "status": "unable",
+        "title": "Background and goals",
+        "turns": [
+          14
+        ]
+      }
+    ],
+    "gaps": [],
+    "kind": "interview",
+    "report_version": 1,
+    "skill_version": "skill-v0.4-draft",
+    "statements": [
+      {
+        "answer": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much.",
+        "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 1
+      },
+      {
+        "answer": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week.",
+        "question": "How do you find organizing your time, your tasks, or your belongings?",
+        "turn": 2
+      },
+      {
+        "answer": "Honestly it is mostly bills and that kind of paperwork. I put the envelopes on the counter meaning to deal with them, and then somehow it is weeks later and there is a late fee. It just never quite feels like the right moment to sit down with them.",
+        "question": "What kinds of tasks are hardest for you to start or finish?",
+        "turn": 3
+      },
+      {
+        "answer": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places. I do not know if that is worse than average or everyone does it.",
+        "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+        "turn": 4
+      },
+      {
+        "answer": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late.",
+        "question": "When you need to sit still or stay with one thing, what is that like for you?",
+        "turn": 5
+      },
+      {
+        "answer": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say.",
+        "question": "How are you with waiting your turn, or holding back when you want to jump in?",
+        "turn": 6
+      },
+      {
+        "answer": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like.",
+        "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+        "turn": 7
+      },
+      {
+        "answer": "I really could not say when this started or whether it has changed. It feels like it has just always been like this, but if you asked me to point to a year or how old I was, I genuinely cannot.",
+        "question": "How have these kinds of experiences changed over the years, as far as you can tell?",
+        "turn": 8
+      },
+      {
+        "answer": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background.",
+        "question": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+        "turn": 9
+      },
+      {
+        "answer": "Work is mostly okay, though the odd thing slips. Nothing dramatic, just the occasional missed email or turning up flustered. I muddle through.",
+        "question": "Can you describe a recent time when these experiences affected your work or studies?",
+        "turn": 10
+      },
+      {
+        "answer": "I think people notice I drift off sometimes. Nobody has made a big thing of it. My sister teases me about never listening, but that is just sisters, probably.",
+        "question": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+        "turn": 11
+      },
+      {
+        "answer": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though.",
+        "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+        "turn": 12
+      },
+      {
+        "answer": "I have got phone reminders set for most things, which sort of works when I actually look at them. Sometimes I just swipe them away and forget anyway, so it is hit and miss.",
+        "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+        "turn": 13
+      },
+      {
+        "answer": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next, I have never done anything like this before.",
+        "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+        "turn": 14
+      }
+    ],
+    "system_notes": [
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "attention-focus",
+        "reason": "cover Sustaining attention (attention-focus) in fixed order",
+        "turn": 1
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "organization",
+        "reason": "cover Organization and time (organization) in fixed order",
+        "turn": 2
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "task-completion",
+        "reason": "cover Starting and finishing tasks (task-completion) in fixed order",
+        "turn": 3
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "forgetfulness",
+        "reason": "cover Forgetfulness in daily life (forgetfulness) in fixed order",
+        "turn": 4
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "restlessness",
+        "reason": "cover Restlessness and staying with one thing (restlessness) in fixed order",
+        "turn": 5
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impulsivity",
+        "reason": "cover Acting quickly and patience (impulsivity) in fixed order",
+        "turn": 6
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "childhood-onset",
+        "reason": "cover Childhood and school years (childhood-onset) in fixed order",
+        "turn": 7
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "persistence-course",
+        "reason": "cover How things changed over time (persistence-course) in fixed order",
+        "turn": 8
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "settings",
+        "reason": "cover Different settings (settings) in fixed order",
+        "turn": 9
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impact-work",
+        "reason": "cover Impact on work or study (impact-work) in fixed order",
+        "turn": 10
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impact-relationships",
+        "reason": "cover Impact on relationships and daily life (impact-relationships) in fixed order",
+        "turn": 11
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "context-factors",
+        "reason": "cover Sleep, stress, mood, and health context (context-factors) in fixed order",
+        "turn": 12
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "strategies",
+        "reason": "cover Strategies and support (strategies) in fixed order",
+        "turn": 13
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "background-goals",
+        "reason": "cover Background and goals (background-goals) in fixed order",
+        "turn": 14
+      }
+    ],
+    "topic_version": "topics-v0.4-draft",
+    "topics": [
+      {
+        "note": "substantive account recorded",
+        "objective": "attention-focus",
+        "status": "covered",
+        "title": "Sustaining attention",
+        "turns": [
+          {
+            "answer": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 2,
+                "quote": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much.",
+                "review_status": "pending",
+                "segment_id": "T1-A1"
+              }
+            ],
+            "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+            "turn": 1
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "organization",
+        "status": "covered",
+        "title": "Organization and time",
+        "turns": [
+          {
+            "answer": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 4,
+                "quote": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week.",
+                "review_status": "pending",
+                "segment_id": "T2-A1"
+              }
+            ],
+            "question": "How do you find organizing your time, your tasks, or your belongings?",
+            "turn": 2
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "task-completion",
+        "status": "covered",
+        "title": "Starting and finishing tasks",
+        "turns": [
+          {
+            "answer": "Honestly it is mostly bills and that kind of paperwork. I put the envelopes on the counter meaning to deal with them, and then somehow it is weeks later and there is a late fee. It just never quite feels like the right moment to sit down with them.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 6,
+                "quote": "Honestly it is mostly bills and that kind of paperwork. I put the envelopes on the counter meaning to deal with them, and then somehow it is weeks later and there is a late fee. It just never quite feels like the right moment to sit down with them.",
+                "review_status": "pending",
+                "segment_id": "T3-A1"
+              }
+            ],
+            "question": "What kinds of tasks are hardest for you to start or finish?",
+            "turn": 3
+          }
+        ]
+      },
+      {
+        "note": "could not recall or say; not pressed further",
+        "objective": "forgetfulness",
+        "status": "unable",
+        "title": "Forgetfulness in daily life",
+        "turns": [
+          {
+            "answer": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places. I do not know if that is worse than average or everyone does it.",
+            "observations": [
+              {
+                "assertion": "uncertain",
+                "criterion_links": [],
+                "line": 8,
+                "quote": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places. I do not know if that is worse than average or everyone does it.",
+                "review_status": "pending",
+                "segment_id": "T4-A1"
+              }
+            ],
+            "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+            "turn": 4
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "restlessness",
+        "status": "covered",
+        "title": "Restlessness and staying with one thing",
+        "turns": [
+          {
+            "answer": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 10,
+                "quote": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late.",
+                "review_status": "pending",
+                "segment_id": "T5-A1"
+              }
+            ],
+            "question": "When you need to sit still or stay with one thing, what is that like for you?",
+            "turn": 5
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impulsivity",
+        "status": "covered",
+        "title": "Acting quickly and patience",
+        "turns": [
+          {
+            "answer": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 12,
+                "quote": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say.",
+                "review_status": "pending",
+                "segment_id": "T6-A1"
+              }
+            ],
+            "question": "How are you with waiting your turn, or holding back when you want to jump in?",
+            "turn": 6
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "childhood-onset",
+        "status": "covered",
+        "title": "Childhood and school years",
+        "turns": [
+          {
+            "answer": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 14,
+                "quote": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like.",
+                "review_status": "pending",
+                "segment_id": "T7-A1"
+              }
+            ],
+            "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+            "turn": 7
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "persistence-course",
+        "status": "covered",
+        "title": "How things changed over time",
+        "turns": [
+          {
+            "answer": "I really could not say when this started or whether it has changed. It feels like it has just always been like this, but if you asked me to point to a year or how old I was, I genuinely cannot.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 16,
+                "quote": "I really could not say when this started or whether it has changed. It feels like it has just always been like this, but if you asked me to point to a year or how old I was, I genuinely cannot.",
+                "review_status": "pending",
+                "segment_id": "T8-A1"
+              }
+            ],
+            "question": "How have these kinds of experiences changed over the years, as far as you can tell?",
+            "turn": 8
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "settings",
+        "status": "covered",
+        "title": "Different settings",
+        "turns": [
+          {
+            "answer": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 18,
+                "quote": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background.",
+                "review_status": "pending",
+                "segment_id": "T9-A1"
+              }
+            ],
+            "question": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+            "turn": 9
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impact-work",
+        "status": "covered",
+        "title": "Impact on work or study",
+        "turns": [
+          {
+            "answer": "Work is mostly okay, though the odd thing slips. Nothing dramatic, just the occasional missed email or turning up flustered. I muddle through.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 20,
+                "quote": "Work is mostly okay, though the odd thing slips. Nothing dramatic, just the occasional missed email or turning up flustered. I muddle through.",
+                "review_status": "pending",
+                "segment_id": "T10-A1"
+              }
+            ],
+            "question": "Can you describe a recent time when these experiences affected your work or studies?",
+            "turn": 10
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impact-relationships",
+        "status": "covered",
+        "title": "Impact on relationships and daily life",
+        "turns": [
+          {
+            "answer": "I think people notice I drift off sometimes. Nobody has made a big thing of it. My sister teases me about never listening, but that is just sisters, probably.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 22,
+                "quote": "I think people notice I drift off sometimes. Nobody has made a big thing of it. My sister teases me about never listening, but that is just sisters, probably.",
+                "review_status": "pending",
+                "segment_id": "T11-A1"
+              }
+            ],
+            "question": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+            "turn": 11
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "context-factors",
+        "status": "covered",
+        "title": "Sleep, stress, mood, and health context",
+        "turns": [
+          {
+            "answer": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 24,
+                "quote": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though.",
+                "review_status": "pending",
+                "segment_id": "T12-A1"
+              }
+            ],
+            "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+            "turn": 12
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "strategies",
+        "status": "covered",
+        "title": "Strategies and support",
+        "turns": [
+          {
+            "answer": "I have got phone reminders set for most things, which sort of works when I actually look at them. Sometimes I just swipe them away and forget anyway, so it is hit and miss.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 26,
+                "quote": "I have got phone reminders set for most things, which sort of works when I actually look at them. Sometimes I just swipe them away and forget anyway, so it is hit and miss.",
+                "review_status": "pending",
+                "segment_id": "T13-A1"
+              }
+            ],
+            "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+            "turn": 13
+          }
+        ]
+      },
+      {
+        "note": "could not recall or say; not pressed further",
+        "objective": "background-goals",
+        "status": "unable",
+        "title": "Background and goals",
+        "turns": [
+          {
+            "answer": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next, I have never done anything like this before.",
+            "observations": [
+              {
+                "assertion": "uncertain",
+                "criterion_links": [],
+                "line": 28,
+                "quote": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next, I have never done anything like this before.",
+                "review_status": "pending",
+                "segment_id": "T14-A1"
+              }
+            ],
+            "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+            "turn": 14
+          }
+        ]
+      }
+    ],
+    "transcript": [
+      {
+        "id": "T1-Q1",
+        "line": 1,
+        "n": 1,
+        "role": "Q",
+        "text": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 1
+      },
+      {
+        "id": "T1-A1",
+        "line": 2,
+        "n": 1,
+        "role": "A",
+        "text": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much.",
+        "turn": 1
+      },
+      {
+        "id": "T2-Q1",
+        "line": 3,
+        "n": 1,
+        "role": "Q",
+        "text": "How do you find organizing your time, your tasks, or your belongings?",
+        "turn": 2
+      },
+      {
+        "id": "T2-A1",
+        "line": 4,
+        "n": 1,
+        "role": "A",
+        "text": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week.",
+        "turn": 2
+      },
+      {
+        "id": "T3-Q1",
+        "line": 5,
+        "n": 1,
+        "role": "Q",
+        "text": "What kinds of tasks are hardest for you to start or finish?",
+        "turn": 3
+      },
+      {
+        "id": "T3-A1",
+        "line": 6,
+        "n": 1,
+        "role": "A",
+        "text": "Honestly it is mostly bills and that kind of paperwork. I put the envelopes on the counter meaning to deal with them, and then somehow it is weeks later and there is a late fee. It just never quite feels like the right moment to sit down with them.",
+        "turn": 3
+      },
+      {
+        "id": "T4-Q1",
+        "line": 7,
+        "n": 1,
+        "role": "Q",
+        "text": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+        "turn": 4
+      },
+      {
+        "id": "T4-A1",
+        "line": 8,
+        "n": 1,
+        "role": "A",
+        "text": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places. I do not know if that is worse than average or everyone does it.",
+        "turn": 4
+      },
+      {
+        "id": "T5-Q1",
+        "line": 9,
+        "n": 1,
+        "role": "Q",
+        "text": "When you need to sit still or stay with one thing, what is that like for you?",
+        "turn": 5
+      },
+      {
+        "id": "T5-A1",
+        "line": 10,
+        "n": 1,
+        "role": "A",
+        "text": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late.",
+        "turn": 5
+      },
+      {
+        "id": "T6-Q1",
+        "line": 11,
+        "n": 1,
+        "role": "Q",
+        "text": "How are you with waiting your turn, or holding back when you want to jump in?",
+        "turn": 6
+      },
+      {
+        "id": "T6-A1",
+        "line": 12,
+        "n": 1,
+        "role": "A",
+        "text": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say.",
+        "turn": 6
+      },
+      {
+        "id": "T7-Q1",
+        "line": 13,
+        "n": 1,
+        "role": "Q",
+        "text": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+        "turn": 7
+      },
+      {
+        "id": "T7-A1",
+        "line": 14,
+        "n": 1,
+        "role": "A",
+        "text": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like.",
+        "turn": 7
+      },
+      {
+        "id": "T8-Q1",
+        "line": 15,
+        "n": 1,
+        "role": "Q",
+        "text": "How have these kinds of experiences changed over the years, as far as you can tell?",
+        "turn": 8
+      },
+      {
+        "id": "T8-A1",
+        "line": 16,
+        "n": 1,
+        "role": "A",
+        "text": "I really could not say when this started or whether it has changed. It feels like it has just always been like this, but if you asked me to point to a year or how old I was, I genuinely cannot.",
+        "turn": 8
+      },
+      {
+        "id": "T9-Q1",
+        "line": 17,
+        "n": 1,
+        "role": "Q",
+        "text": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+        "turn": 9
+      },
+      {
+        "id": "T9-A1",
+        "line": 18,
+        "n": 1,
+        "role": "A",
+        "text": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background.",
+        "turn": 9
+      },
+      {
+        "id": "T10-Q1",
+        "line": 19,
+        "n": 1,
+        "role": "Q",
+        "text": "Can you describe a recent time when these experiences affected your work or studies?",
+        "turn": 10
+      },
+      {
+        "id": "T10-A1",
+        "line": 20,
+        "n": 1,
+        "role": "A",
+        "text": "Work is mostly okay, though the odd thing slips. Nothing dramatic, just the occasional missed email or turning up flustered. I muddle through.",
+        "turn": 10
+      },
+      {
+        "id": "T11-Q1",
+        "line": 21,
+        "n": 1,
+        "role": "Q",
+        "text": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+        "turn": 11
+      },
+      {
+        "id": "T11-A1",
+        "line": 22,
+        "n": 1,
+        "role": "A",
+        "text": "I think people notice I drift off sometimes. Nobody has made a big thing of it. My sister teases me about never listening, but that is just sisters, probably.",
+        "turn": 11
+      },
+      {
+        "id": "T12-Q1",
+        "line": 23,
+        "n": 1,
+        "role": "Q",
+        "text": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+        "turn": 12
+      },
+      {
+        "id": "T12-A1",
+        "line": 24,
+        "n": 1,
+        "role": "A",
+        "text": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though.",
+        "turn": 12
+      },
+      {
+        "id": "T13-Q1",
+        "line": 25,
+        "n": 1,
+        "role": "Q",
+        "text": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+        "turn": 13
+      },
+      {
+        "id": "T13-A1",
+        "line": 26,
+        "n": 1,
+        "role": "A",
+        "text": "I have got phone reminders set for most things, which sort of works when I actually look at them. Sometimes I just swipe them away and forget anyway, so it is hit and miss.",
+        "turn": 13
+      },
+      {
+        "id": "T14-Q1",
+        "line": 27,
+        "n": 1,
+        "role": "Q",
+        "text": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+        "turn": 14
+      },
+      {
+        "id": "T14-A1",
+        "line": 28,
+        "n": 1,
+        "role": "A",
+        "text": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next, I have never done anything like this before.",
+        "turn": 14
+      }
+    ],
+    "turns_answered": 14
+  },
+  "meta": {
+    "cost": "0 (dummy provider \u2014 no model spend)",
+    "exported_at": "2026-10-29T23:42:15.488954+00:00",
+    "headline": "Vague short answers",
+    "latency_ms": {
+      "max": 228.9,
+      "mean": 202.6
+    },
+    "model": {
+      "model": "dummy-stub",
+      "provider": "dummy"
+    },
+    "note": "Generated through the real API with a scripted synthetic patient. Quotes are exact interview output, never hand-edited.",
+    "patient_kind": "dummy",
+    "person_behaviors": [
+      "vague",
+      "short-answers"
+    ],
+    "profile_id": "vague-01",
+    "proves": "Follow-ups turn thin answers into checkable evidence.",
+    "screening_method": "original-0-6",
+    "screening_score": 3,
+    "skill_version": "skill-v0.4-draft",
+    "synthetic": true,
+    "taxonomy_version": "taxonomy-v0.2-draft",
+    "topic_version": "topics-v0.4-draft",
+    "turns": 14,
+    "watermark": "SYNTHETIC DEMO \u2014 not a real person"
+  },
+  "screening": {
+    "answers": [
+      {
+        "answer": "Sometimes",
+        "counted": true,
+        "n": "1",
+        "question": "How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?"
+      },
+      {
+        "answer": "Sometimes",
+        "counted": true,
+        "n": "2",
+        "question": "How often do you have difficulty getting things in order when you have to do a task that requires organization?"
+      },
+      {
+        "answer": "Never",
+        "counted": false,
+        "n": "3",
+        "question": "How often do you have problems remembering appointments or obligations?"
+      },
+      {
+        "answer": "Often",
+        "counted": true,
+        "n": "4",
+        "question": "When you have a task that requires a lot of thought, how often do you avoid or delay getting started?"
+      },
+      {
+        "answer": "Rarely",
+        "counted": false,
+        "n": "5",
+        "question": "How often do you fidget or squirm with your hands or feet when you have to sit down for a long time?"
+      },
+      {
+        "answer": "Sometimes",
+        "counted": false,
+        "n": "6",
+        "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
+      }
+    ],
+    "assessment_id": "4785A5KJ",
+    "completed_at": "2026-10-29T23:42:09.853000",
+    "cutoff": 4,
+    "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
+    "instrument": "asrs-v1.1-6q",
+    "interview_offer": {
+      "next_stage": "interview",
+      "note": "Your screening answers carry forward \u2014 you will not need to repeat them.",
+      "offered": true
+    },
+    "next_section": {
+      "intro": "What happens next: you will be asked several questions, one at a time, covering the following topics. Answer in your own words. If you cannot recall something, say so \u2014 you will not be pressed, and gaps are recorded as gaps.",
+      "topics": [
+        "Attention, organization, and getting things done",
+        "Restlessness and activity",
+        "Background and history over time",
+        "Impact on work, education, and relationships",
+        "Sleep, mood, health, and other context",
+        "Strategies and support you use"
+      ]
+    },
+    "positive": false,
+    "report_version": 1,
+    "score": 3,
+    "scoring_method": "original-0-6",
+    "scoring_version": "WHO-Adult-ASRS-v1.1-PartA-shaded-2003/Q1-3>=Sometimes-Q4-6>=Often-cutoff4;NYU-attribution-2026-10;owner-verified-vs-NYU-patient-facing-shaded-PDF-2026-10-27",
+    "threshold_description": "Q1-Q3: Sometimes/Often/Very often; Q4-Q6: Often/Very often; positive if >=4 of 6"
+  }
+}

@@ -1,0 +1,1021 @@
+{
+  "briefing": {
+    "assessment_id": "4TKSQMHD",
+    "banner": "Draft-topics briefing (unreviewed). This summarizes what was reported in an interview using draft topics that are not clinically reviewed. It is not a clinical assessment. Only a qualified clinician can determine what explains a person's experiences.",
+    "completed_at": "2026-10-29T23:42:21.232000",
+    "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
+    "contradictions": [
+      {
+        "areas": [
+          "Sustaining attention",
+          "Organization and time",
+          "Starting and finishing tasks",
+          "Forgetfulness in daily life",
+          "Restlessness and staying with one thing",
+          "Acting quickly and patience"
+        ],
+        "clarified": true,
+        "denial_turn": 1,
+        "family": "functioning",
+        "note": "revisited in a round-2 follow-up; both accounts retained",
+        "present_turn": 5
+      }
+    ],
+    "coverage": [
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "attention-focus",
+        "status": "denied",
+        "title": "Sustaining attention",
+        "turns": [
+          1,
+          15
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "organization",
+        "status": "denied",
+        "title": "Organization and time",
+        "turns": [
+          2
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "task-completion",
+        "status": "denied",
+        "title": "Starting and finishing tasks",
+        "turns": [
+          3
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "forgetfulness",
+        "status": "denied",
+        "title": "Forgetfulness in daily life",
+        "turns": [
+          4
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "restlessness",
+        "status": "covered",
+        "title": "Restlessness and staying with one thing",
+        "turns": [
+          5
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "impulsivity",
+        "status": "denied",
+        "title": "Acting quickly and patience",
+        "turns": [
+          6
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "childhood-onset",
+        "status": "denied",
+        "title": "Childhood and school years",
+        "turns": [
+          7
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "persistence-course",
+        "status": "denied",
+        "title": "How things changed over time",
+        "turns": [
+          8
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "settings",
+        "status": "denied",
+        "title": "Different settings",
+        "turns": [
+          9
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "impact-work",
+        "status": "denied",
+        "title": "Impact on work or study",
+        "turns": [
+          10
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "impact-relationships",
+        "status": "denied",
+        "title": "Impact on relationships and daily life",
+        "turns": [
+          11
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "context-factors",
+        "status": "covered",
+        "title": "Sleep, stress, mood, and health context",
+        "turns": [
+          12
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "strategies",
+        "status": "covered",
+        "title": "Strategies and support",
+        "turns": [
+          13
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "background-goals",
+        "status": "covered",
+        "title": "Background and goals",
+        "turns": [
+          14
+        ]
+      }
+    ],
+    "gaps": [],
+    "kind": "interview",
+    "report_version": 1,
+    "skill_version": "skill-v0.4-draft",
+    "statements": [
+      {
+        "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+        "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 1
+      },
+      {
+        "answer": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work comment on it.",
+        "question": "How do you find organizing your time, your tasks, or your belongings?",
+        "turn": 2
+      },
+      {
+        "answer": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about with staring at a task and not beginning.",
+        "question": "What kinds of tasks are hardest for you to start or finish?",
+        "turn": 3
+      },
+      {
+        "answer": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good.",
+        "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+        "turn": 4
+      },
+      {
+        "answer": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else.",
+        "question": "When you need to sit still or stay with one thing, what is that like for you?",
+        "turn": 5
+      },
+      {
+        "answer": "No, I am a patient person. I wait my turn and think before I speak. Nobody would call me impulsive.",
+        "question": "How are you with waiting your turn, or holding back when you want to jump in?",
+        "turn": 6
+      },
+      {
+        "answer": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is nothing to dig up there.",
+        "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+        "turn": 7
+      },
+      {
+        "answer": "No, there is no course to describe, because there has never been a problem. Things have been steady all along.",
+        "question": "How have these kinds of experiences changed over the years, as far as you can tell?",
+        "turn": 8
+      },
+      {
+        "answer": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine.",
+        "question": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+        "turn": 9
+      },
+      {
+        "answer": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise.",
+        "question": "Can you describe a recent time when these experiences affected your work or studies?",
+        "turn": 10
+      },
+      {
+        "answer": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters.",
+        "question": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+        "turn": 11
+      },
+      {
+        "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+        "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+        "turn": 12
+      },
+      {
+        "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+        "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+        "turn": 13
+      },
+      {
+        "answer": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of.",
+        "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+        "turn": 14
+      },
+      {
+        "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+        "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 15
+      }
+    ],
+    "system_notes": [
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "attention-focus",
+        "reason": "cover Sustaining attention (attention-focus) in fixed order",
+        "turn": 1
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "organization",
+        "reason": "cover Organization and time (organization) in fixed order",
+        "turn": 2
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "task-completion",
+        "reason": "cover Starting and finishing tasks (task-completion) in fixed order",
+        "turn": 3
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "forgetfulness",
+        "reason": "cover Forgetfulness in daily life (forgetfulness) in fixed order",
+        "turn": 4
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "restlessness",
+        "reason": "cover Restlessness and staying with one thing (restlessness) in fixed order",
+        "turn": 5
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impulsivity",
+        "reason": "cover Acting quickly and patience (impulsivity) in fixed order",
+        "turn": 6
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "childhood-onset",
+        "reason": "cover Childhood and school years (childhood-onset) in fixed order",
+        "turn": 7
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "persistence-course",
+        "reason": "cover How things changed over time (persistence-course) in fixed order",
+        "turn": 8
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "settings",
+        "reason": "cover Different settings (settings) in fixed order",
+        "turn": 9
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impact-work",
+        "reason": "cover Impact on work or study (impact-work) in fixed order",
+        "turn": 10
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impact-relationships",
+        "reason": "cover Impact on relationships and daily life (impact-relationships) in fixed order",
+        "turn": 11
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "context-factors",
+        "reason": "cover Sleep, stress, mood, and health context (context-factors) in fixed order",
+        "turn": 12
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "strategies",
+        "reason": "cover Strategies and support (strategies) in fixed order",
+        "turn": 13
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "background-goals",
+        "reason": "cover Background and goals (background-goals) in fixed order",
+        "turn": 14
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "attention-focus",
+        "reason": "Clarify functioning accounts together: turn 1 reported no difficulty while turn 5 described difficulty; one neutral question, accept either account",
+        "turn": 15
+      }
+    ],
+    "topic_version": "topics-v0.4-draft",
+    "topics": [
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "attention-focus",
+        "status": "denied",
+        "title": "Sustaining attention",
+        "turns": [
+          {
+            "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 2,
+                "quote": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+                "review_status": "pending",
+                "segment_id": "T1-A1"
+              }
+            ],
+            "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+            "turn": 1
+          },
+          {
+            "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 30,
+                "quote": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+                "review_status": "pending",
+                "segment_id": "T15-A1"
+              }
+            ],
+            "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+            "turn": 15
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "organization",
+        "status": "denied",
+        "title": "Organization and time",
+        "turns": [
+          {
+            "answer": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work comment on it.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 4,
+                "quote": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work comment on it.",
+                "review_status": "pending",
+                "segment_id": "T2-A1"
+              }
+            ],
+            "question": "How do you find organizing your time, your tasks, or your belongings?",
+            "turn": 2
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "task-completion",
+        "status": "denied",
+        "title": "Starting and finishing tasks",
+        "turns": [
+          {
+            "answer": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about with staring at a task and not beginning.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 6,
+                "quote": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about with staring at a task and not beginning.",
+                "review_status": "pending",
+                "segment_id": "T3-A1"
+              }
+            ],
+            "question": "What kinds of tasks are hardest for you to start or finish?",
+            "turn": 3
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "forgetfulness",
+        "status": "denied",
+        "title": "Forgetfulness in daily life",
+        "turns": [
+          {
+            "answer": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 8,
+                "quote": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good.",
+                "review_status": "pending",
+                "segment_id": "T4-A1"
+              }
+            ],
+            "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+            "turn": 4
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "restlessness",
+        "status": "covered",
+        "title": "Restlessness and staying with one thing",
+        "turns": [
+          {
+            "answer": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 10,
+                "quote": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else.",
+                "review_status": "pending",
+                "segment_id": "T5-A1"
+              }
+            ],
+            "question": "When you need to sit still or stay with one thing, what is that like for you?",
+            "turn": 5
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "impulsivity",
+        "status": "denied",
+        "title": "Acting quickly and patience",
+        "turns": [
+          {
+            "answer": "No, I am a patient person. I wait my turn and think before I speak. Nobody would call me impulsive.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 12,
+                "quote": "No, I am a patient person. I wait my turn and think before I speak. Nobody would call me impulsive.",
+                "review_status": "pending",
+                "segment_id": "T6-A1"
+              }
+            ],
+            "question": "How are you with waiting your turn, or holding back when you want to jump in?",
+            "turn": 6
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "childhood-onset",
+        "status": "denied",
+        "title": "Childhood and school years",
+        "turns": [
+          {
+            "answer": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is nothing to dig up there.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 14,
+                "quote": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is nothing to dig up there.",
+                "review_status": "pending",
+                "segment_id": "T7-A1"
+              }
+            ],
+            "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+            "turn": 7
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "persistence-course",
+        "status": "denied",
+        "title": "How things changed over time",
+        "turns": [
+          {
+            "answer": "No, there is no course to describe, because there has never been a problem. Things have been steady all along.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 16,
+                "quote": "No, there is no course to describe, because there has never been a problem. Things have been steady all along.",
+                "review_status": "pending",
+                "segment_id": "T8-A1"
+              }
+            ],
+            "question": "How have these kinds of experiences changed over the years, as far as you can tell?",
+            "turn": 8
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "settings",
+        "status": "denied",
+        "title": "Different settings",
+        "turns": [
+          {
+            "answer": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 18,
+                "quote": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine.",
+                "review_status": "pending",
+                "segment_id": "T9-A1"
+              }
+            ],
+            "question": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+            "turn": 9
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "impact-work",
+        "status": "denied",
+        "title": "Impact on work or study",
+        "turns": [
+          {
+            "answer": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 20,
+                "quote": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise.",
+                "review_status": "pending",
+                "segment_id": "T10-A1"
+              }
+            ],
+            "question": "Can you describe a recent time when these experiences affected your work or studies?",
+            "turn": 10
+          }
+        ]
+      },
+      {
+        "note": "difficulty denied; accepted as reported",
+        "objective": "impact-relationships",
+        "status": "denied",
+        "title": "Impact on relationships and daily life",
+        "turns": [
+          {
+            "answer": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters.",
+            "observations": [
+              {
+                "assertion": "explicitly-denied",
+                "criterion_links": [],
+                "line": 22,
+                "quote": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters.",
+                "review_status": "pending",
+                "segment_id": "T11-A1"
+              }
+            ],
+            "question": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+            "turn": 11
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "context-factors",
+        "status": "covered",
+        "title": "Sleep, stress, mood, and health context",
+        "turns": [
+          {
+            "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 24,
+                "quote": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+                "review_status": "pending",
+                "segment_id": "T12-A1"
+              }
+            ],
+            "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+            "turn": 12
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "strategies",
+        "status": "covered",
+        "title": "Strategies and support",
+        "turns": [
+          {
+            "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 26,
+                "quote": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+                "review_status": "pending",
+                "segment_id": "T13-A1"
+              }
+            ],
+            "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+            "turn": 13
+          }
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "background-goals",
+        "status": "covered",
+        "title": "Background and goals",
+        "turns": [
+          {
+            "answer": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of.",
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 28,
+                "quote": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of.",
+                "review_status": "pending",
+                "segment_id": "T14-A1"
+              }
+            ],
+            "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+            "turn": 14
+          }
+        ]
+      }
+    ],
+    "transcript": [
+      {
+        "id": "T1-Q1",
+        "line": 1,
+        "n": 1,
+        "role": "Q",
+        "text": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 1
+      },
+      {
+        "id": "T1-A1",
+        "line": 2,
+        "n": 1,
+        "role": "A",
+        "text": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+        "turn": 1
+      },
+      {
+        "id": "T2-Q1",
+        "line": 3,
+        "n": 1,
+        "role": "Q",
+        "text": "How do you find organizing your time, your tasks, or your belongings?",
+        "turn": 2
+      },
+      {
+        "id": "T2-A1",
+        "line": 4,
+        "n": 1,
+        "role": "A",
+        "text": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work comment on it.",
+        "turn": 2
+      },
+      {
+        "id": "T3-Q1",
+        "line": 5,
+        "n": 1,
+        "role": "Q",
+        "text": "What kinds of tasks are hardest for you to start or finish?",
+        "turn": 3
+      },
+      {
+        "id": "T3-A1",
+        "line": 6,
+        "n": 1,
+        "role": "A",
+        "text": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about with staring at a task and not beginning.",
+        "turn": 3
+      },
+      {
+        "id": "T4-Q1",
+        "line": 7,
+        "n": 1,
+        "role": "Q",
+        "text": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+        "turn": 4
+      },
+      {
+        "id": "T4-A1",
+        "line": 8,
+        "n": 1,
+        "role": "A",
+        "text": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good.",
+        "turn": 4
+      },
+      {
+        "id": "T5-Q1",
+        "line": 9,
+        "n": 1,
+        "role": "Q",
+        "text": "When you need to sit still or stay with one thing, what is that like for you?",
+        "turn": 5
+      },
+      {
+        "id": "T5-A1",
+        "line": 10,
+        "n": 1,
+        "role": "A",
+        "text": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else.",
+        "turn": 5
+      },
+      {
+        "id": "T6-Q1",
+        "line": 11,
+        "n": 1,
+        "role": "Q",
+        "text": "How are you with waiting your turn, or holding back when you want to jump in?",
+        "turn": 6
+      },
+      {
+        "id": "T6-A1",
+        "line": 12,
+        "n": 1,
+        "role": "A",
+        "text": "No, I am a patient person. I wait my turn and think before I speak. Nobody would call me impulsive.",
+        "turn": 6
+      },
+      {
+        "id": "T7-Q1",
+        "line": 13,
+        "n": 1,
+        "role": "Q",
+        "text": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+        "turn": 7
+      },
+      {
+        "id": "T7-A1",
+        "line": 14,
+        "n": 1,
+        "role": "A",
+        "text": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is nothing to dig up there.",
+        "turn": 7
+      },
+      {
+        "id": "T8-Q1",
+        "line": 15,
+        "n": 1,
+        "role": "Q",
+        "text": "How have these kinds of experiences changed over the years, as far as you can tell?",
+        "turn": 8
+      },
+      {
+        "id": "T8-A1",
+        "line": 16,
+        "n": 1,
+        "role": "A",
+        "text": "No, there is no course to describe, because there has never been a problem. Things have been steady all along.",
+        "turn": 8
+      },
+      {
+        "id": "T9-Q1",
+        "line": 17,
+        "n": 1,
+        "role": "Q",
+        "text": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+        "turn": 9
+      },
+      {
+        "id": "T9-A1",
+        "line": 18,
+        "n": 1,
+        "role": "A",
+        "text": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine.",
+        "turn": 9
+      },
+      {
+        "id": "T10-Q1",
+        "line": 19,
+        "n": 1,
+        "role": "Q",
+        "text": "Can you describe a recent time when these experiences affected your work or studies?",
+        "turn": 10
+      },
+      {
+        "id": "T10-A1",
+        "line": 20,
+        "n": 1,
+        "role": "A",
+        "text": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise.",
+        "turn": 10
+      },
+      {
+        "id": "T11-Q1",
+        "line": 21,
+        "n": 1,
+        "role": "Q",
+        "text": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+        "turn": 11
+      },
+      {
+        "id": "T11-A1",
+        "line": 22,
+        "n": 1,
+        "role": "A",
+        "text": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters.",
+        "turn": 11
+      },
+      {
+        "id": "T12-Q1",
+        "line": 23,
+        "n": 1,
+        "role": "Q",
+        "text": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+        "turn": 12
+      },
+      {
+        "id": "T12-A1",
+        "line": 24,
+        "n": 1,
+        "role": "A",
+        "text": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+        "turn": 12
+      },
+      {
+        "id": "T13-Q1",
+        "line": 25,
+        "n": 1,
+        "role": "Q",
+        "text": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+        "turn": 13
+      },
+      {
+        "id": "T13-A1",
+        "line": 26,
+        "n": 1,
+        "role": "A",
+        "text": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+        "turn": 13
+      },
+      {
+        "id": "T14-Q1",
+        "line": 27,
+        "n": 1,
+        "role": "Q",
+        "text": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+        "turn": 14
+      },
+      {
+        "id": "T14-A1",
+        "line": 28,
+        "n": 1,
+        "role": "A",
+        "text": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of.",
+        "turn": 14
+      },
+      {
+        "id": "T15-Q1",
+        "line": 29,
+        "n": 1,
+        "role": "Q",
+        "text": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 15
+      },
+      {
+        "id": "T15-A1",
+        "line": 30,
+        "n": 1,
+        "role": "A",
+        "text": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+        "turn": 15
+      }
+    ],
+    "turns_answered": 15
+  },
+  "meta": {
+    "cost": "0 (dummy provider \u2014 no model spend)",
+    "exported_at": "2026-10-29T23:42:23.849009+00:00",
+    "headline": "Denies difficulties, offers an alternative explanation",
+    "latency_ms": {
+      "max": 214.3,
+      "mean": 194.3
+    },
+    "model": {
+      "model": "dummy-stub",
+      "provider": "dummy"
+    },
+    "note": "Generated through the real API with a scripted synthetic patient. Quotes are exact interview output, never hand-edited.",
+    "patient_kind": "dummy",
+    "person_behaviors": [
+      "denials",
+      "alternative-explanations"
+    ],
+    "profile_id": "denier-01",
+    "proves": "Denials are recorded as denied \u2014 never flipped into absence of evidence.",
+    "screening_method": "original-0-6",
+    "screening_score": 0,
+    "skill_version": "skill-v0.4-draft",
+    "synthetic": true,
+    "taxonomy_version": "taxonomy-v0.2-draft",
+    "topic_version": "topics-v0.4-draft",
+    "turns": 15,
+    "watermark": "SYNTHETIC DEMO \u2014 not a real person"
+  },
+  "screening": {
+    "answers": [
+      {
+        "answer": "Never",
+        "counted": false,
+        "n": "1",
+        "question": "How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?"
+      },
+      {
+        "answer": "Rarely",
+        "counted": false,
+        "n": "2",
+        "question": "How often do you have difficulty getting things in order when you have to do a task that requires organization?"
+      },
+      {
+        "answer": "Never",
+        "counted": false,
+        "n": "3",
+        "question": "How often do you have problems remembering appointments or obligations?"
+      },
+      {
+        "answer": "Never",
+        "counted": false,
+        "n": "4",
+        "question": "When you have a task that requires a lot of thought, how often do you avoid or delay getting started?"
+      },
+      {
+        "answer": "Sometimes",
+        "counted": false,
+        "n": "5",
+        "question": "How often do you fidget or squirm with your hands or feet when you have to sit down for a long time?"
+      },
+      {
+        "answer": "Rarely",
+        "counted": false,
+        "n": "6",
+        "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
+      }
+    ],
+    "assessment_id": "4TKSQMHD",
+    "completed_at": "2026-10-29T23:42:15.875000",
+    "cutoff": 4,
+    "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
+    "instrument": "asrs-v1.1-6q",
+    "interview_offer": {
+      "next_stage": "interview",
+      "note": "Your screening answers carry forward \u2014 you will not need to repeat them.",
+      "offered": true
+    },
+    "next_section": {
+      "intro": "What happens next: you will be asked several questions, one at a time, covering the following topics. Answer in your own words. If you cannot recall something, say so \u2014 you will not be pressed, and gaps are recorded as gaps.",
+      "topics": [
+        "Attention, organization, and getting things done",
+        "Restlessness and activity",
+        "Background and history over time",
+        "Impact on work, education, and relationships",
+        "Sleep, mood, health, and other context",
+        "Strategies and support you use"
+      ]
+    },
+    "positive": false,
+    "report_version": 1,
+    "score": 0,
+    "scoring_method": "original-0-6",
+    "scoring_version": "WHO-Adult-ASRS-v1.1-PartA-shaded-2003/Q1-3>=Sometimes-Q4-6>=Often-cutoff4;NYU-attribution-2026-10;owner-verified-vs-NYU-patient-facing-shaded-PDF-2026-10-27",
+    "threshold_description": "Q1-Q3: Sometimes/Often/Very often; Q4-Q6: Often/Very often; positive if >=4 of 6"
+  }
+}
