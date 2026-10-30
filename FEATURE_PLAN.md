@@ -352,6 +352,13 @@ in the final batch, briefings show evidence-grounded coverage and clarified
 contradictions. Probe accounting moved from model-reason sniffing to a
 stored `probe` marker after a triple-clarification bug.
 
+**Rework (30 Oct 2026): per-answer background extraction.** Each saved answer
+schedules `extract_single_turn` (idempotent, best-effort) while the user
+reads the next question; the batch's `_extract_missing` dedupes and only
+fills gaps, then synthesizes + phrases. Round 1 stays a pure conversation
+(results unused until the batch). `62 passed, 1 skipped`; batch now logs
+extraction time (`batch extraction done … evidence in …s`).
+
 ## 10. Interview quality and recovery controls
 
 **Deliver:** Question validation, repetition limits, neutral clarification, interruption handling, and a defined risk-disclosure behavior for the intended deployment.

@@ -194,7 +194,9 @@ async def test_transcript_and_evidence_lifecycle(client):
     assert first.json()["completed"] is False  # round 1 continues, no analysis yet
     version = first.json()["version"]
 
-    # Transcript preserves wording and formatting; nothing extracted yet.
+    # Transcript preserves wording and formatting. Evidence for turn 1 may or
+    # may not have landed yet (per-answer background extraction) — either is
+    # correct; the batch deduplicates.
     t = (await client.get(f"{base}/interview/transcript", headers=headers)).json()
     texts = [s["text"] for s in t["segments"]]
     assert any("stay focused" in x for x in texts)
@@ -205,7 +207,11 @@ async def test_transcript_and_evidence_lifecycle(client):
     assert [s["line"] for s in t["segments"]] == [1, 2, 3, 4]
     assert t["lines"] == 4
     ev = (await client.get(f"{base}/interview/evidence", headers=headers)).json()
-    assert ev["turns"] == []
+    assert ev["turns"] == [] or (
+        len(ev["turns"]) == 1
+        and ev["turns"][0]["turn"] == 1
+        and ev["turns"][0]["observations"][0]["quote"] in texts
+    )
 
     # Same-key replay neither duplicates transcript segments nor changes state.
     replay = await client.post(

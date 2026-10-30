@@ -15,6 +15,11 @@ job (after the response): per-turn extraction, deterministic synthesis
 the final briefing. Concurrency/idempotency mirror the screening
 endpoint: writes match only the exact base_version with an unseen
 idempotency key; replays return the stored result; otherwise 409.
+
+Latency design: each answered turn schedules a background extraction for
+just that turn while the user reads the next question. The end-of-round
+batch therefore usually finds most evidence already stored (idempotent
+dedupe) and only synthesizes + phrases the first follow-up.
 """
 
 import json
@@ -25,7 +30,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
 from .. import interview as planner
-from ..assessment import run_round_assessment
+from ..assessment import extract_single_turn, run_round_assessment
 from ..db import get_db
 from ..interview import (
     ANSWER_MAX_LEN,
@@ -174,6 +179,19 @@ def _prefetch_session(iv: dict, pending_turn: int, objective: str, fallback: dic
     if pre and pre.get("for_turn") == pending_turn + 1 and pre.get("objective") == objective:
         return pre.get("session") or fallback
     return fallback
+
+
+async def _extract_task(assessment_id: str, turn: int) -> None:
+    """Background per-turn extraction. Best-effort: never fails the loop.
+
+    Scheduled after each answer write while the user reads the next
+    question. Idempotent with the batch job's _extract_missing (existing
+    turn docs are kept), so a turn extracted here is skipped there.
+    """
+    try:
+        await extract_single_turn(get_db(), assessment_id, turn)
+    except Exception:  # noqa: BLE001 - background work only logs
+        log.warning("background extract task failed for %s turn %d", assessment_id, turn)
 
 
 async def _prefetch_task(assessment_id: str, expected_answered: int, expected_pending_turn: int) -> None:
@@ -507,6 +525,9 @@ async def submit_answer(
         # No prefetch on inline-probe turns: the probe answer decides the
         # plan, so the live path asks it with full context.
         background.add_task(_prefetch_task, result["_id"], len(new_history), next_turn_doc["turn"])
+    # Extract this turn's evidence in the background while the user reads
+    # on. Idempotent with the batch: whichever lands first wins.
+    background.add_task(_extract_task, result["_id"], answered_turn["turn"])
     return _answer_result_from_doc(result, result["version"])
 
 
@@ -534,6 +555,7 @@ def _sse(event: str, payload: dict) -> str:
 async def submit_answer_stream(
     assessment_id: str,
     body: InterviewAnswerRequest,
+    background: BackgroundTasks,
     doc: dict = Depends(require_assessment),
 ):
     """Staged-event stream for answer submission (Change 1).
@@ -692,6 +714,9 @@ async def submit_answer_stream(
         # Batch job is triggered by GET .../assessment polling (self-healing).
         # Prefetch for the following turn is triggered by the client via
         # POST .../interview/prefetch once it holds the new question.
+        # Per-turn extraction is scheduled here (turn number is known
+        # upfront); it no-ops harmlessly if the write above lost a race.
+        background.add_task(_extract_task, assessment_id, pending["turn"])
         result = _answer_result_from_doc(result_doc, result_doc["version"])
         yield _sse("done", result.model_dump())
 
@@ -699,6 +724,7 @@ async def submit_answer_stream(
         _events(),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        background=background,
     )
 
 

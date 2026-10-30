@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import time
 from datetime import datetime, timezone
 
 from .briefing import build_interview_briefing
@@ -171,6 +172,47 @@ async def write_assess_progress(db, assessment_id: str, done: int, total: int) -
     )
 
 
+async def extract_single_turn(db, assessment_id: str, turn_number: int) -> dict | None:
+    """Extract evidence for one answered turn. Idempotent, best-effort.
+
+    Runs as a per-answer background task while the user reads the next
+    question, so the end-of-round batch usually finds this turn already
+    done and only synthesizes. Returns the evidence doc, or None when
+    there is nothing to extract (unknown turn, no segments, model
+    failure — the batch treats that as pending and retries it there).
+    Never raises: background work must not break the interview loop.
+    """
+    try:
+        if await db["evidence"].find_one({"_id": f"{assessment_id}:turn:{turn_number}"}):
+            return await db["evidence"].find_one({"_id": f"{assessment_id}:turn:{turn_number}"})
+        doc = await db["assessments"].find_one({"_id": assessment_id})
+        turns = (doc.get("interview") or {}).get("turns", []) if doc else []
+        turn = next((t for t in turns if t.get("turn") == turn_number), None)
+        if turn is None or not turn.get("answer"):
+            return None
+        tdoc = await db["transcripts"].find_one({"_id": assessment_id})
+        segments = [s for s in (tdoc.get("segments", []) if tdoc else []) if s.get("turn") == turn_number]
+        if not segments:
+            return None
+        try:
+            result, info = await extract_turn(
+                objective=turn["objective"],
+                segments=segments,
+                answer=turn.get("answer") or "",
+                session_id=assessment_id,
+            )
+        except Exception as exc:  # noqa: BLE001 - pending is a valid outcome
+            log.warning("background extraction pending for %s turn %d: %s", assessment_id, turn_number, type(exc).__name__)
+            return None
+        covered = sorted({t["objective"] for t in turns if t.get("turn", 0) <= turn_number})
+        objectives = {t["objective"] for t in turns}
+        gaps = [o for o in PLAN_ORDER if o not in objectives]
+        return await upsert_evidence(db, assessment_id=assessment_id, turn=turn_number, result=result, info=info, covered=covered, gaps=gaps)
+    except Exception:  # noqa: BLE001 - background extraction never fails the loop
+        log.warning("background extraction failed for %s turn %d", assessment_id, turn_number)
+        return None
+
+
 async def _extract_missing(db, assessment_id: str, turns: list[dict]) -> list[dict]:
     """Extract observations for turns without evidence docs (bounded parallel)."""
     tdoc = await db["transcripts"].find_one({"_id": assessment_id})
@@ -247,9 +289,14 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
         return (current.get("interview") or {}).get("assessment") or {"status": "unknown"}
 
     await write_assess_progress(db, assessment_id, 0, len(turns))
+    job_started = time.monotonic()
     now = datetime.now(timezone.utc)
     try:
         evidence_turns = await _extract_missing(db, assessment_id, turns)
+        log.info(
+            "batch extraction done for %s: %d/%d evidence in %.1fs (background pre-extracted the rest)",
+            assessment_id, len(evidence_turns), len(turns), time.monotonic() - job_started,
+        )
         coverage = coverage_from_evidence(turns, evidence_turns)
         tensions = tensions_from_evidence(turns, evidence_turns)
         followups = build_followups(turns, evidence_turns, tensions) if rounds_done == 0 else []

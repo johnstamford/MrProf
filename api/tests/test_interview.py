@@ -388,6 +388,76 @@ async def test_assess_progress_writer(client):
     assert res.json()["extracted"] == 3 and res.json()["extract_total"] == 14
 
 
+async def test_extract_single_turn_writes_and_dedupes(client):
+    from app.assessment import extract_single_turn
+    from app.db import get_db
+
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+    res = await client.post(
+        f"{base}/interview/answer",
+        json={"answer_text": "a substantive answer with concrete detail", "base_version": 2, "idempotency_key": f"fk5-ext-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
+
+    db = get_db()
+    first = await extract_single_turn(db, created["assessment_id"], 1)
+    assert first is not None and first["turn"] == 1
+    obs = first["versions"][-1]["observations"][0]
+    tdoc = await db["transcripts"].find_one({"_id": created["assessment_id"]})
+    seg_text = next(s["text"] for s in tdoc["segments"] if s["id"] == obs["segment_id"])
+    assert obs["quote"] and obs["quote"] in seg_text
+
+    # Idempotent: second call returns the stored doc, no duplicate.
+    second = await extract_single_turn(db, created["assessment_id"], 1)
+    assert second["_id"] == first["_id"] and second["versions"] == first["versions"]
+    assert await db["evidence"].count_documents({"assessment_id": created["assessment_id"]}) == 1
+
+    # Unknown turn: nothing to extract, never raises.
+    assert await extract_single_turn(db, created["assessment_id"], 99) is None
+
+
+async def test_preextracted_turns_skip_batch_redo(client):
+    from app.assessment import extract_single_turn
+    from app.db import get_db
+
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+
+    # Answer two turns, pre-extract both like the background task would.
+    version = 2
+    for i in range(2):
+        res = await client.post(
+            f"{base}/interview/answer",
+            json={"answer_text": f"pre-extracted detailed answer {i}", "base_version": version, "idempotency_key": f"fk5-pre-{uuid.uuid4().hex[:8]}"},
+            headers=headers,
+        )
+        assert res.status_code == 200, res.text
+        version = res.json()["version"]
+    db = get_db()
+    for tn in (1, 2):
+        assert await extract_single_turn(db, created["assessment_id"], tn) is not None
+    assert await db["evidence"].count_documents({"assessment_id": created["assessment_id"]}) == 2
+
+    # Finish round 1; the batch must reuse the pre-extracted docs and complete.
+    for i in range(2, len(PLAN_ORDER)):
+        res = await client.post(
+            f"{base}/interview/answer",
+            json={"answer_text": f"answer number {i} with some detail", "base_version": version, "idempotency_key": f"fk5-pre-{uuid.uuid4().hex[:8]}"},
+            headers=headers,
+        )
+        assert res.status_code == 200, res.text
+        version = res.json()["version"]
+    final = await _poll_assessment(client, base, headers)
+    assert final["status"] in ("followup", "complete")
+    assert final["extract_total"] == len(PLAN_ORDER) and final["extracted"] == len(PLAN_ORDER)
+
+
 async def _set_prefetch(client, created, prefetch: dict | None) -> None:
     from app.db import get_db
 
