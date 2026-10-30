@@ -160,6 +160,63 @@ def _needs_detail_invite(last_answer: str | None) -> bool:
     return polarity(last_answer) == "thin"
 
 
+def detail_score(answer: str | None, quality=None, fields_filled: int = 0) -> int:
+    """Rate one answer's usefulness for evidence, 0-3 (rubric, not a vibe).
+
+    0 = empty/evasion ("meh"); 1 = position stated but generic — including
+    plain denials and "can't recall", which are complete answers;
+    2 = substantive account; 3 = grounded (concrete example and/or stated
+    context). Polarity sets the base; the interviewer's advisory quality
+    rating can lift it; extractor fields (period/setting/frequency/note
+    actually filled) confirm level 3. Ground truth stays the stored
+    evidence — if the model claims detail but extraction yields nothing,
+    extraction wins (fields_filled stays 0).
+    """
+    pol = polarity(answer)
+    if pol in ("empty", "thin"):
+        base = 0
+    elif pol in ("denial-like", "uncertain-like"):
+        base = 1
+    else:
+        base = 2
+    # quality may be an AnswerQuality, a stored dict of one, or None.
+    detail = None
+    if isinstance(quality, dict):
+        detail = quality.get("detail")
+    elif quality is not None:
+        detail = getattr(quality, "detail", None)
+    if isinstance(detail, bool):
+        detail = None
+    if isinstance(detail, int):
+        base = max(base, min(max(detail, 0), 2))
+    if base >= 2 and fields_filled >= 2:
+        return 3
+    return base
+
+
+# Effort nudge: after this many consecutive thin answers the next question
+# carries a supportive banner (frontend-rendered) asking for more concrete
+# detail. Denials and uncertainty break the chain — they are complete
+# answers and must never trigger it. Once per round max; never nag.
+EFFORT_NUDGE_STREAK = 3
+EFFORT_NUDGE_MARK_ROUND1 = "effort_nudge:round1"
+EFFORT_NUDGE_MARK_ROUND2 = "effort_nudge:round2"
+
+
+def nudge_round(turns: list[dict]) -> str:
+    """Which round the interview is in: round2 once a follow-up was answered."""
+    if any((t.get("probe") or "") == "followup" for t in turns):
+        return "round2"
+    return "round1"
+
+
+def needs_effort_nudge(turns: list[dict], nudge_shown: bool = False) -> bool:
+    """True after EFFORT_NUDGE_STREAK consecutive thin answers, once per round."""
+    if nudge_shown or len(turns) < EFFORT_NUDGE_STREAK:
+        return False
+    return all(polarity(t.get("answer")) == "thin" for t in turns[-EFFORT_NUDGE_STREAK:])
+
+
 def family_tensions(turns: list[dict]) -> list[dict]:
     """Detect families with both present-like and denial-like answers.
 
@@ -187,7 +244,7 @@ def family_tensions(turns: list[dict]) -> list[dict]:
 
 
 def plan_next(
-    turns: list[dict], followups: list[dict] | None = None
+    turns: list[dict], followups: list[dict] | None = None, nudge_shown: bool = False
 ) -> tuple[str, str, bool, dict | None]:
     """Return (objective_id, reason, complete, hint). Pure function of turns.
 
@@ -197,9 +254,11 @@ def plan_next(
     Round 2 works through the follow-up queue set by the batch assessment
     (each item: objective, reason, optional tension). hint carries tension
     text for neutral clarification phrasing, {"kind": "inline"} for an
-    inline probe, else None. Probe decisions are deterministic code over
-    the turns (including answer text for the thin check only); the model
-    only phrases.
+    inline probe, else None. hint may also carry effort_nudge: True after
+    EFFORT_NUDGE_STREAK consecutive thin answers (denials/uncertainty break
+    the chain; caller passes nudge_shown so it fires once per round).
+    Probe and nudge decisions are deterministic code over the turns
+    (including answer text for the thin check only); the model only phrases.
     """
     followups = followups or []
     n = len(turns)
@@ -212,22 +271,28 @@ def plan_next(
             probed = {t["objective"] for t in turns if (t.get("probe") or "") == "inline"}
             if last["objective"] not in probed and used < INLINE_PROBE_BUDGET:
                 title = load_topics()[last["objective"]].get("title", last["objective"])
+                hint: dict = {"kind": "inline"}
+                if needs_effort_nudge(turns, nudge_shown):
+                    hint["effort_nudge"] = True
                 return (
                     last["objective"],
                     f"invite one concrete detail about {title} ({last['objective']}), once, no pressure",
                     False,
-                    {"kind": "inline"},
+                    hint,
                 )
     asked = [t["objective"] for t in turns]
     unasked = [o for o in PLAN_ORDER if o not in asked]
     if unasked:
         obj = unasked[0]
         title = load_topics()[obj].get("title", obj)
-        return obj, f"cover {title} ({obj}) in fixed order", False, None
+        hint: dict | None = {"effort_nudge": True} if needs_effort_nudge(turns, nudge_shown) else None
+        return obj, f"cover {title} ({obj}) in fixed order", False, hint
     consumed = sum(1 for t in turns if (t.get("probe") or "") == "followup")
     if consumed < len(followups):
         item = followups[consumed]
         hint = {"kind": "followup", "tension": item.get("tension")} if item.get("tension") else {"kind": "followup"}
+        if needs_effort_nudge(turns, nudge_shown):
+            hint["effort_nudge"] = True
         return item["objective"], item["reason"], False, hint
     return "", f"all objectives and {len(followups)} follow-ups explored after {n} answered turns", True, None
 
@@ -315,5 +380,14 @@ def build_prompt(
             "example for this objective, once, without pressuring. A short question "
             "add-on is enough; do not lecture about answer length."
         )
-    lines.append('Reply with JSON ONLY: {"question_text","objective","reason"}.')
+    if history and history[-1].get("answer"):
+        lines.append(
+            "Also rate the last answer's usefulness for evidence as "
+            '"answer_quality": {"detail": 0-2, "has_example": true/false, '
+            '"has_context": true/false}. 0 = one-word/evasion, 1 = position '
+            "stated but generic (plain denials and 'can't recall' are complete "
+            "answers — rate them 1, never 0), 2 = concrete example and/or "
+            "stated context. Rate generously; this only guides supportive follow-ups."
+        )
+    lines.append('Reply with JSON ONLY: {"question_text","objective","reason","answer_quality"}.')
     return lines

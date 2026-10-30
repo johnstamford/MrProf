@@ -23,7 +23,9 @@ from app.interview import (  # noqa: E402
     TOPIC_VERSION,
     _needs_detail_invite,
     build_prompt,
+    detail_score,
     family_tensions,
+    needs_effort_nudge,
     plan_next,
 )
 from app.llm import is_dummy, load_config, parse_llm_json  # noqa: E402
@@ -129,8 +131,9 @@ def test_unit_inline_probe_once_per_objective_and_budget():
         _turn(3, PLAN_ORDER[1], "x"),
     ]
     # PLAN_ORDER[0] already probed; PLAN_ORDER[1] thin and unprobed -> probe it.
+    # (Three consecutive thin answers also trip the effort nudge, which rides along.)
     obj, _, done, hint = plan_next(asked, [])
-    assert (obj, done, hint) == (PLAN_ORDER[1], False, {"kind": "inline"})
+    assert (obj, done, hint) == (PLAN_ORDER[1], False, {"kind": "inline", "effort_nudge": True})
 
     asked = []
     for i in range(3):
@@ -224,6 +227,74 @@ def test_unit_reasoning_effort_options():
     assert "reasoning" not in chat_options(LLMConfig(), None)
     assert "reasoning" not in chat_options(LLMConfig(), "off")
     assert chat_options(LLMConfig(json_mode="off"), "minimal") == {"reasoning": {"effort": "minimal"}}
+
+
+def test_unit_answer_quality_parse():
+    from app.llm import AnswerQuality, parse_llm_json
+
+    good = parse_llm_json(
+        '{"question_text": "What tasks are hardest?", "reason": "why now", '
+        '"answer_quality": {"detail": 2, "has_example": true, "has_context": false}}',
+        "attention-focus",
+    )
+    assert good.answer_quality == AnswerQuality(detail=2, has_example=True, has_context=False)
+    # Absent quality degrades to None; the question still parses.
+    assert parse_llm_json('{"question_text": "What is hardest?", "reason": "why"}', "attention-focus").answer_quality is None
+    # Malformed quality degrades to None; the question still parses.
+    for raw in ('{"detail": 9}', '{"detail": "lots"}', "[1]", '"high"'):
+        q = parse_llm_json(
+            '{"question_text": "What is hardest?", "reason": "why", "answer_quality": ' + raw + "}", "attention-focus"
+        )
+        assert q.answer_quality is None, raw
+    # A bad question still fails loudly even with good quality.
+    try:
+        parse_llm_json('{"question_text": "x", "answer_quality": {"detail": 2}}', "attention-focus")
+    except Exception:
+        pass
+    else:
+        raise AssertionError("expected LLMError for short question_text")
+
+
+def test_unit_detail_score_levels():
+    from app.llm import AnswerQuality
+
+    assert detail_score("") == 0
+    assert detail_score("meh") == 0
+    # Denials and uncertainty are complete answers: level 1, never 0.
+    assert detail_score("No") == 1
+    assert detail_score("I cannot recall any of that, sorry") == 1
+    assert detail_score("A substantive detailed answer indeed yes") == 2
+    # Advisory LLM rating can lift a longer vague answer, capped at 2.
+    assert detail_score("meh", AnswerQuality(detail=0)) == 0
+    assert detail_score("No", AnswerQuality(detail=0)) == 1
+    assert detail_score("meh meh meh meh meh meh!", AnswerQuality(detail=2)) == 2
+    # Extractor-confirmed context lifts to grounded; claims alone never do.
+    assert detail_score("A substantive detailed answer indeed yes", AnswerQuality(detail=2), 0) == 2
+    assert detail_score("A substantive detailed answer indeed yes", AnswerQuality(detail=2), 2) == 3
+    assert detail_score("A substantive detailed answer indeed yes", None, 5) == 3
+    # Stored dict form (as persisted on turns) works too.
+    assert detail_score("meh meh meh meh meh meh!", {"detail": 2}, 0) == 2
+    assert detail_score("anything", {"detail": 9}, 0) == 2
+
+
+def test_unit_effort_nudge_rule():
+    def _t(ans):
+        return {"objective": PLAN_ORDER[0], "answer": ans}
+
+    assert needs_effort_nudge([_t("meh"), _t("meh")]) is False  # streak too short
+    assert needs_effort_nudge([_t("meh")] * 3) is True
+    assert needs_effort_nudge([_t("meh")] * 3, nudge_shown=True) is False  # once per round
+    assert needs_effort_nudge([_t("meh"), _t("meh"), _t("No")]) is False  # denial breaks chain
+    assert needs_effort_nudge([_t("meh"), _t("meh"), _t("I cannot recall, sorry")]) is False  # uncertainty breaks chain
+    assert needs_effort_nudge([_t("a substantive detailed answer indeed")] * 3) is False
+
+    obj, _, done, hint = plan_next([_t("meh")] * 3, [])
+    assert done is False and (hint or {}).get("effort_nudge") is True
+    assert obj == PLAN_ORDER[0] and hint.get("kind") == "inline"  # nudge rides along; planning is unchanged
+    _, _, _, hint2 = plan_next([_t("meh")] * 3, [], nudge_shown=True)
+    assert not (hint2 or {}).get("effort_nudge")
+    _, _, _, hint3 = plan_next([_t("a substantive detailed answer indeed")] * 3, [])
+    assert not (hint3 or {}).get("effort_nudge")
 
 
 def test_unit_dummy_config_and_strict_parse():
@@ -784,3 +855,56 @@ async def test_answer_stream_replay_and_conflict(client):
     )
     assert bad.status_code == 422
     assert (await client.post(f"{base}/interview/answer/stream", json={"answer_text": "x", "base_version": 3, "idempotency_key": "k-12345678"})).status_code == 401
+
+
+async def test_effort_nudge_after_three_thin_answers(client):
+    from app.db import get_db
+
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+
+    version = 2
+    nudged_at = None
+    for i in range(5):
+        res = await client.post(
+            f"{base}/interview/answer",
+            json={"answer_text": "meh", "base_version": version, "idempotency_key": f"fk5-nudge-{uuid.uuid4().hex[:8]}"},
+            headers=headers,
+        )
+        assert res.status_code == 200, res.text
+        body = res.json()
+        version = body["version"]
+        if body["question"] and body["question"].get("effort_nudge") is True and nudged_at is None:
+            nudged_at = i
+    # Streak of 3 thin answers triggers the nudge on the 4th question...
+    assert nudged_at == 2, f"nudge fired at answer index {nudged_at}"
+    doc = await get_db()["assessments"].find_one({"_id": created["assessment_id"]})
+    assert "effort_nudge:round1" in (doc["interview"].get("nudges_shown") or [])
+    # ...and only once per round: the 5th question carries no nudge.
+    res = await client.post(
+        f"{base}/interview/answer",
+        json={"answer_text": "meh", "base_version": version, "idempotency_key": f"fk5-nudge-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
+    assert res.json()["question"].get("effort_nudge") is not True
+
+
+async def test_no_nudge_for_denials_or_detailed_answers(client):
+    created = await _create(client)
+    headers = _auth(created["password"])
+    base = f"/assessments/{created['assessment_id']}"
+    await _start(client, created, version=1)
+
+    version = 2
+    for ans in ("No", "No, never an issue", "I cannot recall, sorry"):
+        res = await client.post(
+            f"{base}/interview/answer",
+            json={"answer_text": ans, "base_version": version, "idempotency_key": f"fk5-nonudge-{uuid.uuid4().hex[:8]}"},
+            headers=headers,
+        )
+        assert res.status_code == 200, res.text
+        version = res.json()["version"]
+        assert res.json()["question"].get("effort_nudge") is not True

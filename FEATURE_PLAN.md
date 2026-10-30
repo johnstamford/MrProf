@@ -391,6 +391,15 @@ hackathon + 2-day opening; F10b is deferred post-hackathon.
 **Depends on:** 9. Real-user release remains blocked on F13-min below;
 full clinical risk workflow (F10b) stays post-hackathon.
 
+**Progress (30 Oct 2026): answer detail + effort nudge built and verified.**
+`AnswerQuality` (detail 0–2, has_example, has_context) piggybacks on the
+existing interview JSON — zero extra calls; malformed quality degrades to
+None, never fails the turn. `detail_score()` 0–3 rubric (polarity base, LLM
+lift capped at 2, extractor fields-filled confirms 3). After 3 consecutive
+thin answers the next question carries `effort_nudge` (supportive banner,
+escape hatch included); denials/uncertainty break the chain and never
+trigger it; once per round max. Full suite 67 passed, 1 skipped.
+
 ## 11. Final reports and basic clinician review
 
 **Deliver:** Final screening and evidence reports, source navigation, review annotations/corrections, and download behavior.
@@ -421,6 +430,10 @@ clinician-approved` banner + printable HTML + JSON export. PDF and
 multi-patient dashboard explicitly deferred. Take-to-doctor copy gets interim
 psychology-student review before the 2-day opening, labeled as interim, not a
 clinical endorsement.
+
+**Progress (30 Oct 2026):** briefing carries `detail_summary`
+(level_counts 0–3, grounded_turns, total_turns), rendered as one honest line
+in the shared briefing component (conditional — frozen demo JSON unaffected).
 
 ## 12. Independent evaluation and refinement
 

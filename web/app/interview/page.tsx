@@ -15,6 +15,7 @@ type Question = {
   model_name: string;
   skill_version: string;
   topic_version: string;
+  effort_nudge?: boolean;
 };
 
 type NextState = {
@@ -526,6 +527,14 @@ export default function InterviewPage() {
       ) : (
       question && (
         <section aria-label={`Question ${question.turn}`} className="mt-4 rounded-2xl border border-line bg-card p-5 sm:p-8">
+          {question.effort_nudge && (
+            <p role="note" className="mb-4 rounded-xl border border-uncertain/40 bg-uncertain-tint px-4 py-3 text-sm leading-relaxed">
+              <strong>A quick note before this one:</strong> to get the most out of
+              your briefing, concrete detail helps a lot — one example of when this
+              happened and what followed. Short answers are still accepted, and
+              “I can’t remember” is always a valid answer.
+            </p>
+          )}
           <p className="font-serif text-xl font-semibold leading-snug sm:text-2xl">{question.text}</p>
           <label className="mt-5 block">
             <span className="text-sm font-semibold">Your answer</span>

@@ -65,10 +65,37 @@ class LLMConfig(BaseModel):
     extractor_timeout_s: int = DEFAULT_EXTRACT_TIMEOUT_S
 
 
+class AnswerQuality(BaseModel):
+    """Rating of one answer's usefulness for evidence (0-2 + flags).
+
+    0 = one-word/evasion ("meh"); 1 = position stated but generic
+    (including plain denials and "can't recall" — complete answers);
+    2 = concrete example and/or stated context. Advisory only.
+    """
+
+    detail: int = Field(default=0, ge=0, le=2)
+    has_example: bool = False
+    has_context: bool = False
+
+
 class LLMQuestion(BaseModel):
     question_text: str = Field(min_length=3, max_length=500)
     objective: str = Field(min_length=1, max_length=64)
     reason: str = Field(min_length=3, max_length=500)
+    # Optional rating of the just-given answer's usefulness for evidence.
+    # Advisory only: the deterministic planner decides what to do with it.
+    # None when the model omits it (e.g. first question) or it is malformed.
+    answer_quality: AnswerQuality | None = None
+
+
+def _parse_quality(raw: object) -> AnswerQuality | None:
+    """Lenient quality parse: malformed quality degrades to None, never fails the turn."""
+    if not isinstance(raw, dict):
+        return None
+    try:
+        return AnswerQuality.model_validate(raw)
+    except ValueError:
+        return None
 
 
 class LLMError(Exception):
@@ -174,14 +201,22 @@ def parse_llm_json(text: str, objective: str) -> LLMQuestion:
             "configuration or use LLM_PROVIDER=dummy.",
         )
     data.setdefault("objective", objective)
+    raw_quality = data.pop("answer_quality", None)
+    return parse_llm_json_with_quality(data, objective, raw_quality)
+
+
+def parse_llm_json_with_quality(data: dict, objective: str, raw_quality: object) -> LLMQuestion:
+    """Validate the question strictly; quality leniently (None on any defect)."""
     try:
-        return LLMQuestion.model_validate(data)
+        question = LLMQuestion.model_validate(data)
     except ValueError as exc:
         raise LLMError(
             "malformed_output",
             "Model output failed validation (one question + objective + reason "
             f"required): {exc}. Check the model or use LLM_PROVIDER=dummy.",
         )
+    question.answer_quality = _parse_quality(raw_quality)
+    return question
 
 
 async def generate_next_question(

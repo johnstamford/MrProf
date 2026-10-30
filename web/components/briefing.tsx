@@ -47,6 +47,7 @@ export type Briefing = {
   }[];
   gaps: { area: string; status: string }[];
   transcript: Segment[];
+  detail_summary?: { level_counts: number[]; grounded_turns: number; total_turns: number };
 };
 
 /** Full interview briefing: shared evidence system for the real report (also mirrored by /demo/[id]). */
@@ -69,6 +70,17 @@ export default function BriefingView({ briefing }: { briefing: Briefing }) {
         {covered ? ` — ${covered} with a detailed account` : ""}.
         Everything below comes from what was written; quotes are exact and line-numbered so each point can be checked.
       </p>
+      {briefing.detail_summary && briefing.detail_summary.total_turns > 0 && (
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-faint">
+          Answer detail: {briefing.detail_summary.grounded_turns} of{" "}
+          {briefing.detail_summary.total_turns} answers included a concrete
+          example or stated context;{" "}
+          {(briefing.detail_summary.level_counts[0] ?? 0) +
+            (briefing.detail_summary.level_counts[1] ?? 0)}{" "}
+          were brief or position-only. Thin answers are recorded as gaps, not
+          as negative findings.
+        </p>
+      )}
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)_260px]">
         <div className="no-print">

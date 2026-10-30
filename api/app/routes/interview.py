@@ -75,6 +75,25 @@ def _question_out(turn_doc: dict) -> InterviewQuestionOut:
         model_name=turn_doc["model_name"],
         skill_version=turn_doc["skill_version"],
         topic_version=turn_doc["topic_version"],
+        effort_nudge=bool(turn_doc.get("effort_nudge", False)),
+    )
+
+
+def _nudge_shown(iv: dict, turns: list[dict]) -> bool:
+    """Whether the effort nudge already fired this round (once-per-round cap)."""
+    mark = (
+        planner.EFFORT_NUDGE_MARK_ROUND2
+        if planner.nudge_round(turns) == "round2"
+        else planner.EFFORT_NUDGE_MARK_ROUND1
+    )
+    return mark in (iv.get("nudges_shown") or [])
+
+
+def _nudge_mark(turns: list[dict]) -> str:
+    return (
+        planner.EFFORT_NUDGE_MARK_ROUND2
+        if planner.nudge_round(turns) == "round2"
+        else planner.EFFORT_NUDGE_MARK_ROUND1
     )
 
 
@@ -101,11 +120,13 @@ def _replay_result(doc: dict, key: str) -> dict | None:
 async def _generate(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None, hint: dict | None = None) -> tuple:
     """Run the InterviewAgent for the planner-assigned objective.
 
-    Returns (question, model_info, session_blob, probe) where probe is the
+    Returns (question, model_info, session_blob, probe, quality) where probe is the
     deterministic marker (None, "followup", "inline", or "clarify:<family>")
     stored on the turn for stop-rule accounting. "followup" marks round-2
     queue items; "inline" marks round-1 thin-answer probes (excluded from
-    round-2 queue accounting).
+    round-2 queue accounting). quality is the interviewer's advisory rating
+    of the just-given answer (dict or None) — stored on the answered turn
+    for detail reporting; never drives planning on its own.
     """
     cfg = load_config()
     last_answer = history[-1].get("answer") if history else None
@@ -125,7 +146,8 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
     )
     kind = hint.get("kind")
     probe = f"clarify:{hint['family']}" if kind == "clarify" else (kind if kind in ("followup", "inline") else None)
-    return question, model_info, session_blob, probe
+    quality = question.answer_quality.model_dump() if question.answer_quality is not None else None
+    return question, model_info, session_blob, probe, quality
 
 
 async def _phrase_for_job(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None, tension: str | None = None) -> tuple:
@@ -167,6 +189,7 @@ def _consume_prefetch(iv: dict, pending_turn: int, objective: str) -> dict | Non
         "question": pre["question"],
         "answer": None,
         "probe": pre.get("probe"),
+        "effort_nudge": bool(pre.get("effort_nudge", False)),
         "model_provider": pre.get("model_provider", "dummy"),
         "model_name": pre.get("model_name", "dummy-stub"),
         "skill_version": pre.get("skill_version", SKILL_VERSION),
@@ -222,12 +245,13 @@ async def _prefetch_task(assessment_id: str, expected_answered: int, expected_pe
         # prefetch is scheduled on probe turns, so that gap never matters.
         pseudo = list(turns) + [{"objective": current["objective"]}]
         queue = iv.get("followups") or []
-        objective, reason, done, hint = planner.plan_next(pseudo, queue)
+        objective, reason, done, hint = planner.plan_next(pseudo, queue, _nudge_shown(iv, pseudo))
         if done:
             return
-        question, model_info, session_blob, probe = await _generate(
+        question, model_info, session_blob, probe, quality = await _generate(
             assessment_id, objective, reason, turns, doc.get("screening"), hint=hint,
         )
+        nudge = bool((hint or {}).get("effort_nudge", False))
         prefetch = {
             "for_turn": expected_pending_turn + 1,
             "objective": objective,
@@ -235,19 +259,36 @@ async def _prefetch_task(assessment_id: str, expected_answered: int, expected_pe
             "question": question.question_text,
             "answer": None,
             "probe": probe,
+            "effort_nudge": nudge,
             "model_provider": model_info["provider"],
             "model_name": model_info["model"],
             "skill_version": SKILL_VERSION,
             "topic_version": TOPIC_VERSION,
             "session": session_blob,
         }
+        update: dict = {"interview.prefetch": prefetch}
+        array_filters = None
+        if nudge:
+            marks = list(iv.get("nudges_shown") or [])
+            mark = _nudge_mark(pseudo)
+            if mark not in marks:
+                marks.append(mark)
+            update["interview.nudges_shown"] = marks
+        if quality is not None and turns:
+            # Backfill the advisory rating onto the already-saved answered
+            # turn (the live path stores it inline; prefetch covers the
+            # consumed-prefetch path). Best-effort: a miss just leaves the
+            # turn to polarity + extractor scoring.
+            update["interview.turns.$[t].quality"] = quality
+            array_filters = [{"t.turn": turns[-1]["turn"]}]
         await db["assessments"].update_one(
             {
                 "_id": assessment_id,
                 "interview.turns": {"$size": expected_answered},
                 "interview.prefetch": None,
             },
-            {"$set": {"interview.prefetch": prefetch}},
+            {"$set": update},
+            array_filters=array_filters,
         )
     except Exception:  # noqa: BLE001 - prefetch never fails the interview loop
         log.warning("prefetch failed for %s", assessment_id)
@@ -278,7 +319,7 @@ async def start_interview(
         )
     objective, reason, _, _ = planner.plan_next([])
     try:
-        question, model_info, session_blob, _ = await _generate(
+        question, model_info, session_blob, _, _ = await _generate(
             assessment_id, objective, reason, [], doc.get("screening")
         )
     except LLMError as exc:
@@ -418,7 +459,7 @@ async def submit_answer(
         schedule_assessment = True
     else:
         completed = False
-        objective, reason, done, hint = planner.plan_next(new_history, queue)
+        objective, reason, done, hint = planner.plan_next(new_history, queue, _nudge_shown(iv, new_history))
         if done and assessed_turns != len(new_history):
             # Round complete but not yet assessed -> run the batch job.
             next_turn_doc = None
@@ -436,7 +477,7 @@ async def submit_answer(
                 session_blob = _prefetch_session(iv, pending["turn"], objective, session_blob)
             else:
                 try:
-                    question, model_info, session_blob, probe = await _generate(
+                    question, model_info, session_blob, probe, quality = await _generate(
                         assessment_id, objective, reason, new_history, doc.get("screening"),
                         hint=hint,
                     )
@@ -446,6 +487,7 @@ async def submit_answer(
                     raise HTTPException(
                         status_code=exc.status, detail={"error": exc.code, "message": exc.message}
                     )
+                answered_turn["quality"] = quality
                 next_turn_doc = {
                     "turn": pending["turn"] + 1,
                     "objective": question.objective,
@@ -453,6 +495,7 @@ async def submit_answer(
                     "question": question.question_text,
                     "answer": None,
                     "probe": probe,
+                    "effort_nudge": bool((hint or {}).get("effort_nudge", False)),
                     "model_provider": model_info["provider"],
                     "model_name": model_info["model"],
                     "skill_version": SKILL_VERSION,
@@ -466,6 +509,11 @@ async def submit_answer(
         new_status = "complete"
     else:
         new_status = "followup" if queue else "active"
+    marks = list(iv.get("nudges_shown") or [])
+    if next_turn_doc is not None and next_turn_doc.get("effort_nudge"):
+        mark = _nudge_mark(new_history)
+        if mark not in marks:
+            marks.append(mark)
     result = await col.find_one_and_update(
         {
             "_id": doc["_id"],
@@ -481,6 +529,7 @@ async def submit_answer(
                 "interview.current": next_turn_doc,
                 "interview.session": session_blob,
                 "interview.prefetch": None,
+                "interview.nudges_shown": marks,
                 "interview.updated_at": now,
             },
             "$push": {
@@ -617,7 +666,7 @@ async def submit_answer_stream(
         if len(new_history) >= HARD_TURN_CAP or len(new_history) >= MAX_TURNS:
             schedule_assessment = True
         else:
-            objective, reason, done, hint = planner.plan_next(new_history, queue)
+            objective, reason, done, hint = planner.plan_next(new_history, queue, _nudge_shown(iv, new_history))
             if done and assessed_turns != len(new_history):
                 schedule_assessment = True
             elif done:
@@ -630,13 +679,14 @@ async def submit_answer_stream(
                 else:
                     yield _sse("phrasing", {"objective": objective, "reason": reason})
                     try:
-                        question, model_info, session_blob, probe = await _generate(
+                        question, model_info, session_blob, probe, quality = await _generate(
                             assessment_id, objective, reason, new_history,
                             doc.get("screening"), hint=hint,
                         )
                     except LLMError as exc:
                         yield _sse("error", {"error": exc.code, "message": exc.message})
                         return
+                    answered_turn["quality"] = quality
                     next_turn_doc = {
                         "turn": pending["turn"] + 1,
                         "objective": question.objective,
@@ -644,6 +694,7 @@ async def submit_answer_stream(
                         "question": question.question_text,
                         "answer": None,
                         "probe": probe,
+                        "effort_nudge": bool((hint or {}).get("effort_nudge", False)),
                         "model_provider": model_info["provider"],
                         "model_name": model_info["model"],
                         "skill_version": SKILL_VERSION,
@@ -660,6 +711,11 @@ async def submit_answer_stream(
             new_status = "complete"
         else:
             new_status = "followup" if queue else "active"
+        marks = list((iv.get("nudges_shown") or []))
+        if next_turn_doc is not None and next_turn_doc.get("effort_nudge"):
+            mark = _nudge_mark(new_history)
+            if mark not in marks:
+                marks.append(mark)
         result_doc = await col.find_one_and_update(
             {
                 "_id": doc["_id"],
@@ -675,6 +731,7 @@ async def submit_answer_stream(
                     "interview.current": next_turn_doc,
                     "interview.session": session_blob,
                     "interview.prefetch": None,
+                    "interview.nudges_shown": marks,
                     "interview.updated_at": now,
                 },
                 "$push": {

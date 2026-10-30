@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .interview import FAMILIES, PLAN_ORDER, load_topics
+from .interview import FAMILIES, PLAN_ORDER, detail_score, load_topics
 
 BRIEFING_BANNER = (
     "Draft-topics briefing (unreviewed). This summarizes what was reported "
@@ -66,6 +66,25 @@ def build_interview_briefing(
     for doc in evidence_turns:
         latest = doc["versions"][-1]
         obs_by_turn.setdefault(doc["turn"], []).extend(latest["observations"])
+    # Detail summary: per-turn 0-3 score from answer polarity + the
+    # interviewer's advisory quality + actually-filled extractor fields.
+    # Missing quality or evidence degrades gracefully to polarity alone.
+    level_counts = [0, 0, 0, 0]
+    for t in turns:
+        filled = sum(
+            1
+            for obs in obs_by_turn.get(t["turn"], [])
+            for field in ("period", "setting", "frequency", "note")
+            if obs.get(field)
+        )
+        quality = t.get("quality")
+        level = detail_score(t.get("answer"), quality, filled)
+        level_counts[min(max(level, 0), 3)] += 1
+    detail_summary = {
+        "level_counts": level_counts,
+        "grounded_turns": level_counts[3],
+        "total_turns": len(turns),
+    }
     turns_by_objective: dict[str, list[dict]] = {}
     for t in turns:
         turns_by_objective.setdefault(t["objective"], []).append(t)
@@ -132,6 +151,7 @@ def build_interview_briefing(
         "banner": BRIEFING_BANNER,
         "completion_note": COMPLETION_NOTE,
         "turns_answered": len(turns),
+        "detail_summary": detail_summary,
         "topics": topic_entries,
         "statements": [
             {"turn": t["turn"], "question": t["question"], "answer": t["answer"]}

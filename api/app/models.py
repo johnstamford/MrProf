@@ -124,6 +124,9 @@ class InterviewQuestionOut(BaseModel):
     model_name: str
     skill_version: str
     topic_version: str
+    # Supportive effort banner (frontend-rendered) after repeated thin
+    # answers. Never set for denials/uncertainty; at most once per round.
+    effort_nudge: bool = False
 
 
 class InterviewStartResult(BaseModel):
@@ -223,6 +226,12 @@ class BriefingTopic(BaseModel):
     turns: list[BriefingTopicTurn] = Field(default_factory=list)
 
 
+class BriefingDetailSummary(BaseModel):
+    level_counts: list[int] = Field(default_factory=lambda: [0, 0, 0, 0])
+    grounded_turns: int = 0
+    total_turns: int = 0
+
+
 class InterviewBriefingOut(BaseModel):
     assessment_id: str
     report_version: int
@@ -239,6 +248,7 @@ class InterviewBriefingOut(BaseModel):
     contradictions: list[BriefingContradiction] = Field(default_factory=list)
     gaps: list[BriefingGap]
     transcript: list[TranscriptSegment] = Field(default_factory=list)
+    detail_summary: BriefingDetailSummary = Field(default_factory=BriefingDetailSummary)
     completed_at: datetime
 
 
