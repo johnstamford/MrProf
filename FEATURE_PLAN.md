@@ -435,6 +435,21 @@ clinical endorsement.
 (level_counts 0–3, grounded_turns, total_turns), rendered as one honest line
 in the shared briefing component (conditional — frozen demo JSON unaffected).
 
+**Progress (1 Nov 2026): F11-min reviewer annotate built and verified.**
+`PATCH .../interview/evidence/{turn}/observations/{index}`
+(`api/app/routes/review.py`): accept/amend/reject (+note, required for
+amend) with `expected_version` concurrency (stale → 409, same review →
+replayed), auth via assessment Bearer. Writes only to `evidence`
+(`review_status`/`review_note`/`reviewed_at` on the latest version) and
+mirrors into the latest stored interview briefing; transcripts and
+screening never written (test-asserted byte-identical). Observations carry
+stable `obs_index`. UI: `EvidenceCard` shows review chip + note and
+Accept/Amend/Reject controls only when `onReview` is passed (real
+briefing on `/interview` fetches evidence versions, PATCHes, refetches the
+report); `/demo` stays read-only. Mandatory `UNREVIEWED — not
+clinician-approved` chip above the sticky banner on every briefing.
+`tests/test_review.py`: 4 passed. PDF + dashboard stay deferred.
+
 **Progress (1 Nov 2026): question validation/regen built and verified.**
 `api/app/question_validation.py`: pure-code checks — off-objective /
 already-answered (objective-field mismatch), repeated (normalized exact
@@ -523,6 +538,30 @@ can access, no monitoring), manual delete-by-`assessment_id` verified across
 linked records, rate/input caps, Tunnel HTTPS + Mongo private, invite-link
 only with no report-sharing by default, public synthetic example briefing.
 Full retention/backup/policy and clinician risk workflow stay post-hackathon.
+
+**Status (1 Nov 2026): ✅ done — implemented and verified.**
+- Consent: `api/app/consent.py` single source of truth naming the
+  configured model; public `GET /consent` + `GET /config`; `web/app/consent`
+  page renders from the API; `/start` requires invite (when configured) +
+  consent checkbox, sends `invite_code`/`consent_accepted`/`consent_version`.
+  `REQUIRE_CONSENT=1` enforces current-version consent (else 422);
+  `PUBLIC_INVITE_CODE` set enforces invite match (else 403, constant-time
+  compare). All report/answer/review endpoints already behind assessment
+  Bearer auth — no public-by-default links.
+- Deletion: `DELETE /assessments/{id}` removes assessment + transcript +
+  all evidence + all reports (counts returned); second call → 404,
+  cross-auth → 401. Cascade verified in-test (≥6 evidence, ≥2 reports gone).
+- Caps: in-memory per-IP POST sliding window (`RATE_LIMIT_PER_MIN`,
+  default 2000 dev, 60 for the opening; 429 + `rate_limited`), 2000-char
+  answer cap, bounded retries/budgets unchanged.
+- Deploy: Mongo private (no published ports, inherited); `api`
+  localhost-only; `docker-compose.opening.yml` adds the cloudflared
+  sidecar (fails fast without `TUNNEL_TOKEN`; overlay `config` validated);
+  `docs/opening.md` runbook: synthetic check first, invite distribution,
+  deletion procedure, closing DB wipe, limitations.
+- `tests/test_opening.py`: 6 passed (consent/config, both gates,
+  cascade, isolation, 429). Full suite 89 passed, 1 skipped;
+  `npm run build` green (incl. `/consent`).
 
 ## 14. MVP polish and launch
 

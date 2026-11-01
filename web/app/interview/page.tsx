@@ -44,6 +44,8 @@ export default function InterviewPage() {
   const [stage, setStage] = useState(0);
   const [mode, setMode] = useState<"full" | "taster">("full");
   const [assessProgress, setAssessProgress] = useState<{ done: number; total: number } | null>(null);
+  const [reviewingKey, setReviewingKey] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const STAGES = ["Saving your answer…", "Thinking…", "Preparing the next question…"];
 
@@ -496,7 +498,40 @@ export default function InterviewPage() {
           Your interview briefing
         </h1>
         <div className="mt-4">
-          <BriefingView briefing={briefing} />
+          <BriefingView
+            briefing={briefing}
+            reviewingKey={reviewingKey}
+            reviewError={reviewError}
+            onReview={async (turn, obsIndex, action, note) => {
+              const auth = authHeaders();
+              if (!auth) return;
+              const key = `${turn}:${obsIndex}`;
+              setReviewingKey(key);
+              setReviewError(null);
+              try {
+                const { session, headers } = auth;
+                const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+                const ev = await fetch(`${base}/interview/evidence`, { headers });
+                if (!ev.ok) throw new Error(`could not load evidence (${ev.status})`);
+                const turns = ((await ev.json()) as { turns: { turn: number; version: number }[] }).turns;
+                const match = turns.find((t) => t.turn === turn);
+                if (!match) throw new Error("evidence for this answer is missing");
+                const res = await fetch(`${base}/interview/evidence/${turn}/observations/${obsIndex}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json", ...headers },
+                  body: JSON.stringify({ action, note, expected_version: match.version }),
+                });
+                if (res.status === 409) throw new Error("changed underneath — reloading the briefing");
+                if (!res.ok) throw new Error(`review failed (${res.status})`);
+                const rep = await fetch(`${base}/interview/report`, { headers });
+                if (rep.ok) setBriefing((await rep.json()) as Briefing);
+              } catch (e) {
+                setReviewError(e instanceof Error ? e.message : "review failed — please try again");
+              } finally {
+                setReviewingKey(null);
+              }
+            }}
+          />
         </div>
         <div className="no-print mt-4"><RiskNote /></div>
         <p className="no-print mt-8 flex flex-wrap gap-3 border-t border-line pt-6">

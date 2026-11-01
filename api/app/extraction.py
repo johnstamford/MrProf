@@ -268,6 +268,11 @@ async def upsert_evidence(db, *, assessment_id: str, turn: int, result: Extracti
     if existing is not None:
         return existing
     now = datetime.now(timezone.utc)
+    observations = []
+    for i, o in enumerate(result.observations):
+        dumped = o.model_dump()
+        dumped["obs_index"] = i
+        observations.append(dumped)
     doc = {
         "_id": f"{assessment_id}:turn:{turn}",
         "assessment_id": assessment_id,
@@ -278,7 +283,7 @@ async def upsert_evidence(db, *, assessment_id: str, turn: int, result: Extracti
                 "version": 1,
                 "taxonomy_version": TAXONOMY_VERSION,
                 "extractor": info,
-                "observations": [o.model_dump() for o in result.observations],
+                "observations": observations,
                 "coverage": {"covered": covered, "gaps": gaps},
                 "created_at": now,
             }

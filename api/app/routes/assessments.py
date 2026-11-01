@@ -6,15 +6,18 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pymongo.errors import DuplicateKeyError
 
 from ..auth import ID_ATTEMPTS, hash_secret, new_assessment_id, verify_secret
+from ..consent import CONSENT_VERSION
 from ..db import get_db
 from ..models import (
     STAGES,
     AssessmentCreateRequest,
     AssessmentCreated,
     AssessmentOut,
+    DeleteResult,
     StageUpdate,
     StageUpdateResult,
 )
+from ..opening import check_invite, consent_required
 
 router = APIRouter(prefix="/assessments", tags=["assessments"])
 
@@ -41,6 +44,15 @@ async def require_assessment(
 
 @router.post("", response_model=AssessmentCreated, status_code=201)
 async def create_assessment(body: AssessmentCreateRequest) -> AssessmentCreated:
+    if not check_invite(body.invite_code):
+        raise HTTPException(status_code=403, detail={"error": "invite_required"})
+    if consent_required() and (
+        not body.consent_accepted or body.consent_version != CONSENT_VERSION
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail={"error": "consent_required", "consent_version": CONSENT_VERSION},
+        )
     for _ in range(ID_ATTEMPTS):
         assessment_id = new_assessment_id()
         now = _now()
@@ -52,6 +64,11 @@ async def create_assessment(body: AssessmentCreateRequest) -> AssessmentCreated:
                     "version": 1,
                     "stage": "created",
                     "status": "in_progress",
+                    "consent": (
+                        {"version": body.consent_version, "accepted_at": now}
+                        if body.consent_accepted
+                        else None
+                    ),
                     "idem": [],
                     "created_at": now,
                     "updated_at": now,
@@ -62,6 +79,7 @@ async def create_assessment(body: AssessmentCreateRequest) -> AssessmentCreated:
                 version=1,
                 stage="created",
                 status="in_progress",
+                consent_version=body.consent_version if body.consent_accepted else "",
             )
         except DuplicateKeyError:
             continue
@@ -77,6 +95,32 @@ async def get_assessment(doc: dict = Depends(require_assessment)) -> AssessmentO
         status=doc["status"],
         created_at=doc["created_at"],
         updated_at=doc["updated_at"],
+    )
+
+
+@router.delete("/{assessment_id}", response_model=DeleteResult)
+async def delete_assessment(doc: dict = Depends(require_assessment)) -> DeleteResult:
+    """F13-min manual deletion: assessment + all linked records.
+
+    Requires the assessment Bearer secret (same authorization as every
+    answer/report/review endpoint). Removes the assessment doc, the
+    transcript doc, all evidence docs, and all reports. A second call
+    finds nothing and returns 404 via require_assessment.
+    """
+    db = get_db()
+    aid = doc["_id"]
+    evidence = await db["evidence"].delete_many({"assessment_id": aid})
+    reports = await db["reports"].delete_many({"assessment_id": aid})
+    transcript = await db["transcripts"].delete_one({"_id": aid})
+    assessment = await db["assessments"].delete_one({"_id": aid})
+    return DeleteResult(
+        assessment_id=aid,
+        deleted={
+            "assessments": assessment.deleted_count,
+            "transcripts": transcript.deleted_count,
+            "evidence": evidence.deleted_count,
+            "reports": reports.deleted_count,
+        },
     )
 
 

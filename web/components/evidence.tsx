@@ -11,12 +11,19 @@ import {
 
 export type Assertion = "present" | "denied" | "uncertain" | string;
 
+export type ReviewState = "pending" | "accepted" | "amended" | "rejected" | string;
+
 export type Observation = {
   assertion: Assertion;
   quote: string;
   segment_id: string;
   line: number | null;
+  obs_index?: number;
+  review_status?: ReviewState;
+  review_note?: string;
 };
+
+export type ReviewAction = "accept" | "amend" | "reject";
 
 export type TopicStatus = string;
 
@@ -72,25 +79,148 @@ export function AssertionChip({ assertion }: { assertion: Assertion }) {
 }
 
 /** One grounded observation: serif quote, chip, line + segment ref. Click jumps to the transcript line. */
-export function EvidenceCard({ observation }: { observation: Observation }) {
+export function EvidenceCard({
+  observation,
+  onReview,
+  reviewing,
+  reviewError,
+}: {
+  observation: Observation;
+  onReview?: (action: ReviewAction, note: string) => Promise<void> | void;
+  reviewing?: boolean;
+  reviewError?: string | null;
+}) {
+  const [amending, setAmending] = useState(false);
+  const [note, setNote] = useState("");
   const line = observation.line;
   const target = line != null ? `#line-${line}` : `#seg-${observation.segment_id}`;
+  const review = (observation.review_status ?? "pending").toLowerCase();
   return (
-    <a
-      href={target}
-      className="block rounded-2xl border border-line bg-card p-4 shadow-[0_1px_2px_rgba(20,32,29,0.05)] transition-colors hover:border-primary"
-      aria-label={`Quote${line != null ? `, line ${line}` : ""}, ${observation.segment_id}. Jump to transcript.`}
-    >
-      <blockquote className="font-serif text-[17px] leading-relaxed text-ink">
-        &ldquo;{observation.quote}&rdquo;
-      </blockquote>
-      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <AssertionChip assertion={observation.assertion} />
-        <span className="text-xs text-ink-faint">
-          {line != null ? `line ${line} · ` : ""}segment {observation.segment_id}
-        </span>
+    <div className="rounded-2xl border border-line bg-card p-4 shadow-[0_1px_2px_rgba(20,32,29,0.05)]">
+      <a
+        href={target}
+        className="block transition-colors hover:border-primary"
+        aria-label={`Quote${line != null ? `, line ${line}` : ""}, ${observation.segment_id}. Jump to transcript.`}
+      >
+        <blockquote className="font-serif text-[17px] leading-relaxed text-ink">
+          &ldquo;{observation.quote}&rdquo;
+        </blockquote>
+        <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <AssertionChip assertion={observation.assertion} />
+          <span className="text-xs text-ink-faint">
+            {line != null ? `line ${line} · ` : ""}segment {observation.segment_id}
+          </span>
+        </p>
+      </a>
+      <p className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+        <ReviewChip review={review} />
+        {observation.review_note && (
+          <span className="text-ink-soft">Reviewer note: {observation.review_note}</span>
+        )}
       </p>
-    </a>
+      {onReview && review === "pending" && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {!amending ? (
+            <>
+              <button
+                onClick={() => void onReview("accept", "")}
+                disabled={reviewing}
+                className="rounded-full border border-line px-3 py-1 text-xs font-semibold text-ink-soft hover:border-primary hover:text-primary disabled:opacity-50"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => setAmending(true)}
+                disabled={reviewing}
+                className="rounded-full border border-line px-3 py-1 text-xs font-semibold text-ink-soft hover:border-primary hover:text-primary disabled:opacity-50"
+              >
+                Amend
+              </button>
+              <button
+                onClick={() => void onReview("reject", "")}
+                disabled={reviewing}
+                className="rounded-full border border-line px-3 py-1 text-xs font-semibold text-ink-soft hover:border-tension hover:text-tension disabled:opacity-50"
+              >
+                Reject
+              </button>
+            </>
+          ) : (
+            <form
+              className="flex w-full flex-col gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (note.trim()) {
+                  void onReview("amend", note.trim());
+                  setAmending(false);
+                }
+              }}
+            >
+              <label className="text-xs font-semibold">
+                Amended interpretation
+                <input
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-line bg-paper px-3 py-2 text-sm font-normal"
+                  placeholder="What should this say instead?"
+                  maxLength={500}
+                />
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={reviewing || !note.trim()}
+                  className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                >
+                  Save amendment
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAmending(false);
+                    setNote("");
+                  }}
+                  className="rounded-full border border-line px-4 py-1.5 text-xs font-semibold text-ink-soft"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+          {reviewError && (
+            <p role="alert" className="w-full text-xs font-medium text-tension">
+              {reviewError}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Review state chip: pending review vs accepted / amended / rejected. */
+export function ReviewChip({ review }: { review: string }) {
+  if (review === "accepted")
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-primary-tint px-2.5 py-0.5 font-medium text-primary-deep">
+        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden /> reviewer accepted
+      </span>
+    );
+  if (review === "amended")
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-primary-tint px-2.5 py-0.5 font-medium text-primary-deep">
+        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden /> reviewer amended
+      </span>
+    );
+  if (review === "rejected")
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-tension-tint px-2.5 py-0.5 font-medium text-tension">
+        <MinusCircle className="h-3.5 w-3.5" aria-hidden /> reviewer rejected
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-cream px-2.5 py-0.5 font-medium text-ink-soft">
+      <CircleDashed className="h-3.5 w-3.5" aria-hidden /> awaiting review
+    </span>
   );
 }
 

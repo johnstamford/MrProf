@@ -10,6 +10,11 @@ STAGES = ("created", "screening", "interview", "complete")
 class AssessmentCreateRequest(BaseModel):
     # Called "password" in the UI. Hashed with bcrypt, never stored or logged.
     password: str = Field(min_length=10, max_length=128)
+    # F13-min opening gates: invite code (required only when the server
+    # configures PUBLIC_INVITE_CODE) + explicit consent record.
+    invite_code: str = Field(default="", max_length=128)
+    consent_accepted: bool = False
+    consent_version: str = Field(default="", max_length=64)
 
 
 class AssessmentCreated(BaseModel):
@@ -17,6 +22,7 @@ class AssessmentCreated(BaseModel):
     version: int
     stage: str
     status: str
+    consent_version: str = ""
 
 
 class AssessmentOut(BaseModel):
@@ -26,6 +32,11 @@ class AssessmentOut(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
+
+
+class DeleteResult(BaseModel):
+    assessment_id: str
+    deleted: dict[str, int]
 
 
 class StageUpdate(BaseModel):
@@ -214,6 +225,9 @@ class BriefingTopicObservation(BaseModel):
     line: int | None = None
     criterion_links: list[dict] = Field(default_factory=list)
     review_status: str = "pending"
+    review_note: str = ""
+    reviewed_at: datetime | None = None
+    obs_index: int = 0
 
 
 class BriefingTopicTurn(BaseModel):
@@ -302,6 +316,9 @@ class EvidenceObservationOut(BaseModel):
     criterion_links: list[dict] = Field(default_factory=list)
     links: list[dict] = Field(default_factory=list)
     review_status: str = "pending"
+    review_note: str = ""
+    reviewed_at: datetime | None = None
+    obs_index: int = 0
 
 
 class EvidenceTurnOut(BaseModel):
@@ -317,3 +334,22 @@ class EvidenceTurnOut(BaseModel):
 class EvidenceOut(BaseModel):
     assessment_id: str
     turns: list[EvidenceTurnOut]
+
+
+REVIEW_ACTIONS = ("accept", "amend", "reject")
+REVIEW_STATUSES = ("pending", "accepted", "amended", "rejected")
+
+
+class ReviewSubmit(BaseModel):
+    action: str = Field(min_length=1, max_length=16)
+    note: str = Field(default="", max_length=500)
+    expected_version: int = Field(ge=1)
+
+
+class ReviewResult(BaseModel):
+    assessment_id: str
+    turn: int
+    obs_index: int
+    evidence_version: int
+    review_status: str
+    replayed: bool = False

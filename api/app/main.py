@@ -6,16 +6,22 @@ import logging
 from fastapi import FastAPI
 
 from .db import get_db
+from .ratelimit import RateLimitMiddleware
 from .routes.assessments import router as assessments_router
 from .routes.interview import router as interview_router
+from .routes.public import router as public_router
+from .routes.review import router as review_router
 from .routes.screening import router as screening_router
 
 log = logging.getLogger("mrprof")
 
 app = FastAPI(title="MrProf API")
+app.add_middleware(RateLimitMiddleware)
+app.include_router(public_router)
 app.include_router(assessments_router)
 app.include_router(screening_router)
 app.include_router(interview_router)
+app.include_router(review_router)
 
 
 @app.get("/health")

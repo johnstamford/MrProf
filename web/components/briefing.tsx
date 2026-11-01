@@ -10,6 +10,7 @@ import {
   TranscriptView,
   type CoverageEntry,
   type Observation,
+  type ReviewAction,
   type Segment,
 } from "./evidence";
 
@@ -53,8 +54,20 @@ export type Briefing = {
   mode?: string;
 };
 
-/** Full interview briefing: shared evidence system for the real report (also mirrored by /demo/[id]). */
-export default function BriefingView({ briefing }: { briefing: Briefing }) {
+/** Full interview briefing: shared evidence system for the real report (also mirrored by /demo/[id]).
+ * Pass onReview to enable reviewer accept/amend/reject controls; omit it for
+ * read-only surfaces (e.g. frozen synthetic demos). */
+export default function BriefingView({
+  briefing,
+  onReview,
+  reviewingKey,
+  reviewError,
+}: {
+  briefing: Briefing;
+  onReview?: (turn: number, obsIndex: number, action: ReviewAction, note: string) => Promise<void> | void;
+  reviewingKey?: string | null;
+  reviewError?: string | null;
+}) {
   const covered = (briefing.coverage ?? []).filter(
     (c) => c.status.toLowerCase() === "covered",
   ).length;
@@ -65,7 +78,10 @@ export default function BriefingView({ briefing }: { briefing: Briefing }) {
 
   return (
     <div>
-      <p role="note" className="sticky top-0 z-10 rounded-2xl bg-ink px-4 py-3 text-sm font-medium text-paper">
+      <p className="inline-block rounded-full border border-tension/40 bg-tension-tint px-3 py-1 text-xs font-bold uppercase tracking-wider text-tension">
+        Unreviewed — not clinician-approved
+      </p>
+      <p role="note" className="sticky top-0 z-10 mt-2 rounded-2xl bg-ink px-4 py-3 text-sm font-medium text-paper">
         {briefing.banner}
       </p>
       <p className="mt-4 max-w-3xl leading-relaxed text-ink-soft">
@@ -151,7 +167,17 @@ export default function BriefingView({ briefing }: { briefing: Briefing }) {
                         {s.observations.length > 0 && (
                           <div className="mt-3 space-y-2.5">
                             {s.observations.map((o, i) => (
-                              <EvidenceCard key={i} observation={o} />
+                              <EvidenceCard
+                                key={i}
+                                observation={o}
+                                onReview={
+                                  onReview
+                                    ? (action, note) => onReview(s.turn, o.obs_index ?? i, action, note)
+                                    : undefined
+                                }
+                                reviewing={reviewingKey === `${s.turn}:${o.obs_index ?? i}`}
+                                reviewError={reviewError}
+                              />
                             ))}
                           </div>
                         )}

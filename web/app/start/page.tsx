@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, KeyRound, PlusCircle } from "lucide-react";
 import { saveSession } from "../../lib/session";
 import RiskNote from "../../components/risk-note";
@@ -12,6 +12,10 @@ type Fetched = { assessment_id: string; version: number; stage: string; status: 
 export default function StartPage() {
   const router = useRouter();
   const [newPassword, setNewPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentVersion, setConsentVersion] = useState("");
+  const [inviteRequired, setInviteRequired] = useState(false);
   const [created, setCreated] = useState<Created | null>(null);
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +23,23 @@ export default function StartPage() {
   const [resumeTarget, setResumeTarget] = useState("/screening");
   const [resumeNote, setResumeNote] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/config");
+        if (!res.ok) return;
+        const cfg = (await res.json()) as {
+          invite_required: boolean;
+          consent_version: string;
+        };
+        setInviteRequired(!!cfg.invite_required);
+        setConsentVersion(cfg.consent_version ?? "");
+      } catch {
+        // Config is best-effort; the server still enforces its gates.
+      }
+    })();
+  }, []);
 
   function goToScreening(code: string, pw: string) {
     saveSession(code, pw);
@@ -33,12 +54,26 @@ export default function StartPage() {
   async function start() {
     setError("");
     setCreated(null);
+    if (!consentChecked) {
+      setError("please read the consent details and tick the box before starting");
+      return;
+    }
     const res = await fetch("/api/assessments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: newPassword }),
+      body: JSON.stringify({
+        password: newPassword,
+        invite_code: inviteCode,
+        consent_accepted: consentChecked,
+        consent_version: consentVersion,
+      }),
     });
-    if (!res.ok) return setError(res.status === 422 ? "password must be at least 10 characters" : `start failed: ${res.status}`);
+    if (res.status === 422)
+      return setError(
+        "please use a password of at least 10 characters and accept the current consent version",
+      );
+    if (res.status === 403) return setError("this opening needs an invite code — check your invite link");
+    if (!res.ok) return setError(`start failed: ${res.status}`);
     const body = (await res.json()) as Created;
     setCreated(body);
     setId(body.assessment_id);
@@ -130,6 +165,32 @@ export default function StartPage() {
               autoComplete="new-password"
               className="mt-1.5 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-base"
             />
+          </label>
+          {inviteRequired && (
+            <label className="mt-3 block text-sm font-medium">
+              Invite code
+              <input
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+                autoComplete="off"
+                className="mt-1.5 w-full rounded-xl border border-line bg-paper px-3 py-2.5 text-base"
+              />
+            </label>
+          )}
+          <label className="mt-3 flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
+            <input
+              type="checkbox"
+              checked={consentChecked}
+              onChange={(e) => setConsentChecked(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0"
+            />
+            <span>
+              I have read the{" "}
+              <a href="/consent" className="font-medium text-primary underline">
+                consent details
+              </a>{" "}
+              and I agree to take part in this draft research prototype.
+            </span>
           </label>
           <button
             onClick={start}

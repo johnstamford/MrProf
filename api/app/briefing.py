@@ -129,6 +129,9 @@ def build_interview_briefing(
                         "line": line_by_segment.get(obs["segment_id"]),
                         "criterion_links": obs.get("criterion_links", []),
                         "review_status": obs.get("review_status", "pending"),
+                        "review_note": obs.get("review_note", ""),
+                        "reviewed_at": obs.get("reviewed_at"),
+                        "obs_index": obs.get("obs_index", 0),
                     }
                 )
             topic_turns.append(

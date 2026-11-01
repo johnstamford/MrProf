@@ -1,0 +1,20 @@
+# 2-day real-user opening overlay (Feature 13). Usage:
+#
+#   TUNNEL_TOKEN=... PUBLIC_INVITE_CODE=... REQUIRE_CONSENT=1 \
+#     docker compose -f docker-compose.yml -f docker-compose.opening.yml up --build
+#
+# The cloudflared sidecar exposes the web service over public HTTPS.
+# MongoDB stays private to the service network (no published ports).
+# The api service stays localhost-only; only the tunnel reaches the web UI.
+name: mrprof
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:2026.1.0
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_started
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN:?TUNNEL_TOKEN is required for the opening overlay}
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
