@@ -91,12 +91,20 @@ export default function ReportPage() {
           ))}
         </ul>
         <p className="mt-3 text-sm leading-relaxed text-ink-soft sm:text-base">{report.interview_offer.note}</p>
-        <button
-          onClick={() => router.push("/interview")}
-          className="no-print mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-deep"
-        >
-          Continue to interview <ArrowRight className="h-4 w-4" aria-hidden />
-        </button>
+        <div className="no-print mt-4 flex flex-wrap gap-3">
+          <button
+            onClick={() => router.push("/interview")}
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-deep"
+          >
+            Continue to interview <ArrowRight className="h-4 w-4" aria-hidden />
+          </button>
+          <button
+            onClick={() => router.push("/interview?mode=taster")}
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary px-6 py-3 text-sm font-semibold text-primary hover:bg-primary-tint"
+          >
+            Try the short taster (6 questions) <ArrowRight className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
       </section>
 
       <div className="no-print mt-4 flex flex-wrap gap-3">

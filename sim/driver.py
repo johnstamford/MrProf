@@ -70,6 +70,7 @@ async def run_journey(
     screening: list[str],
     max_turns: int = 30,
     time_budget_s: int = 600,
+    mode: str = "full",
 ) -> dict:
     """Drive create -> screening -> interview start/answers until completion.
 
@@ -107,7 +108,7 @@ async def run_journey(
     t0 = time.monotonic()
     st = await _post(
         client, f"{base}/assessments/{assessment_id}/interview/start",
-        {"base_version": version, "idempotency_key": _new_key("sim-start")},
+        {"base_version": version, "idempotency_key": _new_key("sim-start"), "mode": mode},
         auth,
     )
     latencies_ms.append((time.monotonic() - t0) * 1000)
@@ -159,13 +160,14 @@ async def run_journey(
                 stop_reason = "time_budget"
                 break
 
-    return _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls)
+    return _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls, mode)
 
 
-def _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls: int = 0) -> dict:
+def _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls: int = 0, mode: str = "full") -> dict:
     return {
         "assessment_id": assessment_id,
         "profile_id": persona["profile_id"],
+        "mode": mode,
         "patient_kind": patient.kind,
         "patient_calls": patient.calls,
         "turns": turns,

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, KeyRound, PlusCircle } from "lucide-react";
 import { saveSession } from "../../lib/session";
+import RiskNote from "../../components/risk-note";
 
 type Created = { assessment_id: string; version: number; stage: string };
 type Fetched = { assessment_id: string; version: number; stage: string; status: string };
@@ -110,7 +111,10 @@ export default function StartPage() {
           <li>Get your evidence briefing with supporting quotes.</li>
         </ol>
         <p className="mt-3 text-sm leading-relaxed text-ink-soft">Both stages together take most people around 20–30 minutes. There is no time limit, and you can close the browser and resume later with your code and password.</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">Short on time? After the screening report you can try the short taster — about 6 questions — instead of the full interview.</p>
       </section>
+
+      <div className="mt-4"><RiskNote /></div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <section aria-label="New assessment" className="rounded-2xl border border-line bg-card p-5">

@@ -29,6 +29,7 @@ from .interview import (
     MAX_FOLLOWUPS,
     PLAN_ORDER,
     load_topics,
+    max_followups,
     polarity,
 )
 from .transcripts import append_turn_segments
@@ -115,19 +116,22 @@ def tensions_from_evidence(turns: list[dict], evidence_turns: list[dict]) -> lis
 
 
 def build_followups(
-    turns: list[dict], evidence_turns: list[dict], tensions: list[dict]
+    turns: list[dict], evidence_turns: list[dict], tensions: list[dict],
+    mode: str = "full",
 ) -> list[dict]:
     """Bounded follow-up queue: tensions first, then pending, then thin.
 
-    One per objective, at most MAX_FOLLOWUPS. Each item is {objective,
-    reason, tension?}. Deterministic; the model only phrases the question.
+    One per objective, at most MAX_FOLLOWUPS (TASTER_MAX_FOLLOWUPS in
+    taster mode). Each item is {objective, reason, tension?}.
+    Deterministic; the model only phrases the question.
     """
+    limit = max_followups(mode)
     coverage = {e["objective"]: e for e in coverage_from_evidence(turns, evidence_turns)}
     queue: list[dict] = []
     used: set[str] = set()
 
     def _take(oid: str, reason: str, tension: str | None = None) -> None:
-        if oid not in used and len(queue) < MAX_FOLLOWUPS:
+        if oid not in used and len(queue) < limit:
             used.add(oid)
             item: dict = {"objective": oid, "reason": reason}
             if tension:
@@ -274,6 +278,7 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
     iv = doc.get("interview") or {}
     turns = iv.get("turns", [])
     rounds_done = iv.get("rounds_done", 0)
+    mode = iv.get("mode", "full")
 
     claimed = await db["assessments"].find_one_and_update(
         {
@@ -299,7 +304,7 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
         )
         coverage = coverage_from_evidence(turns, evidence_turns)
         tensions = tensions_from_evidence(turns, evidence_turns)
-        followups = build_followups(turns, evidence_turns, tensions) if rounds_done == 0 else []
+        followups = build_followups(turns, evidence_turns, tensions, mode) if rounds_done == 0 else []
         summary: dict = {
             "assessor": "assessor-v0.1",
             "taxonomy": TAXONOMY_VERSION,
@@ -323,6 +328,7 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
                 "question": q_text,
                 "answer": None,
                 "probe": "followup",
+                "phrase_ms": (model_info or {}).get("phrase_ms"),
                 "model_provider": model_info["provider"],
                 "model_name": model_info["model"],
                 "skill_version": iv.get("skill_version", ""),

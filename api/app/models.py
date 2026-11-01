@@ -107,6 +107,8 @@ class ScreeningReportOut(BaseModel):
 class InterviewStartRequest(BaseModel):
     base_version: int = Field(ge=1)
     idempotency_key: str = Field(min_length=8, max_length=128)
+    # F10a taster flag: "full" (14 objectives) or "taster" (~6). Not a fork.
+    mode: str = Field(default="full", max_length=16)
 
 
 class InterviewAnswerRequest(BaseModel):
@@ -136,6 +138,7 @@ class InterviewStartResult(BaseModel):
     status: str
     question: InterviewQuestionOut
     replayed: bool = False
+    mode: str = "full"
 
 
 class InterviewAnswerResult(BaseModel):
@@ -146,6 +149,7 @@ class InterviewAnswerResult(BaseModel):
     question: InterviewQuestionOut | None = None
     completed: bool = False
     replayed: bool = False
+    mode: str = "full"
 
 
 class InterviewNextOut(BaseModel):
@@ -155,6 +159,7 @@ class InterviewNextOut(BaseModel):
     turns_answered: int
     question: InterviewQuestionOut | None = None
     completed: bool = False
+    mode: str = "full"
 
 
 class BriefingStatement(BaseModel):
@@ -232,6 +237,15 @@ class BriefingDetailSummary(BaseModel):
     total_turns: int = 0
 
 
+class BriefingLatencySummary(BaseModel):
+    """Server-side question-phrasing latency (ms). Think-time excluded."""
+
+    count: int = 0
+    p50_ms: float = 0
+    p95_ms: float = 0
+    max_ms: float = 0
+
+
 class InterviewBriefingOut(BaseModel):
     assessment_id: str
     report_version: int
@@ -249,6 +263,9 @@ class InterviewBriefingOut(BaseModel):
     gaps: list[BriefingGap]
     transcript: list[TranscriptSegment] = Field(default_factory=list)
     detail_summary: BriefingDetailSummary = Field(default_factory=BriefingDetailSummary)
+    latency_summary: BriefingLatencySummary = Field(default_factory=BriefingLatencySummary)
+    support_note: str = ""
+    mode: str = "full"
     completed_at: datetime
 
 

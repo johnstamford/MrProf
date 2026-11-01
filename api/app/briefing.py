@@ -16,6 +16,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .interview import FAMILIES, PLAN_ORDER, detail_score, load_topics
+from .risk import RISK_SIGNPOST
 
 BRIEFING_BANNER = (
     "Draft-topics briefing (unreviewed). This summarizes what was reported "
@@ -40,6 +41,28 @@ def _clarified_families(turns: list[dict], tensions: list[dict]) -> set[str]:
             if (by_objective.get(oid) or {}).get("probe") == "followup":
                 out.add(tension["family"])
     return out
+
+
+def latency_summary(turns: list[dict]) -> dict:
+    """p50/p95/max over stored per-turn phrase_ms values (server-side only)."""
+    samples = sorted(float(t.get("phrase_ms", 0) or 0) for t in turns if t.get("phrase_ms") is not None)
+    if not samples:
+        return {"count": 0, "p50_ms": 0, "p95_ms": 0, "max_ms": 0}
+    import math
+
+    def _pct(p: float) -> float:
+        k = (len(samples) - 1) * (p / 100)
+        lo, hi = math.floor(k), math.ceil(k)
+        if lo == hi:
+            return samples[int(k)]
+        return samples[lo] + (samples[hi] - samples[lo]) * (k - lo)
+
+    return {
+        "count": len(samples),
+        "p50_ms": _pct(50),
+        "p95_ms": _pct(95),
+        "max_ms": samples[-1],
+    }
 
 
 def build_interview_briefing(
@@ -152,6 +175,9 @@ def build_interview_briefing(
         "completion_note": COMPLETION_NOTE,
         "turns_answered": len(turns),
         "detail_summary": detail_summary,
+        "latency_summary": latency_summary(turns),
+        "support_note": RISK_SIGNPOST,
+        "mode": interview.get("mode", "full"),
         "topics": topic_entries,
         "statements": [
             {"turn": t["turn"], "question": t["question"], "answer": t["answer"]}

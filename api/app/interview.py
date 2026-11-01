@@ -21,7 +21,7 @@ SKILL_VERSION = "skill-v0.4-draft"
 TOPIC_VERSION = "topics-v0.4-draft"
 TOPICS_FILE = "v0.4.yaml"
 
-# Round 1 asks every objective once, in fixed order.
+# Round 1 asks every objective once in fixed order.
 PLAN_ORDER = (
     "attention-focus",
     "organization",
@@ -39,6 +39,12 @@ PLAN_ORDER = (
     "background-goals",
 )
 ROUND1_TURNS = len(PLAN_ORDER)
+# Taster mode (F10a): a short ~6-question flag, not a forked topic set.
+# First six behavior objectives in fixed order; everything else surfaces
+# as gaps in coverage/briefing.
+TASTER_OBJECTIVES = PLAN_ORDER[:6]
+TASTER_MAX_FOLLOWUPS = 2
+INTERVIEW_MODES = ("full", "taster")
 # Round 2 works a bounded follow-up queue set by the batch assessment.
 MAX_FOLLOWUPS = 6
 # Thin answers (short, not a denial, not uncertainty) get one immediate
@@ -217,6 +223,19 @@ def needs_effort_nudge(turns: list[dict], nudge_shown: bool = False) -> bool:
     return all(polarity(t.get("answer")) == "thin" for t in turns[-EFFORT_NUDGE_STREAK:])
 
 
+def round1_objectives(mode: str = "full") -> tuple[str, ...]:
+    """Round-1 objectives for a mode. Taster is a flag, not a forked set."""
+    if mode == "taster":
+        return TASTER_OBJECTIVES
+    return PLAN_ORDER
+
+
+def max_followups(mode: str = "full") -> int:
+    if mode == "taster":
+        return TASTER_MAX_FOLLOWUPS
+    return MAX_FOLLOWUPS
+
+
 def family_tensions(turns: list[dict]) -> list[dict]:
     """Detect families with both present-like and denial-like answers.
 
@@ -244,7 +263,8 @@ def family_tensions(turns: list[dict]) -> list[dict]:
 
 
 def plan_next(
-    turns: list[dict], followups: list[dict] | None = None, nudge_shown: bool = False
+    turns: list[dict], followups: list[dict] | None = None, nudge_shown: bool = False,
+    mode: str = "full",
 ) -> tuple[str, str, bool, dict | None]:
     """Return (objective_id, reason, complete, hint). Pure function of turns.
 
@@ -259,10 +279,13 @@ def plan_next(
     the chain; caller passes nudge_shown so it fires once per round).
     Probe and nudge decisions are deterministic code over the turns
     (including answer text for the thin check only); the model only phrases.
+    mode="taster" asks TASTER_OBJECTIVES (first 6) once; the rest surface
+    as gaps. Taster is a flag, not a forked topic set.
     """
     followups = followups or []
     n = len(turns)
-    if n >= MAX_TURNS:
+    cap = len(round1_objectives(mode)) + INLINE_PROBE_BUDGET + max_followups(mode)
+    if n >= HARD_TURN_CAP or n >= cap:
         return "", f"interview complete at cap ({n} answered turns)", True, None
     if not followups and turns:
         last = turns[-1]
@@ -281,7 +304,7 @@ def plan_next(
                     hint,
                 )
     asked = [t["objective"] for t in turns]
-    unasked = [o for o in PLAN_ORDER if o not in asked]
+    unasked = [o for o in round1_objectives(mode) if o not in asked]
     if unasked:
         obj = unasked[0]
         title = load_topics()[obj].get("title", obj)

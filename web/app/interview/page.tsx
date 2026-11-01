@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { loadSession } from "../../lib/session";
 import BriefingView, { type Briefing } from "../../components/briefing";
+import RiskNote from "../../components/risk-note";
 
 type Question = {
   turn: number;
@@ -41,6 +42,7 @@ export default function InterviewPage() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [stage, setStage] = useState(0);
+  const [mode, setMode] = useState<"full" | "taster">("full");
   const [assessProgress, setAssessProgress] = useState<{ done: number; total: number } | null>(null);
 
   const STAGES = ["Saving your answer…", "Thinking…", "Preparing the next question…"];
@@ -61,6 +63,7 @@ export default function InterviewPage() {
     question: Question | null;
     completed: boolean;
     replayed?: boolean;
+    mode?: string;
   };
 
   function parseSseBuffer(buf: string): { events: { name: string; data: string }[]; rest: string } {
@@ -165,6 +168,9 @@ export default function InterviewPage() {
     if (nextRes.status === 404) {
       // Interview never started: begin it, then show Q1.
       const assessed = await me.json();
+      const wantTaster =
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("mode") === "taster";
       const key =
         typeof crypto !== "undefined" && "randomUUID" in crypto
           ? crypto.randomUUID()
@@ -172,11 +178,15 @@ export default function InterviewPage() {
       const started = await fetch(`${base}/interview/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...headers },
-        body: JSON.stringify({ base_version: assessed.version, idempotency_key: key }),
+        body: JSON.stringify({ base_version: assessed.version, idempotency_key: key, mode: wantTaster ? "taster" : "full" }),
       });
       if (started.status === 409) {
         if (depth < 2) return load(depth + 1);
         setError("the interview changed while loading — please try again");
+        return;
+      }
+      if (started.status === 422) {
+        setError("could not start the interview — please try again");
         return;
       }
       if (!started.ok) {
@@ -184,6 +194,7 @@ export default function InterviewPage() {
         return;
       }
       const body = await started.json();
+      setMode(body.mode === "taster" ? "taster" : "full");
       setVersion(body.version as number);
       setQuestion(body.question as Question);
       setTurnsAnswered(0);
@@ -194,7 +205,8 @@ export default function InterviewPage() {
       setError("could not load the interview — please try again");
       return;
     }
-    const state = (await nextRes.json()) as NextState;
+    const state = (await nextRes.json()) as NextState & { mode?: string };
+    setMode(state.mode === "taster" ? "taster" : "full");
     setVersion(state.version);
     setTurnsAnswered(state.turns_answered);
     if (state.completed || !state.question) {
@@ -331,6 +343,7 @@ export default function InterviewPage() {
       const applyDone = async (body: StreamDone) => {
         clearDraft(question.turn);
         setAnswer("");
+        if (body.mode === "taster" || body.mode === "full") setMode(body.mode);
         setVersion(body.version as number);
         setTurnsAnswered(body.turn_answered as number);
         if (body.completed) {
@@ -459,6 +472,7 @@ export default function InterviewPage() {
           <div className="mrprof-spinner mx-auto" role="status" aria-label={msg} />
           <p role="status" className="mt-4 font-semibold">{msg}</p>
           <p className="mt-2 text-sm text-ink-soft">Your answers are saved — this usually takes under a minute…</p>
+          <div className="mt-4 text-left"><RiskNote /></div>
           {error && (
             <div className="mt-4">
               <p role="alert" className="text-sm font-medium text-tension">{error}</p>
@@ -484,6 +498,7 @@ export default function InterviewPage() {
         <div className="mt-4">
           <BriefingView briefing={briefing} />
         </div>
+        <div className="no-print mt-4"><RiskNote /></div>
         <p className="no-print mt-8 flex flex-wrap gap-3 border-t border-line pt-6">
           <button
             onClick={() => router.push("/report")}
@@ -510,6 +525,12 @@ export default function InterviewPage() {
         not a clinical assessment. Short answers are accepted: a plain no, or
         “I can’t remember”, is a valid answer.
       </p>
+      {mode === "taster" && (
+        <p role="note" className="mt-3 rounded-xl border border-primary/30 bg-primary-tint px-4 py-2.5 text-sm font-medium text-primary-deep">
+          Short taster — about 6 questions. Anything not covered is marked as a gap in your briefing.
+        </p>
+      )}
+      <RiskNote />
       <p className="mt-4 text-sm font-medium text-ink-soft" role="status">
         Question {question ? question.turn : "…"} · {turnsAnswered} answered so far
       </p>

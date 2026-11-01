@@ -446,8 +446,31 @@ match), leading (don't-you/right?/ADHD/diagnosis/cause patterns), compound
 to the pre-approved opener (marked `validation_fallback`) so the loop
 never stalls. Dummy path unaffected (fallback is valid by construction).
 `tests/test_question_validation.py`: 5 passed (pure checks + regen-repair
-+ bounded-fallback). Full suite 72 passed, 1 skipped. Remaining F10a:
-risk signpost, taster flag, latency stats.
++ bounded-fallback). Full suite 72 passed, 1 skipped.
+
+**Progress (1 Nov 2026): F10a done — taster, signpost, latency added.**
+`interview.py`: `TASTER_OBJECTIVES` (first 6 of 14) + `TASTER_MAX_FOLLOWUPS=2`;
+`plan_next(..., mode)` — taster asks 6 in fixed order, rest surfaces as
+gaps; `INTERVIEW_MODES` validated on start (unknown → 422). Batch
+`build_followups(..., mode)` capped at 2 for taster. `models.py`:
+`mode` on start/answer/next outputs; `BriefingLatencySummary`
+(count/p50/p95/max) + `support_note` + `mode` on the briefing.
+`routes/interview.py`: mode stored at start, threaded through
+answer/stream/prefetch; `phrase_ms` (server phrasing latency, think-time
+excluded) per turn, aggregated in `briefing.py:latency_summary()`.
+Static `risk.py:RISK_SIGNPOST` (explicitly non-monitored, interim
+wording, emergency numbers) rendered via
+`web/components/risk-note.tsx` on `/start`, `/interview`
+(ready/assessing/done), carried as briefing `support_note`; short-taster
+entry button on `/report`. `briefing.tsx` renders mode banner, latency
+line, support note (all optional — frozen demo JSON unaffected).
+`sim/driver.py:run_journey(..., mode)` for comparison runs.
+`tests/test_f10a_rest.py`: 7 passed (taster planning/gaps/cap, signpost
+copy, latency percentiles, full taster journey with gaps + latency in
+briefing, bad-mode 422). Evidence (dummy, live stack): full 16–17 turns,
+taster 7 turns; 4/4 complete, 0 abandonment; mean API latency ~2s both
+modes. Full suite 79 passed, 1 skipped; `npm run build` green.
+F10b stays post-hackathon.
 
 ## 12. Independent evaluation and refinement
 

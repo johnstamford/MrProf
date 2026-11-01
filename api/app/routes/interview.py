@@ -35,7 +35,6 @@ from ..db import get_db
 from ..interview import (
     ANSWER_MAX_LEN,
     HARD_TURN_CAP,
-    MAX_TURNS,
     SKILL_VERSION,
     TOPIC_VERSION,
 )
@@ -112,6 +111,7 @@ def _next_out(doc: dict) -> InterviewNextOut:
         turns_answered=len(iv.get("turns", [])),
         question=_question_out(current) if current else None,
         completed=iv.get("status") == "complete",
+        mode=iv.get("mode", "full"),
     )
 
 
@@ -136,8 +136,12 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
     F10a: the phrased question is validated in code (off-objective /
     already-answered / repeated / leading / compound / too-long) with
     bounded regens; persistent failure falls back to the pre-approved
-    opener so the interview never stalls.
+    opener so the interview never stalls. model_info carries phrase_ms
+    (server-side phrasing latency; user think-time excluded).
     """
+    import time as _time
+
+    started = _time.monotonic()
     cfg = load_config()
     last_answer = history[-1].get("answer") if history else None
     hint = hint or {}
@@ -187,6 +191,7 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
             "Reply with JSON ONLY, no other text.\n\n" + base
         )
     assert question is not None
+    model_info["phrase_ms"] = round((_time.monotonic() - started) * 1000, 1)
     kind = hint.get("kind")
     probe = f"clarify:{hint['family']}" if kind == "clarify" else (kind if kind in ("followup", "inline") else None)
     quality = question.answer_quality.model_dump() if question.answer_quality is not None else None
@@ -197,8 +202,11 @@ async def _phrase_for_job(assessment_id: str, objective: str, reason: str, histo
     """Phrase one question for the batch job. Returns (text, model_info, session).
 
     Same F10a validation as the live path: bounded regens, then the
-    pre-approved opener.
+    pre-approved opener. model_info carries phrase_ms.
     """
+    import time as _time
+
+    started = _time.monotonic()
     cfg = load_config()
     last_answer = history[-1].get("answer") if history else None
     prompt = planner.build_prompt(
@@ -220,6 +228,7 @@ async def _phrase_for_job(assessment_id: str, objective: str, reason: str, histo
             fallback_question=planner.fallback_question(objective),
             session_id=assessment_id,
         )
+        model_info["phrase_ms"] = round((_time.monotonic() - started) * 1000, 1)
         if question.question_text == planner.fallback_question(objective):
             return question.question_text, model_info, session_blob
         code = validate_question(
@@ -262,6 +271,7 @@ def _consume_prefetch(iv: dict, pending_turn: int, objective: str) -> dict | Non
         "answer": None,
         "probe": pre.get("probe"),
         "effort_nudge": bool(pre.get("effort_nudge", False)),
+        "phrase_ms": pre.get("phrase_ms"),
         "model_provider": pre.get("model_provider", "dummy"),
         "model_name": pre.get("model_name", "dummy-stub"),
         "skill_version": pre.get("skill_version", SKILL_VERSION),
@@ -317,7 +327,8 @@ async def _prefetch_task(assessment_id: str, expected_answered: int, expected_pe
         # prefetch is scheduled on probe turns, so that gap never matters.
         pseudo = list(turns) + [{"objective": current["objective"]}]
         queue = iv.get("followups") or []
-        objective, reason, done, hint = planner.plan_next(pseudo, queue, _nudge_shown(iv, pseudo))
+        mode = iv.get("mode", "full")
+        objective, reason, done, hint = planner.plan_next(pseudo, queue, _nudge_shown(iv, pseudo), mode)
         if done:
             return
         question, model_info, session_blob, probe, quality = await _generate(
@@ -332,6 +343,7 @@ async def _prefetch_task(assessment_id: str, expected_answered: int, expected_pe
             "answer": None,
             "probe": probe,
             "effort_nudge": nudge,
+            "phrase_ms": model_info.get("phrase_ms"),
             "model_provider": model_info["provider"],
             "model_name": model_info["model"],
             "skill_version": SKILL_VERSION,
@@ -384,12 +396,16 @@ async def start_interview(
                 status=(existing.get("status") or "active"),
                 question=_question_out(existing["current"]),
                 replayed=True,
+                mode=existing.get("mode", "full"),
             )
         raise HTTPException(
             status_code=409,
             detail={"error": "interview_already_started", "current_version": doc["version"]},
         )
-    objective, reason, _, _ = planner.plan_next([])
+    mode = (body.mode or "full").strip().lower()
+    if mode not in planner.INTERVIEW_MODES:
+        raise HTTPException(status_code=422, detail=f"mode must be one of {list(planner.INTERVIEW_MODES)}")
+    objective, reason, _, _ = planner.plan_next([], mode=mode)
     try:
         question, model_info, session_blob, _, _ = await _generate(
             assessment_id, objective, reason, [], doc.get("screening")
@@ -405,6 +421,7 @@ async def start_interview(
         "question": question.question_text,
         "answer": None,
         "probe": None,
+        "phrase_ms": model_info.get("phrase_ms"),
         "model_provider": model_info["provider"],
         "model_name": model_info["model"],
         "skill_version": SKILL_VERSION,
@@ -424,6 +441,7 @@ async def start_interview(
                 "updated_at": now,
                 "interview": {
                     "status": "active",
+                    "mode": mode,
                     "skill_version": SKILL_VERSION,
                     "topic_version": TOPIC_VERSION,
                     "turns": [],
@@ -461,6 +479,7 @@ async def start_interview(
                 status=iv.get("status", "active"),
                 question=_question_out(iv["current"]),
                 replayed=True,
+                mode=iv.get("mode", "full"),
             )
         raise HTTPException(
             status_code=409,
@@ -478,6 +497,7 @@ async def start_interview(
         stage=result["stage"],
         status="active",
         question=_question_out(turn_doc),
+        mode=mode,
     )
 
 
@@ -508,6 +528,7 @@ async def submit_answer(
         return _answer_result_from_doc(fresh, replay["version"], replayed=True)
 
     history = list(iv.get("turns", []))
+    mode = iv.get("mode", "full")
     answered_turn = {
         "turn": pending["turn"],
         "objective": pending["objective"],
@@ -516,6 +537,7 @@ async def submit_answer(
         "answer": answer[:ANSWER_MAX_LEN],
         "answered_at": _now(),
         "probe": pending.get("probe"),
+        "phrase_ms": pending.get("phrase_ms"),
         "model_provider": pending["model_provider"],
         "model_name": pending["model_name"],
         "skill_version": pending["skill_version"],
@@ -525,13 +547,14 @@ async def submit_answer(
     queue = iv.get("followups") or []
     assessed_turns = iv.get("assessed_turns", 0)
     schedule_assessment = False
-    if len(new_history) >= HARD_TURN_CAP or len(new_history) >= MAX_TURNS:
+    cap = len(planner.round1_objectives(mode)) + planner.INLINE_PROBE_BUDGET + planner.max_followups(mode)
+    if len(new_history) >= HARD_TURN_CAP or len(new_history) >= cap:
         completed, next_turn_doc = False, None
         session_blob = iv.get("session") or {"session_id": assessment_id}
         schedule_assessment = True
     else:
         completed = False
-        objective, reason, done, hint = planner.plan_next(new_history, queue, _nudge_shown(iv, new_history))
+        objective, reason, done, hint = planner.plan_next(new_history, queue, _nudge_shown(iv, new_history), mode)
         if done and assessed_turns != len(new_history):
             # Round complete but not yet assessed -> run the batch job.
             next_turn_doc = None
@@ -568,6 +591,7 @@ async def submit_answer(
                     "answer": None,
                     "probe": probe,
                     "effort_nudge": bool((hint or {}).get("effort_nudge", False)),
+                    "phrase_ms": model_info.get("phrase_ms"),
                     "model_provider": model_info["provider"],
                     "model_name": model_info["model"],
                     "skill_version": SKILL_VERSION,
@@ -665,6 +689,7 @@ def _answer_result_from_doc(doc: dict, version: int, replayed: bool = False) -> 
         question=_question_out(current) if current and not completed else None,
         completed=completed,
         replayed=replayed,
+        mode=iv.get("mode", "full"),
     )
 
 
@@ -716,6 +741,7 @@ async def submit_answer_stream(
         yield _sse("received", {"turn": pending["turn"]})
 
         history = list(iv.get("turns", []))
+        mode = iv.get("mode", "full")
         answered_turn = {
             "turn": pending["turn"],
             "objective": pending["objective"],
@@ -724,6 +750,7 @@ async def submit_answer_stream(
             "answer": answer[:ANSWER_MAX_LEN],
             "answered_at": _now(),
             "probe": pending.get("probe"),
+            "phrase_ms": pending.get("phrase_ms"),
             "model_provider": pending["model_provider"],
             "model_name": pending["model_name"],
             "skill_version": pending["skill_version"],
@@ -735,10 +762,11 @@ async def submit_answer_stream(
         schedule_assessment = False
         next_turn_doc: dict | None = None
         session_blob = iv.get("session") or {"session_id": assessment_id}
-        if len(new_history) >= HARD_TURN_CAP or len(new_history) >= MAX_TURNS:
+        cap = len(planner.round1_objectives(mode)) + planner.INLINE_PROBE_BUDGET + planner.max_followups(mode)
+        if len(new_history) >= HARD_TURN_CAP or len(new_history) >= cap:
             schedule_assessment = True
         else:
-            objective, reason, done, hint = planner.plan_next(new_history, queue, _nudge_shown(iv, new_history))
+            objective, reason, done, hint = planner.plan_next(new_history, queue, _nudge_shown(iv, new_history), mode)
             if done and assessed_turns != len(new_history):
                 schedule_assessment = True
             elif done:
@@ -767,6 +795,7 @@ async def submit_answer_stream(
                         "answer": None,
                         "probe": probe,
                         "effort_nudge": bool((hint or {}).get("effort_nudge", False)),
+                        "phrase_ms": model_info.get("phrase_ms"),
                         "model_provider": model_info["provider"],
                         "model_name": model_info["model"],
                         "skill_version": SKILL_VERSION,

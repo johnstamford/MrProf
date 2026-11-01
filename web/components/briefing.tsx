@@ -48,6 +48,9 @@ export type Briefing = {
   gaps: { area: string; status: string }[];
   transcript: Segment[];
   detail_summary?: { level_counts: number[]; grounded_turns: number; total_turns: number };
+  latency_summary?: { count: number; p50_ms: number; p95_ms: number; max_ms: number };
+  support_note?: string;
+  mode?: string;
 };
 
 /** Full interview briefing: shared evidence system for the real report (also mirrored by /demo/[id]). */
@@ -79,7 +82,24 @@ export default function BriefingView({ briefing }: { briefing: Briefing }) {
             (briefing.detail_summary.level_counts[1] ?? 0)}{" "}
           were brief or position-only. Thin answers are recorded as gaps, not
           as negative findings.
+          {briefing.latency_summary && briefing.latency_summary.count > 0 && (
+            <>
+              {" "}Question phrasing took a median of{" "}
+              {Math.round(briefing.latency_summary.p50_ms)} ms (p95{" "}
+              {Math.round(briefing.latency_summary.p95_ms)} ms) on the server;
+              your own thinking time is not counted.
+            </>
+          )}
         </p>
+      )}
+      {briefing.mode === "taster" && (
+        <p role="note" className="mt-2 max-w-3xl rounded-xl border border-primary/30 bg-primary-tint px-4 py-2.5 text-sm font-medium text-primary-deep">
+          Short taster — about 6 questions. Topics below marked unexplored were
+          not reached and are recorded as gaps, not as negative findings.
+        </p>
+      )}
+      {briefing.support_note && (
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-faint">{briefing.support_note}</p>
       )}
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)_260px]">
