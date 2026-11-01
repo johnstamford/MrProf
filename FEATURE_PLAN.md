@@ -435,6 +435,20 @@ clinical endorsement.
 (level_counts 0–3, grounded_turns, total_turns), rendered as one honest line
 in the shared briefing component (conditional — frozen demo JSON unaffected).
 
+**Progress (1 Nov 2026): question validation/regen built and verified.**
+`api/app/question_validation.py`: pure-code checks — off-objective /
+already-answered (objective-field mismatch), repeated (normalized exact
+match), leading (don't-you/right?/ADHD/diagnosis/cause patterns), compound
+(≥3 `?`, numbered lists, two `and`-joined question clauses; house-style
+"What is that like?" closer + all fallback openers exempt), too-long
+(>200 chars). `routes/interview.py` `_generate` + `_phrase_for_job` loop
+1 + 2 bounded regens with violation-specific repair hints, then fall back
+to the pre-approved opener (marked `validation_fallback`) so the loop
+never stalls. Dummy path unaffected (fallback is valid by construction).
+`tests/test_question_validation.py`: 5 passed (pure checks + regen-repair
++ bounded-fallback). Full suite 72 passed, 1 skipped. Remaining F10a:
+risk signpost, taster flag, latency stats.
+
 ## 12. Independent evaluation and refinement
 
 **Deliver:** Ground-truth evaluation, fixed regression cases, benchmark summaries, and documented limitations.

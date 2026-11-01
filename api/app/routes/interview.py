@@ -39,7 +39,12 @@ from ..interview import (
     SKILL_VERSION,
     TOPIC_VERSION,
 )
-from ..llm import LLMError, generate_next_question, load_config
+from ..llm import LLMError, LLMQuestion, generate_next_question, load_config
+from ..question_validation import (
+    REPAIR_HINTS,
+    VALIDATION_MAX_REGENS,
+    validate_question,
+)
 from ..models import (
     EvidenceOut,
     EvidenceTurnOut,
@@ -127,6 +132,11 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
     round-2 queue accounting). quality is the interviewer's advisory rating
     of the just-given answer (dict or None) — stored on the answered turn
     for detail reporting; never drives planning on its own.
+
+    F10a: the phrased question is validated in code (off-objective /
+    already-answered / repeated / leading / compound / too-long) with
+    bounded regens; persistent failure falls back to the pre-approved
+    opener so the interview never stalls.
     """
     cfg = load_config()
     last_answer = history[-1].get("answer") if history else None
@@ -135,15 +145,48 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
         objective=objective, reason=reason, history=history, screening=screening,
         last_answer=last_answer, tension=hint.get("tension"),
     )
-    question, model_info, session_blob = await generate_next_question(
-        cfg=cfg,
-        instructions=planner.load_skill(),
-        prompt=prompt,
-        objective=objective,
-        reason=reason,
-        fallback_question=planner.fallback_question(objective),
-        session_id=assessment_id,
-    )
+    fallbacks = {t.get("opener", "") for t in planner.load_topics().values()}
+    prior_qs = [t.get("question", "") for t in history if t.get("question")]
+    asked = [t.get("objective", "") for t in history if t.get("objective")]
+    current_prompt = prompt
+    question = None
+    model_info: dict = {}
+    session_blob: dict = {}
+    for attempt in range(1 + VALIDATION_MAX_REGENS):
+        question, model_info, session_blob = await generate_next_question(
+            cfg=cfg,
+            instructions=planner.load_skill(),
+            prompt=current_prompt,
+            objective=objective,
+            reason=reason,
+            fallback_question=planner.fallback_question(objective),
+            session_id=assessment_id,
+        )
+        # Dummy path returns the pre-approved opener: valid by construction.
+        if question.question_text == planner.fallback_question(objective):
+            break
+        code = validate_question(
+            question.question_text, question.objective, objective,
+            prior_questions=prior_qs, asked_objectives=asked,
+            fallback_texts=fallbacks,
+        )
+        if code == "ok":
+            break
+        log.warning("question validation failed (%s), regen %d", code, attempt + 1)
+        if attempt >= VALIDATION_MAX_REGENS:
+            question = LLMQuestion(
+                question_text=planner.fallback_question(objective),
+                objective=objective, reason=reason if len(reason or "") >= 3 else "cover assigned objective",
+            )
+            model_info["validation_fallback"] = code
+            break
+        repair = REPAIR_HINTS.get(code, "Ask exactly ONE short neutral question for the assigned objective.")
+        base = current_prompt if isinstance(current_prompt, str) else "\n".join(current_prompt)
+        current_prompt = (
+            f"Your previous question was rejected ({code}): {repair} "
+            "Reply with JSON ONLY, no other text.\n\n" + base
+        )
+    assert question is not None
     kind = hint.get("kind")
     probe = f"clarify:{hint['family']}" if kind == "clarify" else (kind if kind in ("followup", "inline") else None)
     quality = question.answer_quality.model_dump() if question.answer_quality is not None else None
@@ -151,23 +194,52 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
 
 
 async def _phrase_for_job(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None, tension: str | None = None) -> tuple:
-    """Phrase one question for the batch job. Returns (text, model_info, session)."""
+    """Phrase one question for the batch job. Returns (text, model_info, session).
+
+    Same F10a validation as the live path: bounded regens, then the
+    pre-approved opener.
+    """
     cfg = load_config()
     last_answer = history[-1].get("answer") if history else None
     prompt = planner.build_prompt(
         objective=objective, reason=reason, history=history, screening=screening,
         last_answer=last_answer, tension=tension,
     )
-    question, model_info, session_blob = await generate_next_question(
-        cfg=cfg,
-        instructions=planner.load_skill(),
-        prompt=prompt,
-        objective=objective,
-        reason=reason,
-        fallback_question=planner.fallback_question(objective),
-        session_id=assessment_id,
-    )
-    return question.question_text, model_info, session_blob
+    fallbacks = {t.get("opener", "") for t in planner.load_topics().values()}
+    prior_qs = [t.get("question", "") for t in history if t.get("question")]
+    asked = [t.get("objective", "") for t in history if t.get("objective")]
+    current_prompt = prompt
+    text, model_info, session_blob = planner.fallback_question(objective), {"provider": "dummy"}, {}
+    for attempt in range(1 + VALIDATION_MAX_REGENS):
+        question, model_info, session_blob = await generate_next_question(
+            cfg=cfg,
+            instructions=planner.load_skill(),
+            prompt=current_prompt,
+            objective=objective,
+            reason=reason,
+            fallback_question=planner.fallback_question(objective),
+            session_id=assessment_id,
+        )
+        if question.question_text == planner.fallback_question(objective):
+            return question.question_text, model_info, session_blob
+        code = validate_question(
+            question.question_text, question.objective, objective,
+            prior_questions=prior_qs, asked_objectives=asked,
+            fallback_texts=fallbacks,
+        )
+        if code == "ok":
+            return question.question_text, model_info, session_blob
+        log.warning("batch phrase validation failed (%s), regen %d", code, attempt + 1)
+        if attempt >= VALIDATION_MAX_REGENS:
+            model_info["validation_fallback"] = code
+            return planner.fallback_question(objective), model_info, session_blob
+        repair = REPAIR_HINTS.get(code, "Ask exactly ONE short neutral question for the assigned objective.")
+        base = current_prompt if isinstance(current_prompt, str) else "\n".join(current_prompt)
+        current_prompt = (
+            f"Your previous question was rejected ({code}): {repair} "
+            "Reply with JSON ONLY, no other text.\n\n" + base
+        )
+    return text, model_info, session_blob
 
 
 def _consume_prefetch(iv: dict, pending_turn: int, objective: str) -> dict | None:
