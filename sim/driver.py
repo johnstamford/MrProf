@@ -103,7 +103,7 @@ async def run_journey(
 
     if time.monotonic() > deadline:
         stop_reason = "time_budget"
-        return _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at)
+        return _record(base, assessment_id, password, persona, patient, turns, latencies_ms, stop_reason, started_at)
 
     t0 = time.monotonic()
     st = await _post(
@@ -160,12 +160,13 @@ async def run_journey(
                 stop_reason = "time_budget"
                 break
 
-    return _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls, mode)
+    return _record(base, assessment_id, password, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls, mode)
 
 
-def _record(base, assessment_id, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls: int = 0, mode: str = "full") -> dict:
+def _record(base, assessment_id, password, persona, patient, turns, latencies_ms, stop_reason, started_at, assess_polls: int = 0, mode: str = "full") -> dict:
     return {
         "assessment_id": assessment_id,
+        "password": password,
         "profile_id": persona["profile_id"],
         "mode": mode,
         "patient_kind": patient.kind,

@@ -98,7 +98,7 @@ async def test_artifacts_sealed(tmp_path, client):
     )
     names = {p.name for p in dest.iterdir()}
     assert names == {"profile.json", "reference_transcript.json", "persona.json",
-                     "run_transcript.json", "results.json", "manifest.json"}
+                     "run_transcript.json", "results.json", "manifest.json", "credentials.json"}
     import hashlib
     import json
 
@@ -110,3 +110,5 @@ async def test_artifacts_sealed(tmp_path, client):
     assert ref["ground_truth_facts"] == profile["facts"]
     results = json.loads((dest / "results.json").read_text())
     assert results["stop_reason"] == "complete" and results["turns"] in (14, 15)
+    creds = json.loads((dest / "credentials.json").read_text())
+    assert creds["assessment_id"] == run["assessment_id"] and creds["password"] == run["password"]

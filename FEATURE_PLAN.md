@@ -1,7 +1,9 @@
 # MrProf — Ordered Feature Plan
 
-Planning baseline: 26 October 2026. Features 1–9 are implemented and verified;
-features 10–14 below remain planned, not implemented.
+Planning baseline: 26 October 2026. Features 1–9, F10a, F11-min reviewer
+annotate, F12-min regression, F13-min opening, 15–16 are implemented and verified;
+F11-full/F14 polish plus post-hackathon items (F10b, 10x3 eval, clinical review)
+remain open.
 
 Plan revision (29 Oct 2026, owner-agreed): priority is a hackathon win with a
 technically sound core plus a bounded 2-day real-user opening. Interview
@@ -9,7 +11,7 @@ quality + reports/review first (F10a + F11-min), synthetic metrics from a small
 regression (F12-min), F13-min hardening for the opening, full clinical review
 deferred to post-hackathon. Topics v0.3 / taxonomy v0.2 stay labeled
 `draft — not clinically validated — interim psychology-student review only`.
-Working tree has uncommitted F10/F11 work-in-progress (see `git status`);
+Working tree was clean at F12-min (2 Nov 2026);
 `README.md` is still TBD and must be filled before judging.
 
 Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focused, and update this plan with implementation status, verification evidence, and remaining limitations. Do not infer that a working prototype is clinically validated or ready for real-user data.
@@ -508,6 +510,26 @@ validity or real-user timing.
 - Treat question/time targets as hypotheses. Synthetic runs do not establish human completion time or clinical validity.
 
 **Depends on:** 8–11.
+
+**Status (2 Nov 2026): ✅ F12-min done — implemented and verified (hermetic dummy gate).**
+- `sim/eval.py`: 4 profiles × 2 hermetic runs (`DummyPatient` + server dummy
+  LLM via ASGI, no network/cost) with threshold checks — completion,
+  quote-exactness (every evidence quote an exact substring of its cited
+  segment), banned-language (report + briefing system copy), latency logged.
+  Seals each run via `sim/artifacts.py` (now incl. gitignored
+  `credentials.json` with code + password for UI review) and writes
+  `docs/eval/f12min-<stamp>.{md,json}` (passwords stripped — credentials stay
+  in gitignored `sim/runs/*/` only).
+- `sim/driver.py` now threads the minted password through the run record;
+  `api/tests/test_sim.py` asserts the sealed credentials match the run.
+- Result `docs/eval/f12min-20261102T133300.md`: 8/8 complete, 118/118 quotes
+  exact, 0 banned hits — PASS. Fixtures: skill-v0.4-draft, topics-v0.4-draft,
+  taxonomy-v0.2-draft. Latency (ASGI in-process, not real-user timing):
+  mean ~203 ms, max ~391 ms per turn. Full suite 89 passed, 1 skipped.
+- Review: resume any run on `/start` with its code + password from the local
+  `sim/runs/<run>/credentials.json`. Remaining: hand-reviewed semantic
+  samples, live-model spot checks, and the 10×3 proposal stay future work;
+  synthetic success ≠ clinical validity or real-user timing.
 
 **Milestone B:** Evaluated synthetic-data hackathon MVP, with remaining clinical limitations explicit.
 

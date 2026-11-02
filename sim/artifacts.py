@@ -47,5 +47,12 @@ def save_run(outdir: str | Path, run: dict, profile: dict, persona: dict, versio
         text = json.dumps(payload, indent=2, sort_keys=True)
         (dest / name).write_text(text, encoding="utf-8")
         manifest["files"][name] = _sha(text)
+    # Review credentials (local-only: sim/runs/*/ is gitignored, never committed).
+    # Lets the operator resume the assessment in the UI with code + password.
+    if run.get("password"):
+        creds = {"assessment_id": run["assessment_id"], "password": run["password"]}
+        cred_text = json.dumps(creds, indent=2, sort_keys=True)
+        (dest / "credentials.json").write_text(cred_text, encoding="utf-8")
+        manifest["files"]["credentials.json"] = _sha(cred_text)
     (dest / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
     return dest
