@@ -223,6 +223,9 @@ class BriefingTopicObservation(BaseModel):
     quote: str
     segment_id: str
     line: int | None = None
+    # Extractor's one-sentence explainer: what the quote shows about this
+    # topic. System interpretation, not a quote; never a finding.
+    note: str = ""
     criterion_links: list[dict] = Field(default_factory=list)
     review_status: str = "pending"
     review_note: str = ""

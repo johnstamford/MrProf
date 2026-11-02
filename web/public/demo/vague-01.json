@@ -1,8 +1,8 @@
 {
   "briefing": {
-    "assessment_id": "4785A5KJ",
+    "assessment_id": "MDH8C45Y",
     "banner": "Draft-topics briefing (unreviewed). This summarizes what was reported in an interview using draft topics that are not clinically reviewed. It is not a clinical assessment. Only a qualified clinician can determine what explains a person's experiences.",
-    "completed_at": "2026-10-29T23:42:12.864000",
+    "completed_at": "2026-11-02T13:49:25.918000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [],
     "coverage": [
@@ -133,8 +133,25 @@
         ]
       }
     ],
+    "detail_summary": {
+      "grounded_turns": 0,
+      "level_counts": [
+        0,
+        2,
+        12,
+        0
+      ],
+      "total_turns": 14
+    },
     "gaps": [],
     "kind": "interview",
+    "latency_summary": {
+      "count": 14,
+      "max_ms": 0.1,
+      "p50_ms": 0.0,
+      "p95_ms": 0.1
+    },
+    "mode": "full",
     "report_version": 1,
     "skill_version": "skill-v0.4-draft",
     "statements": [
@@ -209,6 +226,7 @@
         "turn": 14
       }
     ],
+    "support_note": "Support note \u2014 no one monitors your answers here. MrProf does not provide crisis support and no one reviews your answers in real time. If you feel unsafe or are thinking about harming yourself, please contact your local emergency number now (for example 112 in most of Europe, 911 in the US, 999 in the UK) or a local crisis helpline. You can also stop the interview at any time.",
     "system_notes": [
       {
         "model_name": "muse-spark-1.3-contributor",
@@ -324,8 +342,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 2,
-                "quote": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T1-A1"
               }
             ],
@@ -347,8 +369,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 4,
-                "quote": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T2-A1"
               }
             ],
@@ -370,8 +396,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 6,
-                "quote": "Honestly it is mostly bills and that kind of paperwork. I put the envelopes on the counter meaning to deal with them, and then somehow it is weeks later and there is a late fee. It just never quite feels like the right moment to sit down with them.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Honestly it is mostly bills and that kind of paperwork.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T3-A1"
               }
             ],
@@ -393,8 +423,12 @@
                 "assertion": "uncertain",
                 "criterion_links": [],
                 "line": 8,
-                "quote": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places. I do not know if that is worse than average or everyone does it.",
+                "note": "Expresses uncertainty on this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I do not know if that is worse than average or everyone does it.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T4-A1"
               }
             ],
@@ -416,8 +450,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 10,
-                "quote": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T5-A1"
               }
             ],
@@ -439,8 +477,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 12,
-                "quote": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I suppose I can be a bit quick to jump in, especially when I am excited about something.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T6-A1"
               }
             ],
@@ -462,8 +504,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 14,
-                "quote": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I do not really remember much about school in that way.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T7-A1"
               }
             ],
@@ -485,8 +531,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 16,
-                "quote": "I really could not say when this started or whether it has changed. It feels like it has just always been like this, but if you asked me to point to a year or how old I was, I genuinely cannot.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I really could not say when this started or whether it has changed.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T8-A1"
               }
             ],
@@ -508,8 +558,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 18,
-                "quote": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "It is probably a bit of everything, home and out and about.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T9-A1"
               }
             ],
@@ -531,8 +585,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 20,
-                "quote": "Work is mostly okay, though the odd thing slips. Nothing dramatic, just the occasional missed email or turning up flustered. I muddle through.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Work is mostly okay, though the odd thing slips.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T10-A1"
               }
             ],
@@ -554,8 +612,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 22,
-                "quote": "I think people notice I drift off sometimes. Nobody has made a big thing of it. My sister teases me about never listening, but that is just sisters, probably.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I think people notice I drift off sometimes.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T11-A1"
               }
             ],
@@ -577,8 +639,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 24,
-                "quote": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "My sleep is a bit all over the place, I suppose that does not help.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T12-A1"
               }
             ],
@@ -600,8 +666,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 26,
-                "quote": "I have got phone reminders set for most things, which sort of works when I actually look at them. Sometimes I just swipe them away and forget anyway, so it is hit and miss.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I have got phone reminders set for most things, which sort of works when I actually look at them.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T13-A1"
               }
             ],
@@ -623,8 +693,12 @@
                 "assertion": "uncertain",
                 "criterion_links": [],
                 "line": 28,
-                "quote": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next, I have never done anything like this before.",
+                "note": "Expresses uncertainty on this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I do not know what happens next, I have never done anything like this before.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T14-A1"
               }
             ],
@@ -864,11 +938,11 @@
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-10-29T23:42:15.488954+00:00",
+    "exported_at": "2026-11-02T13:49:28.529999+00:00",
     "headline": "Vague short answers",
     "latency_ms": {
-      "max": 228.9,
-      "mean": 202.6
+      "max": 203.2,
+      "mean": 193.0
     },
     "model": {
       "model": "dummy-stub",
@@ -930,8 +1004,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "4785A5KJ",
-    "completed_at": "2026-10-29T23:42:09.853000",
+    "assessment_id": "MDH8C45Y",
+    "completed_at": "2026-11-02T13:49:23.033000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

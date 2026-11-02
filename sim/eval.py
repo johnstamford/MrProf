@@ -82,9 +82,18 @@ def _check_banned(screening: dict, briefing: dict) -> list[str]:
         briefing.get("banner", ""),
         briefing.get("completion_note", ""),
     ]).lower()
+    note_text = " ".join(
+        o.get("note", "")
+        for topic in briefing.get("topics", [])
+        for turn in topic.get("turns", [])
+        for o in turn.get("observations", [])
+    ).lower()
     for word in BANNED_BRIEFING:
         if word in brief_text:
             hits.append(f"briefing copy contains {word!r}")
+    for word in BANNED_BRIEFING:
+        if word in note_text:
+            hits.append(f"observation note contains {word!r}")
     return hits
 
 

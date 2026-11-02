@@ -126,6 +126,7 @@ def build_interview_briefing(
                         "assertion": obs["assertion"],
                         "quote": obs["quote"],
                         "segment_id": obs["segment_id"],
+                        "note": obs.get("note", ""),
                         "line": line_by_segment.get(obs["segment_id"]),
                         "criterion_links": obs.get("criterion_links", []),
                         "review_status": obs.get("review_status", "pending"),

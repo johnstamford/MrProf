@@ -18,6 +18,8 @@ export type Observation = {
   quote: string;
   segment_id: string;
   line: number | null;
+  /** Extractor's one-sentence explainer (system interpretation, not a quote). */
+  note?: string;
   obs_index?: number;
   review_status?: ReviewState;
   review_note?: string;
@@ -105,6 +107,13 @@ export function EvidenceCard({
         <blockquote className="font-serif text-[17px] leading-relaxed text-ink">
           &ldquo;{observation.quote}&rdquo;
         </blockquote>
+        {observation.note && (
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            <span className="font-medium text-ink">Why this is here: </span>
+            {observation.note}{" "}
+            <span className="text-ink-faint">(system interpretation, not a quote)</span>
+          </p>
+        )}
         <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
           <AssertionChip assertion={observation.assertion} />
           <span className="text-xs text-ink-faint">

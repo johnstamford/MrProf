@@ -452,6 +452,18 @@ report); `/demo` stays read-only. Mandatory `UNREVIEWED — not
 clinician-approved` chip above the sticky banner on every briefing.
 `tests/test_review.py`: 4 passed. PDF + dashboard stay deferred.
 
+**Progress (2 Nov 2026): evidence explainer + tight quotes built and verified.**
+Owner review found whole-answer quotes duplicating the displayed answer
+(e.g. restlessness denial quoting all 3 sentences). Fix: extractor writes a
+one-sentence grounded `note` per observation (no new facts/causes/diagnosis),
+surfaced in the briefing as "Why this is here (system interpretation, not a
+quote)"; quotes tightened to the shortest supporting span (usually one
+sentence) via instruction + dummy `_minimal_span`. Plumbs
+`extraction.py` → `briefing.py` → `BriefingTopicObservation.note` →
+`EvidenceCard`. F12-min re-ran PASS (8/8, 118/118, 0 banned;
+`docs/eval/f12min-20261102T134745.md`); frozen demos re-exported with the new
+shape. Full suite 89 passed, 1 skipped; `npm run build` green.
+
 **Progress (1 Nov 2026): question validation/regen built and verified.**
 `api/app/question_validation.py`: pure-code checks — off-objective /
 already-answered (objective-field mismatch), repeated (normalized exact

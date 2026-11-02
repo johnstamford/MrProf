@@ -1,8 +1,8 @@
 {
   "briefing": {
-    "assessment_id": "4TKSQMHD",
+    "assessment_id": "3CYU2UJ8",
     "banner": "Draft-topics briefing (unreviewed). This summarizes what was reported in an interview using draft topics that are not clinically reviewed. It is not a clinical assessment. Only a qualified clinician can determine what explains a person's experiences.",
-    "completed_at": "2026-10-29T23:42:21.232000",
+    "completed_at": "2026-11-02T13:49:34.223000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [
       {
@@ -150,8 +150,25 @@
         ]
       }
     ],
+    "detail_summary": {
+      "grounded_turns": 0,
+      "level_counts": [
+        0,
+        11,
+        4,
+        0
+      ],
+      "total_turns": 15
+    },
     "gaps": [],
     "kind": "interview",
+    "latency_summary": {
+      "count": 15,
+      "max_ms": 0.1,
+      "p50_ms": 0.0,
+      "p95_ms": 0.1
+    },
+    "mode": "full",
     "report_version": 1,
     "skill_version": "skill-v0.4-draft",
     "statements": [
@@ -231,6 +248,7 @@
         "turn": 15
       }
     ],
+    "support_note": "Support note \u2014 no one monitors your answers here. MrProf does not provide crisis support and no one reviews your answers in real time. If you feel unsafe or are thinking about harming yourself, please contact your local emergency number now (for example 112 in most of Europe, 911 in the US, 999 in the UK) or a local crisis helpline. You can also stop the interview at any time.",
     "system_notes": [
       {
         "model_name": "muse-spark-1.3-contributor",
@@ -353,8 +371,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 2,
-                "quote": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, concentrating is fine for me.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T1-A1"
               }
             ],
@@ -368,8 +390,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 30,
-                "quote": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, concentrating is fine for me.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T15-A1"
               }
             ],
@@ -391,8 +417,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 4,
-                "quote": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work comment on it.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, organization is not a problem for me.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T2-A1"
               }
             ],
@@ -414,8 +444,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 6,
-                "quote": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about with staring at a task and not beginning.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, starting tasks is honestly fine for me.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T3-A1"
               }
             ],
@@ -437,8 +471,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 8,
-                "quote": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, I rarely forget things.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T4-A1"
               }
             ],
@@ -460,8 +498,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 10,
-                "quote": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "If I am restless it is the coffee, honestly.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T5-A1"
               }
             ],
@@ -483,8 +525,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 12,
-                "quote": "No, I am a patient person. I wait my turn and think before I speak. Nobody would call me impulsive.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, I am a patient person.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T6-A1"
               }
             ],
@@ -506,8 +552,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 14,
-                "quote": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is nothing to dig up there.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, nothing was ever flagged at school.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T7-A1"
               }
             ],
@@ -529,8 +579,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 16,
-                "quote": "No, there is no course to describe, because there has never been a problem. Things have been steady all along.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, there is no course to describe, because there has never been a problem.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T8-A1"
               }
             ],
@@ -552,8 +606,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 18,
-                "quote": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No difference anywhere.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T9-A1"
               }
             ],
@@ -575,8 +633,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 20,
-                "quote": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, work is fine, my reviews have always been decent.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T10-A1"
               }
             ],
@@ -598,8 +660,12 @@
                 "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 22,
-                "quote": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "No, my relationships are good.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T11-A1"
               }
             ],
@@ -621,8 +687,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 24,
-                "quote": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Like I said, it is the coffee and the shifts.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T12-A1"
               }
             ],
@@ -644,8 +714,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 26,
-                "quote": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I do not really use anything, no lists or reminders.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T13-A1"
               }
             ],
@@ -667,8 +741,12 @@
                 "assertion": "present",
                 "criterion_links": [],
                 "line": 28,
-                "quote": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Honestly I am mostly here because my partner suggested it.",
+                "review_note": "",
                 "review_status": "pending",
+                "reviewed_at": null,
                 "segment_id": "T14-A1"
               }
             ],
@@ -924,11 +1002,11 @@
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-10-29T23:42:23.849009+00:00",
+    "exported_at": "2026-11-02T13:49:36.842754+00:00",
     "headline": "Denies difficulties, offers an alternative explanation",
     "latency_ms": {
-      "max": 214.3,
-      "mean": 194.3
+      "max": 207.3,
+      "mean": 194.4
     },
     "model": {
       "model": "dummy-stub",
@@ -990,8 +1068,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "4TKSQMHD",
-    "completed_at": "2026-10-29T23:42:15.875000",
+    "assessment_id": "3CYU2UJ8",
+    "completed_at": "2026-11-02T13:49:28.905000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

@@ -113,6 +113,13 @@ def extractor_instructions() -> str:
         "(missing information is simply not emitted).",
         "- segment_id must be an existing segment ID; quote must be an EXACT "
         "character-for-character substring of that segment, copied verbatim.",
+        "- Quote the SHORTEST span that supports the observation — usually one "
+        "sentence, never the whole answer. Split distinct facts into separate "
+        "observations, each with its own minimal quote.",
+        "- note is one sentence saying what the quote shows about this topic "
+        "(e.g. denies difficulty sitting still; attributes it to caffeine). "
+        "Grounded only: no new facts, no causes, no diagnosis, no probability, "
+        "no severity language.",
         "- period/setting/frequency only when the person stated them; never infer.",
         "- criterion_links are candidate suggestions with rationale, separate "
         "from the observation; they are not findings.",
@@ -141,10 +148,27 @@ def classify_dummy(answer: str) -> str:
     }.get(polarity(answer), "present")
 
 
+def _minimal_span(text: str, needle: str | None) -> str:
+    """Shortest sentence containing the needle, else the first sentence.
+
+    Keeps quotes tight (one sentence) while staying an exact substring of
+    the stored segment. Test-path mimic of the live minimal-span rule.
+    """
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s.strip()]
+    if not sentences:
+        return text
+    if needle:
+        for s in sentences:
+            if needle in s.lower():
+                return s
+    return sentences[0]
+
+
 def dummy_extract(objective: str, segments: list[dict], answer: str) -> ExtractionResult:
     """Deterministic stub extraction: assertion heuristic + exact segment quote."""
     answer_segs = [s for s in segments if s["role"] == "A"]
     target = None
+    needle: str | None = None
     if answer_segs:
         m = _UNCERTAIN_RE.search(answer) or _DENIAL_RE.match(answer.strip())
         if m:
@@ -154,13 +178,20 @@ def dummy_extract(objective: str, segments: list[dict], answer: str) -> Extracti
             target = answer_segs[0]
     else:
         target = segments[0]
+    assertion = classify_dummy(answer)
+    explainer = {
+        "present": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+        "explicitly-denied": "States this is not an issue for them; the quote is the supporting span.",
+        "uncertain": "Expresses uncertainty on this topic; the quote is the supporting span.",
+    }[assertion]
     return ExtractionResult(
         observations=[
             ExtractedObservation(
                 code=objective,
-                assertion=classify_dummy(answer),
+                assertion=assertion,
                 segment_id=target["id"],
-                quote=target["text"],
+                quote=_minimal_span(target["text"], needle),
+                note=explainer,
             )
         ]
     )
