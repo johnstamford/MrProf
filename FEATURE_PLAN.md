@@ -465,7 +465,10 @@ Denied > Limited > Not covered with per-status counts always shown.
 `doc.screening`, models defaulted (old briefings still parse), `briefing.tsx`
 3 sections + rail grouped by area (flat fallback when areas absent). F12-min
 re-ran PASS (8/8, 118/118, 0 banned; `docs/eval/f12min-20261102T140557.md`),
-demos re-frozen with areas. Full suite 90 passed, 1 skipped; web build green.
+demos re-frozen with areas. Follow-up: `/demo/[id]` had its own inline copy
+of the old layout (drifted from the shared viewer) — replaced with shared
+`BriefingView` read-only; web image rebuilt. Full suite 90 passed, 1 skipped;
+web build green.
 
 **Progress (2 Nov 2026): evidence explainer + tight quotes built and verified.**
 Owner review found whole-answer quotes duplicating the displayed answer

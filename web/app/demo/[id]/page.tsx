@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import {
-  CoverageBar,
-  EvidenceCard,
-  NotConcludedBox,
-  StatusDot,
-  SyntheticBadge,
-  TopicRail,
-  TranscriptView,
-  type CoverageEntry,
-} from "../../../components/evidence";
+import BriefingView, { type Briefing } from "../../../components/briefing";
+import { SyntheticBadge } from "../../../components/evidence";
 
 export const metadata = { title: "Example report — MrProf" };
 
@@ -44,34 +36,7 @@ type DemoFile = {
     interview_offer: { offered: boolean; next_stage: string; note: string };
     next_section: { intro: string; topics: string[] };
   };
-  briefing: {
-    banner: string;
-    completion_note: string;
-    turns_answered: number;
-    topics: {
-      objective: string;
-      title: string;
-      status: string;
-      note: string;
-      turns: {
-        turn: number;
-        question: string;
-        answer: string;
-        observations: { assertion: string; quote: string; segment_id: string; line: number | null }[];
-      }[];
-    }[];
-    coverage: CoverageEntry[];
-    contradictions: {
-      family: string;
-      areas: string[];
-      present_turn: number;
-      denial_turn: number;
-      clarified: boolean;
-      note: string;
-    }[];
-    gaps: { area: string; status: string }[];
-    transcript: { id: string; turn: number; role: string; n: number; text: string; line: number }[];
-  };
+  briefing: Briefing;
 };
 
 const ORDER = ["vague-01", "denier-01", "contradictor-01", "recall-01"];
@@ -145,109 +110,9 @@ export default async function DemoViewer({ params }: { params: Promise<{ id: str
         </ul>
       </section>
 
-      {/* Draft banner */}
-      <p role="note" className="sticky top-0 z-10 mt-6 rounded-2xl bg-ink px-4 py-3 text-sm font-medium text-paper">
-        {briefing.banner}
-      </p>
-
-      {/* Three-column evidence layout */}
-      <div className="mt-6 grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)_260px]">
-        <div className="no-print">
-          <div className="lg:sticky lg:top-20">
-            <TopicRail topics={briefing.topics} />
-          </div>
-        </div>
-
-        <div className="min-w-0 space-y-8">
-          <section aria-label="Coverage">
-            <h2 className="font-serif text-xl font-semibold">What was covered</h2>
-            <div className="mt-3">
-              <CoverageBar coverage={briefing.coverage} />
-            </div>
-            <p className="mt-2 text-sm text-ink-soft">{briefing.completion_note}</p>
-          </section>
-
-          {briefing.topics.map((t) => (
-            <section
-              key={t.objective}
-              id={`topic-${t.objective}`}
-              aria-label={t.title}
-              className="scroll-mt-24"
-            >
-              <h3 className="flex items-center gap-2 font-serif text-lg font-semibold">
-                <StatusDot status={t.status} label={`${t.title}: ${t.status}`} />
-                {t.title}
-                <span className="text-sm font-normal text-ink-faint">— {t.status}</span>
-              </h3>
-              <p className="mt-1 text-sm text-ink-faint">{t.note}</p>
-              <div className="mt-3 space-y-5">
-                {t.turns.map((s) => (
-                  <article key={s.turn} className="rounded-2xl border border-line bg-card p-4 sm:p-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                      Turn {s.turn}
-                    </p>
-                    <p className="mt-1.5 text-sm leading-relaxed">
-                      <span className="font-medium">Asked: </span>
-                      {s.question}
-                    </p>
-                    <p className="mt-1.5 text-sm leading-relaxed">
-                      <span className="font-medium">Answered: </span>
-                      {s.answer}
-                    </p>
-                    {s.observations.length > 0 && (
-                      <div className="mt-3 space-y-2.5">
-                        {s.observations.map((o, i) => (
-                          <EvidenceCard key={i} observation={o} />
-                        ))}
-                      </div>
-                    )}
-                  </article>
-                ))}
-              </div>
-            </section>
-          ))}
-
-          <TranscriptView segments={briefing.transcript} />
-        </div>
-
-        <div className="space-y-5">
-          <div className="lg:sticky lg:top-20 lg:space-y-5">
-            {briefing.contradictions.length > 0 && (
-              <section
-                aria-label="Accounts in tension"
-                className="rounded-2xl border border-tension/40 bg-tension-tint p-4"
-              >
-                <h2 className="text-sm font-semibold">Accounts in tension — both retained</h2>
-                <ul className="mt-2 space-y-2 text-sm leading-relaxed">
-                  {briefing.contradictions.map((c) => (
-                    <li key={c.family}>
-                      {c.areas.join(" / ")}: turn {c.denial_turn} reported no difficulty,
-                      turn {c.present_turn} described difficulty — {c.note}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-            <section aria-label="Gaps" className="rounded-2xl border border-line bg-card p-4">
-              <h2 className="text-sm font-semibold">Gaps and open questions</h2>
-              {briefing.gaps.length === 0 ? (
-                <p className="mt-2 text-sm text-ink-soft">
-                  No open gaps: every planned topic reached a detailed account, a clear
-                  denial, or a documented unable-to-answer.
-                </p>
-              ) : (
-                <ul className="mt-2 space-y-1.5 text-sm text-ink-soft">
-                  {briefing.gaps.map((g) => (
-                    <li key={g.area}>
-                      <strong className="text-ink">{g.area}</strong> — {g.status}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-            <NotConcludedBox />
-          </div>
-        </div>
+      {/* Shared briefing layout (read-only demo: no reviewer controls). */}
+      <div className="mt-6">
+        <BriefingView briefing={briefing} />
       </div>
 
       <nav aria-label="More examples" className="mt-10 flex flex-wrap justify-between gap-3 border-t border-line pt-6">
