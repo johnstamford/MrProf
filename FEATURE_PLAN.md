@@ -452,6 +452,21 @@ report); `/demo` stays read-only. Mandatory `UNREVIEWED — not
 clinician-approved` chip above the sticky banner on every briefing.
 `tests/test_review.py`: 4 passed. PDF + dashboard stay deferred.
 
+**Progress (2 Nov 2026): clinician 3-section report built and verified.**
+Owner asked for high-level-to-deep-diving shape: Section 1 Summary (screening
+score + 4 area cards), Section 2 evidence by area (subtopics with status,
+responses, quotes/notes), Section 3 full line-numbered transcript. Areas roll
+up the 14 topics via `FAMILIES`: Daily functioning / History and course /
+Settings and impact / Context and background. Display vocabulary (owner-chose
+buckets, denial kept distinct): Reported / Explicitly denied / Uncertain /
+Limited / Not covered; family headline priority Uncertain > Reported >
+Denied > Limited > Not covered with per-status counts always shown.
+`briefing.py:family_rollup` + screening snapshot, `assessment.py` passes
+`doc.screening`, models defaulted (old briefings still parse), `briefing.tsx`
+3 sections + rail grouped by area (flat fallback when areas absent). F12-min
+re-ran PASS (8/8, 118/118, 0 banned; `docs/eval/f12min-20261102T140557.md`),
+demos re-frozen with areas. Full suite 90 passed, 1 skipped; web build green.
+
 **Progress (2 Nov 2026): evidence explainer + tight quotes built and verified.**
 Owner review found whole-answer quotes duplicating the displayed answer
 (e.g. restlessness denial quoting all 3 sentences). Fix: extractor writes a

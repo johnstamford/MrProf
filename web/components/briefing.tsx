@@ -25,8 +25,25 @@ export type BriefingTopic = {
   objective: string;
   title: string;
   status: string;
+  label?: string;
   note: string;
   turns: BriefingTopicTurn[];
+};
+
+export type BriefingArea = {
+  key: string;
+  title: string;
+  status: string;
+  label?: string;
+  counts: Record<string, number>;
+  objectives: string[];
+};
+
+export type BriefingScreening = {
+  score: number | null;
+  scoring_method: string;
+  positive: boolean | null;
+  completed_at?: string | null;
 };
 
 export type Briefing = {
@@ -34,6 +51,8 @@ export type Briefing = {
   banner: string;
   completion_note: string;
   turns_answered: number;
+  screening?: BriefingScreening | null;
+  areas?: BriefingArea[];
   topics: BriefingTopic[];
   statements: { turn: number; question: string; answer: string }[];
   system_notes: { turn: number; objective: string; reason: string }[];
@@ -53,6 +72,31 @@ export type Briefing = {
   support_note?: string;
   mode?: string;
 };
+
+/** Display words for raw topic/area statuses. Denial stays distinct from gaps. */
+const STATUS_LABELS: Record<string, string> = {
+  covered: "Reported",
+  denied: "Explicitly denied",
+  unable: "Uncertain",
+  thin: "Limited",
+  unasked: "Not covered",
+  pending: "Not covered",
+};
+
+function statusLabel(raw: string, fallback?: string): string {
+  if (fallback) return fallback;
+  return STATUS_LABELS[raw.toLowerCase()] ?? raw;
+}
+
+function formatCounts(counts: Record<string, number>): string {
+  const order = ["covered", "denied", "unable", "thin", "unasked", "pending"];
+  const parts: string[] = [];
+  for (const k of order) {
+    const n = counts[k] ?? 0;
+    if (n > 0) parts.push(`${n} ${statusLabel(k).toLowerCase()}`);
+  }
+  return parts.length > 0 ? parts.join(" · ") : "no topics";
+}
 
 /** Full interview briefing: shared evidence system for the real report (also mirrored by /demo/[id]).
  * Pass onReview to enable reviewer accept/amend/reject controls; omit it for
@@ -75,6 +119,13 @@ export default function BriefingView({
   const jsonHref = `data:application/json;charset=utf-8,${encodeURIComponent(
     JSON.stringify(briefing, null, 2),
   )}`;
+
+  const byObjective: Record<string, BriefingTopic> = Object.fromEntries(
+    (briefing.topics ?? []).map((t) => [t.objective, t]),
+  );
+  const areas: BriefingArea[] = (briefing.areas ?? []).filter((a) =>
+    (a.objectives ?? []).some((o) => byObjective[o]),
+  );
 
   return (
     <div>
@@ -121,75 +172,162 @@ export default function BriefingView({
       <div className="mt-6 grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)_260px]">
         <div className="no-print">
           <div className="lg:sticky lg:top-20">
-            <TopicRail topics={briefing.topics} />
+            <TopicRail
+              topics={briefing.topics}
+              groups={(briefing.areas ?? []).map((a) => ({
+                key: a.key,
+                title: a.title,
+                objectives: a.objectives,
+              }))}
+            />
           </div>
         </div>
 
         <div className="min-w-0 space-y-8">
-          <section aria-label="Coverage">
-            <h2 className="font-serif text-xl font-semibold">What was covered</h2>
-            <div className="mt-3">
-              <CoverageBar coverage={briefing.coverage} />
-            </div>
+          <section aria-label="Summary">
+            <h2 className="font-serif text-xl font-semibold">1 · Summary</h2>
+            {briefing.screening != null && briefing.screening.score != null && (
+              <p className="mt-3 rounded-2xl border border-line bg-card p-4 text-sm leading-relaxed">
+                <span className="font-medium">Screening: </span>
+                {briefing.screening.score}/6 ({briefing.screening.scoring_method}
+                {briefing.screening.positive == null
+                  ? ""
+                  : briefing.screening.positive
+                    ? ", above threshold — further assessment may be useful"
+                    : ", below threshold — does not exclude ADHD or other conditions"}
+                ).
+              </p>
+            )}
+            {areas.length > 0 ? (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {areas.map((a) => (
+                  <a
+                    key={a.key}
+                    href={`#area-${a.key}`}
+                    className="block rounded-2xl border border-line bg-card p-4 transition-colors hover:border-primary"
+                  >
+                    <p className="flex items-center gap-2 font-medium">
+                      <StatusDot status={a.status} label={`${a.title}: ${statusLabel(a.status, a.label)}`} />
+                      {a.title}
+                    </p>
+                    <p className="mt-1 text-sm text-ink-soft">{statusLabel(a.status, a.label)}</p>
+                    <p className="mt-0.5 text-xs text-ink-faint">{formatCounts(a.counts)}</p>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-3">
+                <CoverageBar coverage={briefing.coverage} />
+              </div>
+            )}
             <p className="mt-2 text-sm text-ink-soft">{briefing.completion_note}</p>
           </section>
 
-          <section aria-label="What you reported">
-            <h2 className="font-serif text-xl font-semibold">What you reported</h2>
+          <section aria-label="Evidence by area">
+            <h2 className="font-serif text-xl font-semibold">2 · Evidence by area</h2>
             <div className="mt-3 space-y-8">
-              {(briefing.topics ?? []).map((t) => (
+              {(areas.length > 0
+                ? areas
+                : [
+                    {
+                      key: "all",
+                      title: "All topics",
+                      status: "",
+                      label: "",
+                      counts: {},
+                      objectives: (briefing.topics ?? []).map((t) => t.objective),
+                    } as BriefingArea,
+                  ]
+              ).map((a) => (
                 <section
-                  key={t.objective}
-                  id={`topic-${t.objective}`}
-                  aria-label={t.title}
+                  key={a.key}
+                  id={`area-${a.key}`}
+                  aria-label={a.title}
                   className="scroll-mt-24"
                 >
-                  <h3 className="flex items-center gap-2 font-serif text-lg font-semibold">
-                    <StatusDot status={t.status} label={`${t.title}: ${t.status}`} />
-                    {t.title}
-                    <span className="text-sm font-normal text-ink-faint">— {t.status}</span>
-                  </h3>
-                  <p className="mt-1 text-sm text-ink-faint">{t.note}</p>
+                  {areas.length > 0 && (
+                    <>
+                      <h3 className="flex items-center gap-2 font-serif text-lg font-semibold">
+                        <StatusDot status={a.status} label={`${a.title}: ${statusLabel(a.status, a.label)}`} />
+                        {a.title}
+                        <span className="text-sm font-normal text-ink-faint">
+                          — {statusLabel(a.status, a.label)}
+                        </span>
+                      </h3>
+                      <p className="mt-1 text-sm text-ink-faint">{formatCounts(a.counts)}</p>
+                    </>
+                  )}
                   <div className="mt-3 space-y-5">
-                    {t.turns.map((s) => (
-                      <article key={s.turn} className="rounded-2xl border border-line bg-card p-4 sm:p-5">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                          Turn {s.turn}
-                        </p>
-                        <p className="mt-1.5 text-sm leading-relaxed">
-                          <span className="font-medium">Asked: </span>
-                          {s.question}
-                        </p>
-                        <p className="mt-1.5 text-sm leading-relaxed">
-                          <span className="font-medium">You said: </span>
-                          {s.answer}
-                        </p>
-                        {s.observations.length > 0 && (
-                          <div className="mt-3 space-y-2.5">
-                            {s.observations.map((o, i) => (
-                              <EvidenceCard
-                                key={i}
-                                observation={o}
-                                onReview={
-                                  onReview
-                                    ? (action, note) => onReview(s.turn, o.obs_index ?? i, action, note)
-                                    : undefined
-                                }
-                                reviewing={reviewingKey === `${s.turn}:${o.obs_index ?? i}`}
-                                reviewError={reviewError}
-                              />
+                    {a.objectives.map((oid) => {
+                      const t = byObjective[oid];
+                      if (!t) return null;
+                      return (
+                        <section
+                          key={t.objective}
+                          id={`topic-${t.objective}`}
+                          aria-label={t.title}
+                          className="scroll-mt-24 rounded-2xl border border-line bg-paper p-4 sm:p-5"
+                        >
+                          <h4 className="flex items-center gap-2 font-serif text-base font-semibold">
+                            <StatusDot status={t.status} label={`${t.title}: ${statusLabel(t.status, t.label)}`} />
+                            {t.title}
+                            <span className="text-sm font-normal text-ink-faint">
+                              — {statusLabel(t.status, t.label)}
+                            </span>
+                          </h4>
+                          <p className="mt-1 text-sm text-ink-faint">{t.note}</p>
+                          <div className="mt-3 space-y-5">
+                            {t.turns.map((s) => (
+                              <article key={s.turn} className="rounded-2xl border border-line bg-card p-4 sm:p-5">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                                  Turn {s.turn}
+                                </p>
+                                <p className="mt-1.5 text-sm leading-relaxed">
+                                  <span className="font-medium">Asked: </span>
+                                  {s.question}
+                                </p>
+                                <p className="mt-1.5 text-sm leading-relaxed">
+                                  <span className="font-medium">You said: </span>
+                                  {s.answer}
+                                </p>
+                                {s.observations.length > 0 && (
+                                  <div className="mt-3 space-y-2.5">
+                                    {s.observations.map((o, i) => (
+                                      <EvidenceCard
+                                        key={i}
+                                        observation={o}
+                                        onReview={
+                                          onReview
+                                            ? (action, note) => onReview(s.turn, o.obs_index ?? i, action, note)
+                                            : undefined
+                                        }
+                                        reviewing={reviewingKey === `${s.turn}:${o.obs_index ?? i}`}
+                                        reviewError={reviewError}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </article>
                             ))}
                           </div>
-                        )}
-                      </article>
-                    ))}
+                        </section>
+                      );
+                    })}
                   </div>
                 </section>
               ))}
             </div>
           </section>
 
-          <TranscriptView segments={briefing.transcript} />
+          <section aria-label="Full transcript">
+            <h2 className="font-serif text-xl font-semibold">3 · Full transcript</h2>
+            <p className="mt-1 text-sm text-ink-soft">
+              Numbered lines for quick lookup — every quote above jumps to its line here.
+            </p>
+            <div className="mt-3">
+              <TranscriptView segments={briefing.transcript} />
+            </div>
+          </section>
 
           <details className="print-open rounded-2xl border border-line bg-card px-5 py-4">
             <summary className="cursor-pointer font-serif text-lg font-semibold">

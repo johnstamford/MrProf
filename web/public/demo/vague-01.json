@@ -1,8 +1,70 @@
 {
   "briefing": {
-    "assessment_id": "MDH8C45Y",
+    "areas": [
+      {
+        "counts": {
+          "covered": 5,
+          "unable": 1
+        },
+        "key": "functioning",
+        "label": "Uncertain",
+        "objectives": [
+          "attention-focus",
+          "organization",
+          "task-completion",
+          "forgetfulness",
+          "restlessness",
+          "impulsivity"
+        ],
+        "status": "unable",
+        "title": "Daily functioning"
+      },
+      {
+        "counts": {
+          "covered": 2
+        },
+        "key": "course",
+        "label": "Reported",
+        "objectives": [
+          "childhood-onset",
+          "persistence-course"
+        ],
+        "status": "covered",
+        "title": "History and course"
+      },
+      {
+        "counts": {
+          "covered": 3
+        },
+        "key": "impact",
+        "label": "Reported",
+        "objectives": [
+          "settings",
+          "impact-work",
+          "impact-relationships"
+        ],
+        "status": "covered",
+        "title": "Settings and impact"
+      },
+      {
+        "counts": {
+          "covered": 2,
+          "unable": 1
+        },
+        "key": "context",
+        "label": "Uncertain",
+        "objectives": [
+          "context-factors",
+          "strategies",
+          "background-goals"
+        ],
+        "status": "unable",
+        "title": "Context and background"
+      }
+    ],
+    "assessment_id": "2H2M3HK7",
     "banner": "Draft-topics briefing (unreviewed). This summarizes what was reported in an interview using draft topics that are not clinically reviewed. It is not a clinical assessment. Only a qualified clinician can determine what explains a person's experiences.",
-    "completed_at": "2026-11-02T13:49:25.918000",
+    "completed_at": "2026-11-02T14:07:27.653000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [],
     "coverage": [
@@ -149,10 +211,16 @@
       "count": 14,
       "max_ms": 0.1,
       "p50_ms": 0.0,
-      "p95_ms": 0.1
+      "p95_ms": 0.03499999999999997
     },
     "mode": "full",
     "report_version": 1,
+    "screening": {
+      "completed_at": "2026-11-02T14:07:24.816000",
+      "positive": false,
+      "score": 3,
+      "scoring_method": "original-0-6"
+    },
     "skill_version": "skill-v0.4-draft",
     "statements": [
       {
@@ -330,6 +398,7 @@
     "topic_version": "topics-v0.4-draft",
     "topics": [
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "attention-focus",
         "status": "covered",
@@ -357,6 +426,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "organization",
         "status": "covered",
@@ -384,6 +454,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "task-completion",
         "status": "covered",
@@ -411,6 +482,7 @@
         ]
       },
       {
+        "label": "Uncertain",
         "note": "could not recall or say; not pressed further",
         "objective": "forgetfulness",
         "status": "unable",
@@ -438,6 +510,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "restlessness",
         "status": "covered",
@@ -465,6 +538,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "impulsivity",
         "status": "covered",
@@ -492,6 +566,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "childhood-onset",
         "status": "covered",
@@ -519,6 +594,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "persistence-course",
         "status": "covered",
@@ -546,6 +622,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "settings",
         "status": "covered",
@@ -573,6 +650,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "impact-work",
         "status": "covered",
@@ -600,6 +678,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "impact-relationships",
         "status": "covered",
@@ -627,6 +706,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "context-factors",
         "status": "covered",
@@ -654,6 +734,7 @@
         ]
       },
       {
+        "label": "Reported",
         "note": "substantive account recorded",
         "objective": "strategies",
         "status": "covered",
@@ -681,6 +762,7 @@
         ]
       },
       {
+        "label": "Uncertain",
         "note": "could not recall or say; not pressed further",
         "objective": "background-goals",
         "status": "unable",
@@ -938,11 +1020,11 @@
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-02T13:49:28.529999+00:00",
+    "exported_at": "2026-11-02T14:07:30.291491+00:00",
     "headline": "Vague short answers",
     "latency_ms": {
       "max": 203.2,
-      "mean": 193.0
+      "mean": 189.9
     },
     "model": {
       "model": "dummy-stub",
@@ -1004,8 +1086,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "MDH8C45Y",
-    "completed_at": "2026-11-02T13:49:23.033000",
+    "assessment_id": "2H2M3HK7",
+    "completed_at": "2026-11-02T14:07:24.816000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

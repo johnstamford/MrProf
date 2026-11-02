@@ -360,6 +360,7 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
             content = build_interview_briefing(
                 assessment_id, iv, coverage, tensions, evidence_turns,
                 (transcripts_doc or {}).get("segments", []), prior + 1, now,
+                doc.get("screening"),
             )
             await db["reports"].insert_one(
                 {

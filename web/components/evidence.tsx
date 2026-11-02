@@ -236,32 +236,53 @@ export function ReviewChip({ review }: { review: string }) {
 /** Left rail: topic list with status dots, anchor-linked to sections. */
 export function TopicRail({
   topics,
+  groups,
   idPrefix = "topic-",
 }: {
   topics: { objective: string; title: string; status: string }[];
+  groups?: { key: string; title: string; objectives: string[] }[];
   idPrefix?: string;
 }) {
+  const byObjective: Record<string, { objective: string; title: string; status: string }> =
+    Object.fromEntries(topics.map((t) => [t.objective, t]));
+  const sections =
+    groups && groups.length > 0
+      ? groups
+          .map((g) => ({
+            key: g.key,
+            title: g.title,
+            topics: g.objectives.map((o) => byObjective[o]).filter(Boolean),
+          }))
+          .filter((g) => g.topics.length > 0)
+      : [{ key: "all", title: "", topics }];
   return (
     <nav aria-label="Topics" className="rounded-2xl border border-line bg-card p-4">
       <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-faint">Topics</h2>
-      <ul className="mt-3 space-y-1">
-        {topics.map((t) => (
-          <li key={t.objective}>
-            <a
-              href={`#${idPrefix}${t.objective}`}
-              className="flex items-start gap-2.5 rounded-lg px-2 py-1.5 text-sm text-ink-soft hover:bg-paper hover:text-ink"
-            >
-              <span className="mt-1.5">
-                <StatusDot status={t.status} label={`${t.title}: ${t.status}`} />
-              </span>
-              <span>
-                <span className="block font-medium leading-snug">{t.title}</span>
-                <span className="block text-xs text-ink-faint">{t.status}</span>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+      {sections.map((s) => (
+        <div key={s.key} className="mt-3 first:mt-3">
+          {s.title && (
+            <p className="px-2 text-xs font-semibold text-ink-soft">{s.title}</p>
+          )}
+          <ul className="mt-1 space-y-1">
+            {s.topics.map((t) => (
+              <li key={t.objective}>
+                <a
+                  href={`#${idPrefix}${t.objective}`}
+                  className="flex items-start gap-2.5 rounded-lg px-2 py-1.5 text-sm text-ink-soft hover:bg-paper hover:text-ink"
+                >
+                  <span className="mt-1.5">
+                    <StatusDot status={t.status} label={`${t.title}: ${t.status}`} />
+                  </span>
+                  <span>
+                    <span className="block font-medium leading-snug">{t.title}</span>
+                    <span className="block text-xs text-ink-faint">{t.status}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
       <p className="mt-3 flex items-start gap-1.5 border-t border-line pt-3 text-xs text-ink-faint">
         <CircleDashed className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
         Hollow dots are gaps: unexplored or thinly covered, not negative findings.

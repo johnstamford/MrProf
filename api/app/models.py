@@ -244,8 +244,29 @@ class BriefingTopic(BaseModel):
     objective: str
     title: str
     status: str
+    label: str = ""
     note: str
     turns: list[BriefingTopicTurn] = Field(default_factory=list)
+
+
+class BriefingArea(BaseModel):
+    """Section-1/2 area rollup: headline status plus honest per-status counts."""
+
+    key: str
+    title: str
+    status: str
+    label: str = ""
+    counts: dict[str, int] = Field(default_factory=dict)
+    objectives: list[str] = Field(default_factory=list)
+
+
+class BriefingScreeningSnapshot(BaseModel):
+    """Screening score carried into the interview briefing summary."""
+
+    score: int | None = None
+    scoring_method: str = "original-0-6"
+    positive: bool | None = None
+    completed_at: datetime | None = None
 
 
 class BriefingDetailSummary(BaseModel):
@@ -272,6 +293,8 @@ class InterviewBriefingOut(BaseModel):
     banner: str
     completion_note: str
     turns_answered: int
+    screening: BriefingScreeningSnapshot | None = None
+    areas: list[BriefingArea] = Field(default_factory=list)
     topics: list[BriefingTopic] = Field(default_factory=list)
     statements: list[BriefingStatement]
     system_notes: list[BriefingSystemNote]

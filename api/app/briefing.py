@@ -25,6 +25,28 @@ BRIEFING_BANNER = (
     "what explains a person's experiences."
 )
 
+# Section-1 display vocabulary. Denial stays distinct from missing information:
+# "Explicitly denied" is an answer; "Not covered" means we have nothing.
+TOPIC_STATUS_LABELS = {
+    "covered": "Reported",
+    "denied": "Explicitly denied",
+    "unable": "Uncertain",
+    "thin": "Limited",
+    "unasked": "Not covered",
+    "pending": "Not covered",
+}
+
+# The four clinician-facing areas. Rollup priority: uncertainty first (needs
+# attention), then reported detail, denial, limited, and finally gaps. Counts
+# are always shown alongside the headline so mixed areas stay honest.
+FAMILY_META = (
+    ("functioning", "Daily functioning"),
+    ("course", "History and course"),
+    ("impact", "Settings and impact"),
+    ("context", "Context and background"),
+)
+_FAMILY_ROLLUP_PRIORITY = ("unable", "covered", "denied", "thin", "unasked", "pending")
+
 COMPLETION_NOTE = (
     "Information gathering has ended within the turn budget. Topics below were "
     "not covered or only thinly covered; they are recorded as gaps, not as "
@@ -65,6 +87,38 @@ def latency_summary(turns: list[dict]) -> dict:
     }
 
 
+def family_rollup(coverage: list[dict]) -> list[dict]:
+    """Roll the 14 topic entries up into the 4 clinician-facing areas.
+
+    Returns [{key, title, status, label, counts:{...}, objectives:[...]}].
+    status is the raw winning status; label is its display word. Counts cover
+    every member so mixed areas (e.g. 5 denied + 1 reported) stay honest.
+    """
+    by_objective = {e["objective"]: e for e in coverage}
+    rank = {s: i for i, s in enumerate(_FAMILY_ROLLUP_PRIORITY)}
+    areas = []
+    for key, title in FAMILY_META:
+        members = FAMILIES.get(key, ())
+        counts: dict[str, int] = {}
+        win = "unasked"
+        for oid in members:
+            status = (by_objective.get(oid) or {}).get("status", "unasked")
+            counts[status] = counts.get(status, 0) + 1
+            if rank.get(status, 99) < rank.get(win, 99):
+                win = status
+        areas.append(
+            {
+                "key": key,
+                "title": title,
+                "status": win,
+                "label": TOPIC_STATUS_LABELS.get(win, win),
+                "counts": counts,
+                "objectives": list(members),
+            }
+        )
+    return areas
+
+
 def build_interview_briefing(
     assessment_id: str,
     interview: dict,
@@ -74,6 +128,7 @@ def build_interview_briefing(
     segments: list[dict],
     report_version: int,
     completed_at: datetime,
+    screening: dict | None = None,
 ) -> dict:
     """Build the fixed briefing content dict.
 
@@ -148,12 +203,21 @@ def build_interview_briefing(
                 "objective": oid,
                 "title": entry["title"],
                 "status": entry["status"],
+                "label": TOPIC_STATUS_LABELS.get(entry["status"], entry["status"]),
                 "note": entry["note"],
                 "turns": topic_turns,
             }
         )
 
     clarified = _clarified_families(turns, tensions)
+    screening_snapshot = None
+    if screening:
+        screening_snapshot = {
+            "score": screening.get("score"),
+            "scoring_method": screening.get("scoring_method", "original-0-6"),
+            "positive": screening.get("positive"),
+            "completed_at": screening.get("completed_at"),
+        }
     contradictions = [
         {
             "family": tension["family"],
@@ -178,6 +242,8 @@ def build_interview_briefing(
         "banner": BRIEFING_BANNER,
         "completion_note": COMPLETION_NOTE,
         "turns_answered": len(turns),
+        "screening": screening_snapshot,
+        "areas": family_rollup(coverage),
         "detail_summary": detail_summary,
         "latency_summary": latency_summary(turns),
         "support_note": RISK_SIGNPOST,
