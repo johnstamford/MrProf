@@ -470,6 +470,10 @@ correction link slip first, in that order.
 **Status (3 Nov 2026): ✅ all workstreams landed and verified.** Live spot-check
 result appended above (vague-01, model patient, 20 turns, complete, 1.4s mean
 latency, dimension-targeted follow-ups).
+Post-plan addition (owner request, same day): "Your account at a glance" recap
+on the done screen — descriptive counts/lists only (reported / denied /
+unsure / limited-or-not-covered + screening line + take-to-appointment note),
+no interpretation. Excluded from print; reviewer mode hides it.
 
 ## Out of scope (unchanged)
 

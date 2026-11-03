@@ -794,11 +794,68 @@ export default function InterviewPage() {
   }
 
   if (phase === "done" && briefing) {
+    const glance = (() => {
+      const groups: Record<string, string[]> = {};
+      for (const t of briefing.topics ?? []) {
+        const key = (t.label || t.status || "").toLowerCase();
+        (groups[key] ??= []).push(t.title);
+      }
+      return groups;
+    })();
     return (
       <div className="pt-8 sm:pt-12">
         <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
           Your interview briefing
         </h1>
+        {!reviewerMode && (
+          <section aria-label="Your account at a glance" className="no-print mt-4 max-w-3xl rounded-2xl border border-line bg-card p-5">
+            <h2 className="font-serif text-lg font-semibold">Your account at a glance</h2>
+            <p className="mt-1 text-sm text-ink-faint">
+              A plain recap of what you reported — no interpretation. The full
+              evidence is below.
+            </p>
+            {briefing.screening != null && briefing.screening.score != null && (
+              <p className="mt-2 text-sm leading-relaxed">
+                <span className="font-medium">Screening: </span>
+                {briefing.screening.score}/6 ({briefing.screening.scoring_method}
+                {briefing.screening.positive == null
+                  ? ""
+                  : briefing.screening.positive
+                    ? ", above threshold — further assessment may be useful"
+                    : ", below threshold — does not exclude ADHD or other conditions"}
+                ).
+              </p>
+            )}
+            {(glance["reported"] ?? []).length > 0 && (
+              <p className="mt-2 text-sm leading-relaxed">
+                <span className="font-medium">You described experiences with: </span>
+                {(glance["reported"] ?? []).join("; ")}.
+              </p>
+            )}
+            {(glance["explicitly denied"] ?? []).length > 0 && (
+              <p className="mt-2 text-sm leading-relaxed">
+                <span className="font-medium">You said {(glance["explicitly denied"] ?? []).length === 1 ? "this was" : "these were"} not an issue for you: </span>
+                {(glance["explicitly denied"] ?? []).join("; ")}.
+              </p>
+            )}
+            {(glance["uncertain"] ?? []).length > 0 && (
+              <p className="mt-2 text-sm leading-relaxed">
+                <span className="font-medium">You weren&apos;t sure about: </span>
+                {(glance["uncertain"] ?? []).join("; ")}.
+              </p>
+            )}
+            {((glance["limited"] ?? []).length > 0 || (glance["not covered"] ?? []).length > 0) && (
+              <p className="mt-2 text-sm leading-relaxed">
+                <span className="font-medium">Limited or not covered: </span>
+                {[...(glance["limited"] ?? []), ...(glance["not covered"] ?? [])].join("; ")}.
+              </p>
+            )}
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+              Take both reports to your appointment — every point links to your
+              line-numbered transcript so a clinician can check it.
+            </p>
+          </section>
+        )}
         {reviewerMode && (
           <p role="note" className="mt-2 max-w-3xl rounded-xl border border-line bg-cream px-4 py-2.5 text-sm">
             Reviewer mode — Accept / Amend / Reject controls are enabled. They write
