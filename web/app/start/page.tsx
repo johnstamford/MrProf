@@ -127,13 +127,7 @@ export default function StartPage() {
           MrProf helps you complete a 6-question ADHD screening questionnaire and,
           if you choose, answer follow-up questions about your experiences. You keep
           two reports: a screening summary and an evidence briefing with exact quotes
-          from your answers.
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft sm:text-base">
-          This is a draft research prototype — it organizes what you report so a
-          clinician can review it. A result below the screening threshold does not
-          rule anything out. Only a qualified clinician can determine what explains
-          your experiences.
+          from your answers. It organizes what you report so a clinician can review it.
         </p>
       </section>
 

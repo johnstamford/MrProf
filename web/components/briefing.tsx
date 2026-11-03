@@ -4,7 +4,6 @@ import { Download, Printer } from "lucide-react";
 import {
   CoverageBar,
   EvidenceCard,
-  NotConcludedBox,
   StatusDot,
   TopicRail,
   TranscriptView,
@@ -132,9 +131,6 @@ export default function BriefingView({
       <p className="inline-block rounded-full border border-tension/40 bg-tension-tint px-3 py-1 text-xs font-bold uppercase tracking-wider text-tension">
         Unreviewed — not clinician-approved
       </p>
-      <p role="note" className="sticky top-0 z-10 mt-2 rounded-2xl bg-ink px-4 py-3 text-sm font-medium text-paper">
-        {briefing.banner}
-      </p>
       <p className="mt-4 max-w-3xl leading-relaxed text-ink-soft">
         {briefing.turns_answered} answers across {total} topics
         {covered ? ` — ${covered} with a detailed account` : ""}.
@@ -147,8 +143,7 @@ export default function BriefingView({
           example or stated context;{" "}
           {(briefing.detail_summary.level_counts[0] ?? 0) +
             (briefing.detail_summary.level_counts[1] ?? 0)}{" "}
-          were brief or position-only. Thin answers are recorded as gaps, not
-          as negative findings.
+          were brief or position-only.
           {briefing.latency_summary && briefing.latency_summary.count > 0 && (
             <>
               {" "}Question phrasing took a median of{" "}
@@ -162,7 +157,7 @@ export default function BriefingView({
       {briefing.mode === "taster" && (
         <p role="note" className="mt-2 max-w-3xl rounded-xl border border-primary/30 bg-primary-tint px-4 py-2.5 text-sm font-medium text-primary-deep">
           Short taster — about 6 questions. Topics below marked unexplored were
-          not reached and are recorded as gaps, not as negative findings.
+          not reached and are recorded as gaps.
         </p>
       )}
       {briefing.support_note && (
@@ -220,7 +215,6 @@ export default function BriefingView({
                 <CoverageBar coverage={briefing.coverage} />
               </div>
             )}
-            <p className="mt-2 text-sm text-ink-soft">{briefing.completion_note}</p>
           </section>
 
           <section aria-label="Evidence by area">
@@ -333,6 +327,7 @@ export default function BriefingView({
             <summary className="cursor-pointer font-serif text-lg font-semibold">
               How this was gathered (system notes — not what you said)
             </summary>
+            <p className="mt-3 text-sm text-ink-soft">{briefing.completion_note}</p>
             <ul className="mt-3 space-y-1.5 text-sm text-ink-soft">
               {briefing.system_notes.map((n) => (
                 <li key={n.turn}>
@@ -372,7 +367,6 @@ export default function BriefingView({
             )}
             <section aria-label="Gaps and open questions" className="rounded-2xl border border-line bg-card p-4">
               <h2 className="text-sm font-semibold">Gaps and open questions</h2>
-              <p className="mt-2 text-sm text-ink-soft">{briefing.completion_note}</p>
               {(briefing.gaps ?? []).length === 0 ? (
                 <p className="mt-2 text-sm text-ink-soft">
                   No open gaps: every planned topic reached a detailed account, a clear
@@ -388,7 +382,6 @@ export default function BriefingView({
                 </ul>
               )}
             </section>
-            <NotConcludedBox />
           </div>
         </div>
       </div>

@@ -283,10 +283,6 @@ export function TopicRail({
           </ul>
         </div>
       ))}
-      <p className="mt-3 flex items-start gap-1.5 border-t border-line pt-3 text-xs text-ink-faint">
-        <CircleDashed className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-        Hollow dots are gaps: unexplored or thinly covered, not negative findings.
-      </p>
     </nav>
   );
 }

@@ -19,10 +19,7 @@ from .interview import FAMILIES, PLAN_ORDER, detail_score, load_topics
 from .risk import RISK_SIGNPOST
 
 BRIEFING_BANNER = (
-    "Draft-topics briefing (unreviewed). This summarizes what was reported "
-    "in an interview using draft topics that are not clinically reviewed. "
-    "It is not a clinical assessment. Only a qualified clinician can determine "
-    "what explains a person's experiences."
+    "Prepared from your answers for clinician review \u2014 unreviewed draft."
 )
 
 # Section-1 display vocabulary. Denial stays distinct from missing information:

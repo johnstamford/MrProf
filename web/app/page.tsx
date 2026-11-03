@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, FileCheck2, MessagesSquare, ScanSearch } from "lucide-react";
-import { getReadiness } from "../lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -46,9 +45,6 @@ const STEPS = [
 ];
 
 export default async function Home() {
-  const { status, body } = await getReadiness();
-  const apiOk = status === 200 && body?.ok === true;
-
   return (
     <div className="pt-10 sm:pt-16">
       {/* Hero */}
@@ -60,7 +56,8 @@ export default async function Home() {
         <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-soft">
           MrProf guides you through a short screening and a one-question-at-a-time
           interview, then assembles a briefing grounded in your exact words —
-          quotes, line numbers, denials, and gaps included.
+          quotes, line numbers, denials, and gaps included. It organizes what
+          you report for clinician review — it does not diagnose or rule anything out.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
@@ -126,22 +123,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Limitations */}
-      <section
-        aria-label="Limitations"
-        className="mt-12 rounded-2xl border border-line bg-cream p-5 sm:mt-16 sm:p-6"
-      >
-        <h2 className="font-serif text-xl font-semibold">Limitations, stated plainly</h2>
-        <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-ink-soft">
-          <li>Topic briefings are drafts — not clinically reviewed, and not a clinical assessment.</li>
-          <li>Unreviewed outputs never look clinician-approved: every briefing carries its draft banner.</li>
-          <li>Synthetic walkthroughs prove the pipeline works; they say nothing about clinical validity or timing.</li>
-          <li>
-            Service status: API {apiOk ? "reachable" : "unreachable"}
-            {body?.mongo ? `, database ${body.mongo}` : ""}.
-          </li>
-        </ul>
-      </section>
     </div>
   );
 }

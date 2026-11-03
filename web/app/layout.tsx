@@ -38,15 +38,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <main className="mx-auto w-full max-w-5xl px-4 pb-20 sm:px-6">
             {children}
           </main>
-          <footer className="no-print border-t border-line">
-            <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-ink-faint sm:px-6">
-              <p>
-                Draft research prototype. Nothing here is a clinical assessment —
-                only a qualified clinician can determine what explains your
-                experiences.
-              </p>
-            </div>
-          </footer>
         </div>
       </body>
     </html>

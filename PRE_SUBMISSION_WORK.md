@@ -319,9 +319,22 @@ stay in JSON metadata and system notes — out of user-facing copy.
 a manual count: the not-a-diagnosis boundary appears at most 3 times in a
 full journey (consent, screening explanation, briefing line); no surface
 loses information a user needs for safety (risk signpost still reachable
-in ≤1 click from every interview state).
+in ≤1 click from every interview state; ready state keeps a "Need support?"
+expander, assessing/done states carry no full note (done briefing keeps its
+support line)).
 
-**Size:** S. Do early — it changes how every later WS reads.
+**Status (3 Nov 2026): ✅ done.** Footer paragraph deleted (footer removed);
+landing hero carries the one-line is/isn't, Limitations box removed; `/start`
+What-is-this folds the useful half without caveat framing, consent + full
+risk signpost kept; `/interview` header drops the draft-topics sentence, full
+risk note only on `/start`, loop uses the compact expander; briefing keeps the
+UNREVIEWED chip only (sticky banner render removed, banner text shortened to
+the one-liner in `api/app/briefing.py`), completion note moved into "How this
+was gathered", gaps listed once, rail footnote + repeated "not negative
+findings" glosses removed, `NotConcludedBox` no longer rendered.
+Evidence-card section-level label deferred to WS3. Screening report needed no
+change (already minimal). Focused tests (briefing/report/f10a/review: 20
+passed) + `npm run build` green.
 
 ---
 

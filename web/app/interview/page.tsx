@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { loadSession } from "../../lib/session";
 import BriefingView, { type Briefing } from "../../components/briefing";
-import RiskNote from "../../components/risk-note";
+import { RiskLink } from "../../components/risk-note";
 
 type Question = {
   turn: number;
@@ -474,7 +474,6 @@ export default function InterviewPage() {
           <div className="mrprof-spinner mx-auto" role="status" aria-label={msg} />
           <p role="status" className="mt-4 font-semibold">{msg}</p>
           <p className="mt-2 text-sm text-ink-soft">Your answers are saved — this usually takes under a minute…</p>
-          <div className="mt-4 text-left"><RiskNote /></div>
           {error && (
             <div className="mt-4">
               <p role="alert" className="text-sm font-medium text-tension">{error}</p>
@@ -533,7 +532,6 @@ export default function InterviewPage() {
             }}
           />
         </div>
-        <div className="no-print mt-4"><RiskNote /></div>
         <p className="no-print mt-8 flex flex-wrap gap-3 border-t border-line pt-6">
           <button
             onClick={() => router.push("/report")}
@@ -556,16 +554,15 @@ export default function InterviewPage() {
     <div className="mx-auto max-w-2xl pt-10 sm:pt-14">
       <h1 className="font-serif text-3xl font-semibold tracking-tight">Interview</h1>
       <p className="mt-3 text-sm leading-relaxed text-ink-soft sm:text-base">
-        One question at a time — there is no time limit, and topics are a first draft,
-        not a clinical assessment. Short answers are accepted: a plain no, or
-        “I can’t remember”, is a valid answer.
+        One question at a time — there is no time limit. Short answers are accepted:
+        a plain no, or “I can’t remember”, is a valid answer.
       </p>
       {mode === "taster" && (
         <p role="note" className="mt-3 rounded-xl border border-primary/30 bg-primary-tint px-4 py-2.5 text-sm font-medium text-primary-deep">
           Short taster — about 6 questions. Anything not covered is marked as a gap in your briefing.
         </p>
       )}
-      <RiskNote />
+      <RiskLink />
       <p className="mt-4 text-sm font-medium text-ink-soft" role="status">
         Question {question ? question.turn : "…"} · {turnsAnswered} answered so far
       </p>
