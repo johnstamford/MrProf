@@ -73,6 +73,7 @@ export default function InterviewPage() {
   const [correctOpen, setCorrectOpen] = useState<Record<string, boolean>>({});
   const [correctText, setCorrectText] = useState<Record<string, string>>({});
   const [reviewMsg, setReviewMsg] = useState("");
+  const [confirming, setConfirming] = useState(false);
   const [version, setVersion] = useState<number | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [turnsAnswered, setTurnsAnswered] = useState(0);
@@ -553,6 +554,7 @@ export default function InterviewPage() {
     const auth = authHeaders();
     if (!auth || version === null) return;
     setError("");
+    setConfirming(true);
     try {
       const { session, headers } = auth;
       const base = `/api/assessments/${encodeURIComponent(session.code)}`;
@@ -562,23 +564,28 @@ export default function InterviewPage() {
         body: JSON.stringify({ base_version: version, idempotency_key: newKey() }),
       });
       if (res.status === 409) {
+        setConfirming(false);
         setError("already confirmed — reloading");
         await load();
         return;
       }
       if (!res.ok) {
+        setConfirming(false);
         setError("could not build your briefing — please try again");
         return;
       }
       const rep = await fetch(`${base}/interview/report`, { headers });
       if (!rep.ok) {
+        setConfirming(false);
         setError("confirmed, but the briefing is missing — please reload");
         return;
       }
       setBriefing((await rep.json()) as Briefing);
       setReview(null);
+      setConfirming(false);
       setPhase("done");
     } catch {
+      setConfirming(false);
       setError("could not build your briefing — please try again");
     }
   }
@@ -1113,12 +1120,23 @@ export default function InterviewPage() {
 
         {reviewMsg && <p role="status" className="mt-4 text-sm font-medium text-primary-deep">{reviewMsg}</p>}
         {error && <p role="alert" className="mt-4 rounded-xl border border-tension/40 bg-tension-tint px-4 py-3 text-sm font-medium">{error}</p>}
-        <button
-          onClick={submitConfirm}
-          className="mt-6 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-6 py-3.5 text-base font-semibold text-white hover:bg-primary-deep"
-        >
-          Looks right — build my briefing <ArrowRight className="h-4 w-4" aria-hidden />
-        </button>
+        {confirming ? (
+          <div role="status" aria-live="polite" className="mt-6 rounded-2xl border border-line bg-card p-6 text-center">
+            <div className="mrprof-spinner mx-auto" aria-hidden />
+            <p className="mt-4 font-semibold">Building your briefing…</p>
+            <p className="mt-2 text-sm text-ink-soft">
+              Gathering the last details into your report — this can take up to
+              a minute. Your answers are safe; please keep this tab open.
+            </p>
+          </div>
+        ) : (
+          <button
+            onClick={submitConfirm}
+            className="mt-6 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-6 py-3.5 text-base font-semibold text-white hover:bg-primary-deep"
+          >
+            Looks right — build my briefing <ArrowRight className="h-4 w-4" aria-hidden />
+          </button>
+        )}
         <p className="mt-2 pb-10 text-center text-xs text-ink-faint">
           Your briefing is only generated after you confirm. Closing the browser here resumes at this step.
         </p>
