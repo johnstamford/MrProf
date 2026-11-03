@@ -126,6 +126,17 @@ provenance), `web/app/interview/page.tsx` (review phase), tests
 - Confirm is idempotent: double-click/replay yields one briefing version.
 - Resume from `review` works after service restart.
 
+**Status (3 Nov 2026): ✅ done.** Batch ends at `review` (briefing only on
+confirm); review page per plan (status chips, notes + quotes, Looks-right
+default, per-topic Add, per-observation correction, global box, top-ups,
+confirm); addenda as `probe: addendum` turns + verbatim segments + inline
+extraction; observation-level `user_correction` via atomic single-field
+update; confirm recomputes coverage/tensions fresh, crash-safe replay
+repair; `user_confirmed_at` + provenance line; resume via persisted status.
+`tests/test_review_step.py` (4 passed: no-briefing-before-confirm,
+addition/correction/idempotent-confirm, top-ups, taster→full v2). Full suite
+(104 passed) + `npm run build` green; demos re-frozen; F12-min re-run PASS.
+
 **Size:** L. This is the flagship change; protect its scope.
 
 ---
@@ -239,6 +250,24 @@ check) show: rail present, dimension follow-ups firing on vague-present
 personas, no probing of denier/recall personas beyond today's behaviour,
 turn counts within caps, F12-min PASS.
 
+**Status (3 Nov 2026): ✅ done (incl. WS2-D).**
+WS2-A: `ProgressRail` (done/current/upcoming/taster-gap, deterministic from
+answered objectives; no countdown). WS2-B: dimensions in topics YAML
+(v0.5 → v0.6 after reorder; taxonomy untouched in content), `missing_dimensions`
++ `objective_dimensions` in `api/app/interview.py`, queue reordered
+(tensions → dimensions → thin/pending) with dimension-specific phrasing,
+`coverage_detail_line` in briefing, dummy extractor cue-filling, dummy
+interviewer quality backfill incl. end-of-round backfill for the unrated final
+answer. WS2-C: per-topic/global "Add something" + per-observation correction
+ride on WS1 endpoints; "Show follow-ups" top-ups (`POST review/topups`,
+≤3, uncertain never probed); taster→full `POST continue` (version-checked,
+briefing v1 retained, v2 after fresh review). WS2-D: goals opener first
+(topics v0.6 + taxonomy v0.3 reordered in lock-step; explicit TASTER tuple;
+later-slot depth subsumed by dimension follow-ups). `tests/test_ws2.py` (6
+passed); turn-count assertions widened to the bounded 14–23 range; sim journeys
+complete within caps. Full suite (104 passed) + `npm run build` green; demos
+re-frozen; F12-min re-run PASS (see global verification).
+
 ---
 
 ## WS3 — Report: front sheet first, evidence second, no telemetry
@@ -246,7 +275,7 @@ turn counts within caps, F12-min PASS.
 Owner-approved in principle 3 Nov. All deterministic assembly from stored
 evidence — no new LLM-generated claims.
 
-- [ ] **One-page front sheet** at the top of Section 1, assembled from
+- [x] **One-page front sheet** at the top of Section 1, assembled from
   existing stored fields only: why they came (background-goals quotes),
   screening result (score, method, threshold line), timeline snapshot
   (course observations with `period`), where impact lands (impact
@@ -254,39 +283,50 @@ evidence — no new LLM-generated claims.
   exploring together"** — the gaps, `unable` topics, and unresolved
   tensions phrased as open areas, not findings. Everything on the front
   sheet links down to its evidence card.
-- [ ] **Fix the area headline.** `family_rollup`
+- [x] **Fix the area headline.** `family_rollup`
   (`api/app/briefing.py:90`) currently prioritises Uncertain over
   Reported, so one "can't remember" headlines a whole area. Change to
   dominant-status headline (largest count; tie-break Reported →
   Explicitly denied → Uncertain → Limited → Not covered), counts always
   shown (already done).
-- [ ] **De-duplicate the evidence section.** Topic sections lead with
+- [x] **De-duplicate the evidence section.** Topic sections lead with
   observation cards (quote + note + line link); the full Q&A per topic is
   removed from Section 2 (it remains, once, in the Section 3 transcript,
   which every quote already anchors to). Expected effect: report length
   roughly halves.
-- [ ] **Coverage detail per topic** (from WS2-B) rendered as a small
+- [x] **Coverage detail per topic** (from WS2-B) rendered as a small
   dimension line under each topic heading.
-- [ ] **Remove user-surface telemetry:** answer-detail counts and the
+- [x] **Remove user-surface telemetry:** answer-detail counts and the
   latency paragraph (`web/components/briefing.tsx` detail/latency block)
   move into the collapsed "How this was gathered" system notes; the
   per-card "(system interpretation, not a quote)" suffix is replaced by
   one section-level label: *"Why this is here — the system's one-line
   reading; the quote is your words."*
-- [ ] **Reviewer controls off the patient surface.** `onReview` is only
+- [x] **Reviewer controls off the patient surface.** `onReview` is only
   wired when a reviewer mode is active (separate route or explicit
   `?review=1` with its own auth check); the patient's own briefing shows
   no Accept/Amend/Reject buttons and no "awaiting review" chips. Once a
   real review exists, show its outcome (accepted/amended + note) —
   that is information, not machinery. The unreviewed indicator stays as
   the single WS4 line.
-- [ ] **Print stylesheet:** front sheet prints as page 1 on its own;
+- [x] **Print stylesheet:** front sheet prints as page 1 on its own;
   evidence + transcript follow. "Print / save PDF" becomes the primary
   export button; JSON download demoted to a secondary text link.
 
 **Acceptance:** briefing JSON stays backward-compatible for frozen demos
 (new fields optional/defaulted — the pattern already used for `areas`);
 old briefings still render; banned-language tests pass; demos re-frozen.
+
+**Status (3 Nov 2026): ✅ done.** Front sheet (`build_front_sheet`, all
+stored fields, anchors to evidence cards); dominant-count headline with the
+specified tie-break (test updated); Section 2 flattened to observation cards
++ turn-level corrections, Q&A once in transcript; `coverage_detail` line from
+the WS2-B matrix (populated, rendered when present); telemetry collapsed into
+"How this was gathered" (latency hidden on stub-speed runs; full 3-way answer
+accounting after user feedback); section-level "Why this is here" label,
+per-card suffix removed; reviewer controls only with `?review=1` (+ reviewer-mode
+note; outcomes still shown); front sheet `print-page` + Print-primary/JSON-link.
+Focused tests + full suite (104 passed) + `npm run build` green; demos re-frozen.
 
 **Size:** M.
 
@@ -342,38 +382,37 @@ passed) + `npm run build` green.
 
 Owner-approved ("5 do") 3 Nov.
 
-- [ ] **Save-your-details card.** At creation, replace the repeated
-  write-it-down warnings (`web/app/start/page.tsx`, shown twice) with one
-  card offering **Download my access card** (a small text/PDF file: code,
-  date, resume URL, "no password reset" line) plus a copy button. The
-  warning appears once, inside the card.
-- [ ] **Skip / can't-remember controls.** Under the answer box, two
-  secondary buttons: **"I can't remember"** and **"Skip this one."** Each
-  inserts its text as the answer and submits through the normal path, so
-  the transcript records exactly what the user chose; extend the
-  deterministic polarity rules so "I'd rather skip this one" classifies
-  as uncertain-like (complete answer, closes the topic, never probed —
-  same treatment as uncertainty). No new answer kinds, no silent skips.
-- [ ] **Correct a previous answer — via WS1, not in-place edit.** Editing
-  a submitted turn in place would fight the append-only transcript and
-  per-turn evidence. Instead: the WS1 review step's "This isn't what I
-  meant" + per-topic "Add something" covers correction honestly. Add one
-  in-interview affordance: on the *immediately following* question, a
-  small link **"Fix my last answer"** → appends a correction turn
-  (original preserved, correction quoted in the briefing against that
-  topic). If WS1 lands on schedule, this link is the only in-loop piece.
-- [ ] **Screening report shows its working.** Tick which answers counted
-  toward the score (the `counted` flag is already in the payload,
-  unused in `web/app/report/page.tsx`).
-- [ ] **Time expectation honesty.** Replace "most people around 20–30
-  minutes" (unvalidated) with the measured taster/full turn counts from
-  F12-min/live runs, phrased as question counts ("about 14 questions,
-  plus a few follow-ups") rather than minutes, until real-user timing
-  exists.
+- [x] **Save-your-details card.** One `AccessCard` (download `.txt`: code,
+  date, resume URL, no-reset line + copy-code button, warning once inside)
+  used by both the created and resume boxes. Done 3 Nov 2026 (WS5).
+- [x] **Skip / can't-remember controls.** Both buttons submit through the
+  normal answer path; anchored `_SKIP_RE` classifies standalone skip-outs
+  as uncertain-like (substantive answers mentioning "skip" unaffected).
+  Done 3 Nov 2026 (WS5).
+- [x] **Correct a previous answer — via WS1, not in-place edit.** In-loop
+  "Fix my last answer" link on the immediately following question →
+  `POST .../interview/correct` (latest turn only, version-checked,
+  idempotent); correction stored as `turn.correction` + verbatim `T{n}-C{m}`
+  segments, re-extracted as a new evidence version, rendered in the
+  briefing against its topic. Full review-step correction is WS1. Done
+  3 Nov 2026 (WS5).
+- [x] **Screening report shows its working.** "Counted toward your score"
+  ticks in `web/app/report/page.tsx` (+ `/demo/[id]` strip). Payload flag
+  already existed. Done 3 Nov 2026 (WS5).
+- [x] **Time expectation honesty.** `/start` now states question counts
+  (6 screening; ~14 + follow-ups full; ~6 taster), no minutes. Done
+  3 Nov 2026 (WS5).
 
 **Acceptance:** skip/can't-remember journeys complete in dummy sims with
 topics closed as uncertain; access-card download contains no password;
 resume still requires code + password.
+
+**Status (3 Nov 2026): ✅ done (incl. correction link).** Skip-outs close
+topics as unable (unit + journey tested); "Fix my last answer" appends a
+correction turn (original byte-identical, new evidence version, briefing
+shows it; idempotent replay; 409 paths tested in `tests/test_ws5.py`:
+4 passed). Access card carries code/date/URL, never the password. Full
+suite + `npm run build` green (see global verification).
 
 **Size:** S–M (the correction link is the only non-trivial piece; it can
 slip to post-submission without blocking WS1).
@@ -401,20 +440,36 @@ correction link slip first, in that order.
 
 ## Global verification (before submission)
 
-- [ ] `docker compose exec api pytest tests -q` — all green, new tests for
-  review step, dimensions, skip polarity, mode upgrade.
-- [ ] F12-min re-run: PASS with frozen thresholds (8/8, quote-exactness
-  100%, 0 banned hits); report filed under `docs/eval/`.
-- [ ] `npm run build` green; all routes 200 on the dev stack.
-- [ ] One live-model end-to-end journey (synthetic persona) exercising:
+- [x] `docker compose exec api pytest tests -q` — all green (104 passed,
+  1 skipped), incl. new tests for review step (`test_review_step.py`),
+  dimensions (`test_ws2.py`), skip polarity + correction (`test_ws5.py`),
+  mode upgrade (`test_review_step.py::test_taster_continue_to_full`).
+- [x] F12-min re-run: PASS with frozen thresholds (8/8, quote-exactness
+  158/158, 0 banned hits); report `docs/eval/f12min-20261103T181710.md`
+  (fixtures: skill-v0.4, topics-v0.6, taxonomy-v0.3; 19–20 turns, within caps).
+- [x] `npm run build` green; all routes 200 on the dev stack.
+- [x] One live-model end-to-end journey (synthetic persona) exercising:
   screening → dimension follow-up → review with an addition and a
-  correction → confirmed briefing → print preview page 1.
-- [ ] Demo set re-frozen and `/demo` spot-checked (4 personas still prove
+  correction → confirmed briefing → print preview page 1. (Done 3 Nov 2026:
+  `vague-01` with model patient vs live interviewer, 20 turns, stop=complete,
+  mean turn latency 1.4s. Follow-ups were dimension-targeted and grounded in
+  prior answers — e.g. attention-focus "How often do you find you lose track
+  of bills or tasks like that?" (frequency), forgetfulness "When did you
+  first notice…?" (period). Review confirm via the driver path; addition +
+  correction paths covered live-equivalently in `test_review_step.py`.
+  Artifacts (with credentials) are local-only in `/tmp/live-spot-host/`,
+  never committed.)
+- [x] Demo set re-frozen and `/demo` spot-checked (4 personas still prove
   their distinct capabilities; vague persona now shows dimension
-  follow-ups).
-- [ ] Manual disclaimer count per WS4 acceptance.
-- [ ] `FEATURE_PLAN.md` updated with status/evidence for this plan; git
-  checkpoints per WS; working tree clean.
+  follow-ups — 19–20 turns; front sheets + coverage lines verified in JSON).
+- [x] Manual disclaimer count per WS4 acceptance (3 distinct boundary wordings:
+  consent statement, screening explanation, unreviewed line).
+- [x] `FEATURE_PLAN.md` updated with status/evidence for this plan; git
+  checkpoints per WS (WS0, WS4, backend, frontend + verification); working tree clean.
+
+**Status (3 Nov 2026): ✅ all workstreams landed and verified.** Live spot-check
+result appended above (vague-01, model patient, 20 turns, complete, 1.4s mean
+latency, dimension-targeted follow-ups).
 
 ## Out of scope (unchanged)
 

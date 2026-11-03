@@ -77,7 +77,7 @@ Stack: Next.js/React + Tailwind, Python/FastAPI + Microsoft Agent Framework
 
 ## Limitations, stated once
 
-Research prototype, not clinical: draft topics/taxonomy (`topics-v0.4-draft`)
+Research prototype, not clinical: draft topics/taxonomy (`topics-v0.6-draft`)
 not clinically validated; every briefing is an `UNREVIEWED — not
 clinician-approved` draft until a reviewer annotates it. Synthetic runs prove
 the pipeline, not clinical validity or real-user timing. Live-model turns take

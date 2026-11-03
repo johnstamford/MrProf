@@ -1,0 +1,309 @@
+{
+  "fixtures": {
+    "interviewer": "dummy",
+    "patient": "dummy",
+    "repeats": 2,
+    "skill": "skill-v0.4-draft",
+    "taxonomy": "taxonomy-v0.3-draft",
+    "topics": "topics-v0.6-draft"
+  },
+  "gate": "F12-min",
+  "runs": [
+    {
+      "artifacts": "/tmp/eval-runs/vague-01-dummy-20261103T181722",
+      "assessment_id": "3YVQJZWF",
+      "banned_hits": [],
+      "briefing_latency": {
+        "count": 20,
+        "max_ms": 0.1,
+        "p50_ms": 0.0,
+        "p95_ms": 0.1
+      },
+      "complete": true,
+      "duration_s": 11.2,
+      "latency_max_ms": 205.1,
+      "latency_mean_ms": 194.5,
+      "observations": 20,
+      "profile_id": "vague-01",
+      "quote_misses": [],
+      "quote_rate": 1.0,
+      "quotes_exact": 20,
+      "repeat": 1,
+      "screening_score": 3,
+      "stop_reason": "complete",
+      "turns": 20,
+      "versions": {
+        "interviewer": {
+          "model": "dummy-stub",
+          "provider": "dummy"
+        },
+        "max_turns": 23,
+        "patient": "dummy",
+        "skill": "skill-v0.4-draft",
+        "taxonomy": "taxonomy-v0.3-draft",
+        "topics": "topics-v0.6-draft"
+      }
+    },
+    {
+      "artifacts": "/tmp/eval-runs/vague-01-dummy-20261103T181734",
+      "assessment_id": "R2VFYDEW",
+      "banned_hits": [],
+      "briefing_latency": {
+        "count": 20,
+        "max_ms": 0.1,
+        "p50_ms": 0.0,
+        "p95_ms": 0.1
+      },
+      "complete": true,
+      "duration_s": 11.3,
+      "latency_max_ms": 245.9,
+      "latency_mean_ms": 199.7,
+      "observations": 20,
+      "profile_id": "vague-01",
+      "quote_misses": [],
+      "quote_rate": 1.0,
+      "quotes_exact": 20,
+      "repeat": 2,
+      "screening_score": 3,
+      "stop_reason": "complete",
+      "turns": 20,
+      "versions": {
+        "interviewer": {
+          "model": "dummy-stub",
+          "provider": "dummy"
+        },
+        "max_turns": 23,
+        "patient": "dummy",
+        "skill": "skill-v0.4-draft",
+        "taxonomy": "taxonomy-v0.3-draft",
+        "topics": "topics-v0.6-draft"
+      }
+    },
+    {
+      "artifacts": "/tmp/eval-runs/denier-01-dummy-20261103T181746",
+      "assessment_id": "QX3D29NU",
+      "banned_hits": [],
+      "briefing_latency": {
+        "count": 19,
+        "max_ms": 0.1,
+        "p50_ms": 0.0,
+        "p95_ms": 0.1
+      },
+      "complete": true,
+      "duration_s": 11.0,
+      "latency_max_ms": 214.2,
+      "latency_mean_ms": 195.5,
+      "observations": 19,
+      "profile_id": "denier-01",
+      "quote_misses": [],
+      "quote_rate": 1.0,
+      "quotes_exact": 19,
+      "repeat": 1,
+      "screening_score": 0,
+      "stop_reason": "complete",
+      "turns": 19,
+      "versions": {
+        "interviewer": {
+          "model": "dummy-stub",
+          "provider": "dummy"
+        },
+        "max_turns": 23,
+        "patient": "dummy",
+        "skill": "skill-v0.4-draft",
+        "taxonomy": "taxonomy-v0.3-draft",
+        "topics": "topics-v0.6-draft"
+      }
+    },
+    {
+      "artifacts": "/tmp/eval-runs/denier-01-dummy-20261103T181758",
+      "assessment_id": "PH2R9Z6N",
+      "banned_hits": [],
+      "briefing_latency": {
+        "count": 19,
+        "max_ms": 0.1,
+        "p50_ms": 0.0,
+        "p95_ms": 0.1
+      },
+      "complete": true,
+      "duration_s": 11.0,
+      "latency_max_ms": 238.6,
+      "latency_mean_ms": 197.1,
+      "observations": 19,
+      "profile_id": "denier-01",
+      "quote_misses": [],
+      "quote_rate": 1.0,
+      "quotes_exact": 19,
+      "repeat": 2,
+      "screening_score": 0,
+      "stop_reason": "complete",
+      "turns": 19,
+      "versions": {
+        "interviewer": {
+          "model": "dummy-stub",
+          "provider": "dummy"
+        },
+        "max_turns": 23,
+        "patient": "dummy",
+        "skill": "skill-v0.4-draft",
+        "taxonomy": "taxonomy-v0.3-draft",
+        "topics": "topics-v0.6-draft"
+      }
+    },
+    {
+      "artifacts": "/tmp/eval-runs/contradictor-01-dummy-20261103T181809",
+      "assessment_id": "6K4RR79H",
+      "banned_hits": [],
+      "briefing_latency": {
+        "count": 20,
+        "max_ms": 0.1,
+        "p50_ms": 0.0,
+        "p95_ms": 0.1
+      },
+      "complete": true,
+      "duration_s": 11.2,
+      "latency_max_ms": 211.0,
+      "latency_mean_ms": 195.5,
+      "observations": 20,
+      "profile_id": "contradictor-01",
+      "quote_misses": [],
+      "quote_rate": 1.0,
+      "quotes_exact": 20,
+      "repeat": 1,
+      "screening_score": 3,
+      "stop_reason": "complete",
+      "turns": 20,
+      "versions": {
+        "interviewer": {
+          "model": "dummy-stub",
+          "provider": "dummy"
+        },
+        "max_turns": 23,
+        "patient": "dummy",
+        "skill": "skill-v0.4-draft",
+        "taxonomy": "taxonomy-v0.3-draft",
+        "topics": "topics-v0.6-draft"
+      }
+    },
+    {
+      "artifacts": "/tmp/eval-runs/contradictor-01-dummy-20261103T181821",
+      "assessment_id": "T3ZVG8WZ",
+      "banned_hits": [],
+      "briefing_latency": {
+        "count": 20,
+        "max_ms": 0.1,
+        "p50_ms": 0.0,
+        "p95_ms": 0.1
+      },
+      "complete": true,
+      "duration_s": 11.2,
+      "latency_max_ms": 213.4,
+      "latency_mean_ms": 198.1,
+      "observations": 20,
+      "profile_id": "contradictor-01",
+      "quote_misses": [],
+      "quote_rate": 1.0,
+      "quotes_exact": 20,
+      "repeat": 2,
+      "screening_score": 3,
+      "stop_reason": "complete",
+      "turns": 20,
+      "versions": {
+        "interviewer": {
+          "model": "dummy-stub",
+          "provider": "dummy"
+        },
+        "max_turns": 23,
+        "patient": "dummy",
+        "skill": "skill-v0.4-draft",
+        "taxonomy": "taxonomy-v0.3-draft",
+        "topics": "topics-v0.6-draft"
+      }
+    },
+    {
+      "artifacts": "/tmp/eval-runs/recall-01-dummy-20261103T181833",
+      "assessment_id": "BU2PGZ5F",
+      "banned_hits": [],
+      "briefing_latency": {
+        "count": 20,
+        "max_ms": 0.1,
+        "p50_ms": 0.0,
+        "p95_ms": 0.1
+      },
+      "complete": true,
+      "duration_s": 11.1,
+      "latency_max_ms": 211.4,
+      "latency_mean_ms": 194.5,
+      "observations": 20,
+      "profile_id": "recall-01",
+      "quote_misses": [],
+      "quote_rate": 1.0,
+      "quotes_exact": 20,
+      "repeat": 1,
+      "screening_score": 3,
+      "stop_reason": "complete",
+      "turns": 20,
+      "versions": {
+        "interviewer": {
+          "model": "dummy-stub",
+          "provider": "dummy"
+        },
+        "max_turns": 23,
+        "patient": "dummy",
+        "skill": "skill-v0.4-draft",
+        "taxonomy": "taxonomy-v0.3-draft",
+        "topics": "topics-v0.6-draft"
+      }
+    },
+    {
+      "artifacts": "/tmp/eval-runs/recall-01-dummy-20261103T181845",
+      "assessment_id": "4G28R8PK",
+      "banned_hits": [],
+      "briefing_latency": {
+        "count": 20,
+        "max_ms": 0.1,
+        "p50_ms": 0.0,
+        "p95_ms": 0.1
+      },
+      "complete": true,
+      "duration_s": 11.2,
+      "latency_max_ms": 209.1,
+      "latency_mean_ms": 195.0,
+      "observations": 20,
+      "profile_id": "recall-01",
+      "quote_misses": [],
+      "quote_rate": 1.0,
+      "quotes_exact": 20,
+      "repeat": 2,
+      "screening_score": 3,
+      "stop_reason": "complete",
+      "turns": 20,
+      "versions": {
+        "interviewer": {
+          "model": "dummy-stub",
+          "provider": "dummy"
+        },
+        "max_turns": 23,
+        "patient": "dummy",
+        "skill": "skill-v0.4-draft",
+        "taxonomy": "taxonomy-v0.3-draft",
+        "topics": "topics-v0.6-draft"
+      }
+    }
+  ],
+  "stamp": "20261103T181710",
+  "summary": {
+    "banned_hits": 0,
+    "completed": 8,
+    "latency_max_ms": 245.9,
+    "latency_mean_ms": 196.2,
+    "observations": 158,
+    "passed": true,
+    "quotes_exact": 158,
+    "runs": 8
+  },
+  "thresholds": {
+    "banned_hits": 0,
+    "completion": "8/8",
+    "quote_exactness": "100%"
+  }
+}

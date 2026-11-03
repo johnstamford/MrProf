@@ -3,7 +3,10 @@
 Planning baseline: 26 October 2026. Features 1–9, F10a, F11-min reviewer
 annotate, F12-min regression, F13-min opening, 15–16 are implemented and verified;
 F11-full/F14 polish plus post-hackathon items (F10b, 10x3 eval, clinical review)
-remain open.
+remain open. Pre-submission work (WS0–WS5 incl. WS1 review step, WS2 coverage,
+WS3 report rework, WS4 disclaimer diet) landed 3 Nov 2026 — see
+`PRE_SUBMISSION_WORK.md` and the verification commit (full suite 104 passed,
+F12-min `docs/eval/f12min-20261103T181710.md` PASS, demos re-frozen).
 
 Plan revision (29 Oct 2026, owner-agreed): priority is a hackathon win with a
 technically sound core plus a bounded 2-day real-user opening. Interview
