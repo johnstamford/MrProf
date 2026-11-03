@@ -59,6 +59,30 @@ distinguishes "denied, complete" from "reported with detail."
 - Abandonment in synthetic runs: 0/10 (simulated patients always finish —
   say this explicitly; it is NOT a human-usability claim).
 
+## Reviewing the 10 runs (local only)
+
+Each run is resumable at `http://localhost:3000/start` with its code +
+password. Codes are listed here; **passwords live only in the gitignored
+local run dirs** (`sim/runs/<run>/credentials.json`) — never committed,
+matching the F12-min pattern. Nothing below opens without the local file.
+
+| Persona | Mode | Turns | Code | Password in |
+|---|---|---|---|---|
+| vague-01 | full | 20 | `3GT8KWF8` | `sim/runs/vague-01-dummy-20261103T204405/credentials.json` |
+| vague-01 | full | 20 | `2KE94UMC` | `sim/runs/vague-01-dummy-20261103T204418/credentials.json` |
+| denier-01 | full | 19 | `WKX8KMQR` | `sim/runs/denier-01-dummy-20261103T204430/credentials.json` |
+| denier-01 | full | 19 | `XPMRDKQM` | `sim/runs/denier-01-dummy-20261103T204442/credentials.json` |
+| contradictor-01 | full | 20 | `AZT5546M` | `sim/runs/contradictor-01-dummy-20261103T204454/credentials.json` |
+| contradictor-01 | full | 20 | `M8RGS8CU` | `sim/runs/contradictor-01-dummy-20261103T204507/credentials.json` |
+| recall-01 | full | 20 | `KPU2DTEM` | `sim/runs/recall-01-dummy-20261103T204519/credentials.json` |
+| recall-01 | full | 20 | `A8EEUVDU` | `sim/runs/recall-01-dummy-20261103T204531/credentials.json` |
+| vague-01 | taster | 8 | `YADUMY67` | `sim/runs/vague-01-dummy-20261103T204541/credentials.json` |
+| denier-01 | taster | 8 | `AQWZ3CPH` | `sim/runs/denier-01-dummy-20261103T204551/credentials.json` |
+
+Caveat for reviewers: these are synthetic dummy-patient runs (scripted
+answers, stub phrasing) — good for checking report shape and citations,
+not interview quality.
+
 ## Honest limitations (one slide, then move on)
 
 - Draft topics/taxonomy, no clinical validation; interim
