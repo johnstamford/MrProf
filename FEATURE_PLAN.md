@@ -12,7 +12,9 @@ regression (F12-min), F13-min hardening for the opening, full clinical review
 deferred to post-hackathon. Topics v0.3 / taxonomy v0.2 stay labeled
 `draft — not clinically validated — interim psychology-student review only`.
 Working tree was clean at F12-min (2 Nov 2026);
-`README.md` is still TBD and must be filled before judging.
+`README.md` was TBD until WS0 filled it (3 Nov 2026); `docs/release-notes.md`
+stub added in WS0. Uncommitted `briefing.tsx` right-rail change reverted in
+WS0 for a clean baseline (WS3 redoes it properly).
 
 Read `PROJECT_OVERVIEW.md` first. Build one feature at a time, keep changes focused, and update this plan with implementation status, verification evidence, and remaining limitations. Do not infer that a working prototype is clinically validated or ready for real-user data.
 
