@@ -86,4 +86,7 @@ body {
   details.print-open > summary::-webkit-details-marker {
     display: none;
   }
+  .print-page {
+    break-after: page;
+  }
 }

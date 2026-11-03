@@ -1,40 +1,40 @@
 {
   "demos": [
     {
-      "exported_at": "2026-11-02T14:07:30.291491+00:00",
+      "exported_at": "2026-11-03T18:16:34.447244+00:00",
       "headline": "Vague short answers",
       "id": "vague-01",
       "proves": "Follow-ups turn thin answers into checkable evidence.",
       "screening_method": "original-0-6",
       "screening_score": 3,
-      "turns": 14
+      "turns": 20
     },
     {
-      "exported_at": "2026-11-02T14:07:38.953216+00:00",
+      "exported_at": "2026-11-03T18:16:43.775748+00:00",
       "headline": "Denies difficulties, offers an alternative explanation",
       "id": "denier-01",
       "proves": "Denials are recorded as denied \u2014 never flipped into absence of evidence.",
       "screening_method": "original-0-6",
       "screening_score": 0,
-      "turns": 15
+      "turns": 19
     },
     {
-      "exported_at": "2026-11-02T14:07:47.597754+00:00",
+      "exported_at": "2026-11-03T18:16:53.299638+00:00",
       "headline": "Gives conflicting accounts across turns",
       "id": "contradictor-01",
       "proves": "Contradictions stay visible, with both accounts retained.",
       "screening_method": "original-0-6",
       "screening_score": 3,
-      "turns": 15
+      "turns": 20
     },
     {
-      "exported_at": "2026-11-02T14:07:56.012628+00:00",
+      "exported_at": "2026-11-03T18:17:02.836163+00:00",
       "headline": "Incomplete recall with partial detail",
       "id": "recall-01",
       "proves": "\u201cI cannot remember\u201d is respected and logged as a gap, not a finding.",
       "screening_method": "original-0-6",
       "screening_score": 3,
-      "turns": 15
+      "turns": 20
     }
   ],
   "synthetic": true,

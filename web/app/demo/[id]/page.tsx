@@ -103,7 +103,11 @@ export default async function DemoViewer({ params }: { params: Promise<{ id: str
               <span className="font-mono text-xs leading-6 text-ink-faint">Q{a.n}</span>
               <span>
                 {a.question} — <strong>{a.answer}</strong>
-                {a.counted ? "" : ""}
+                {a.counted && (
+                  <span className="ml-2 inline-block rounded-full bg-primary-tint px-2 py-0.5 text-xs font-medium text-primary-deep">
+                    counted toward the score
+                  </span>
+                )}
               </span>
             </li>
           ))}

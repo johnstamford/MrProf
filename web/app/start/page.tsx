@@ -9,6 +9,63 @@ import RiskNote from "../../components/risk-note";
 type Created = { assessment_id: string; version: number; stage: string };
 type Fetched = { assessment_id: string; version: number; stage: string; status: string };
 
+function AccessCard({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  function download() {
+    const date = new Date().toLocaleDateString();
+    const url = typeof window !== "undefined" ? `${window.location.origin}/start` : "/start";
+    const text = [
+      "MrProf access card",
+      `Assessment code: ${code}`,
+      `Saved: ${date}`,
+      `Resume here: ${url}`,
+      "",
+      "You need your code AND your password to get back in.",
+      "There is no password reset — without them the assessment cannot be retrieved.",
+    ].join("\n");
+    const blob = new Blob([text], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `mrprof-access-${code}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+  return (
+    <div className="mt-4 rounded-xl bg-cream p-4">
+      <h3 className="font-semibold">Save your assessment details</h3>
+      <p className="mt-1 text-sm">Assessment code: <code className="rounded bg-card px-1.5 py-0.5 font-mono">{code}</code></p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          onClick={download}
+          className="inline-flex items-center gap-1.5 rounded-full border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-primary-tint"
+        >
+          Download my access card
+        </button>
+        <button
+          onClick={copy}
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-sm font-medium text-ink-soft hover:border-primary hover:text-primary"
+        >
+          {copied ? "Copied" : "Copy code"}
+        </button>
+      </div>
+      <p role="alert" className="mt-2 text-sm leading-relaxed">
+        Keep your code and password somewhere safe — without both, your assessment
+        cannot be retrieved, and there is no password reset.
+      </p>
+    </div>
+  );
+}
+
 export default function StartPage() {
   const router = useRouter();
   const [newPassword, setNewPassword] = useState("");
@@ -96,14 +153,16 @@ export default function StartPage() {
     // otherwise continue with the screening questions.
     const next = await fetch(`/api/assessments/${encodeURIComponent(code)}/interview/next`, { headers });
     if (next.ok) {
-      const state = (await next.json()) as { completed?: boolean; question?: unknown };
+      const state = (await next.json()) as { completed?: boolean; question?: unknown; status?: string };
       setResumeTarget("/interview");
       setResumeNote(
         state.completed
           ? "Interview complete — your reports are ready."
-          : state.question
-            ? "Interview in progress — pick up where you left off."
-            : "Interview in progress.",
+          : state.status === "review"
+            ? "Your briefing is waiting for your check — review and confirm it."
+            : state.question
+              ? "Interview in progress — pick up where you left off."
+              : "Interview in progress.",
       );
     } else {
       setResumeTarget("/screening");
@@ -139,7 +198,7 @@ export default function StartPage() {
           <li>Optionally continue to the interview: one question at a time, in your own words.</li>
           <li>Get your evidence briefing with supporting quotes.</li>
         </ol>
-        <p className="mt-3 text-sm leading-relaxed text-ink-soft">Both stages together take most people around 20–30 minutes. There is no time limit, and you can close the browser and resume later with your code and password.</p>
+        <p className="mt-3 text-sm leading-relaxed text-ink-soft">The screening is 6 questions. The full interview is about 14 questions, plus a few follow-ups where more detail would help; the short taster is about 6 questions. There is no time limit, and you can close the browser and resume later with your code and password.</p>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">Short on time? After the screening report you can try the short taster — about 6 questions — instead of the full interview.</p>
       </section>
 
@@ -193,21 +252,15 @@ export default function StartPage() {
             Start
           </button>
           {created && (
-            <div className="mt-4 rounded-xl bg-cream p-4">
-              <h3 className="font-semibold">Save your assessment details</h3>
-              <p className="mt-1 text-sm">Assessment code: <code className="rounded bg-card px-1.5 py-0.5 font-mono">{created.assessment_id}</code></p>
-              <p role="alert" className="mt-2 text-sm leading-relaxed">
-                Write down your assessment code and password somewhere safe.
-                You need both to get back to your assessment — without them it
-                cannot be retrieved, and there is no password reset.
-              </p>
+            <>
+              <AccessCard code={created.assessment_id} />
               <button
                 onClick={() => goToScreening(created.assessment_id, newPassword)}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-deep"
               >
                 I have saved my code and password — continue <ArrowRight className="h-4 w-4" aria-hidden />
               </button>
-            </div>
+            </>
           )}
         </section>
 
@@ -241,21 +294,16 @@ export default function StartPage() {
             Resume
           </button>
           {fetched && (
-            <div className="mt-4 rounded-xl bg-cream p-4">
-              <h3 className="font-semibold">Assessment found</h3>
-              <p className="mt-1 text-sm">{resumeNote || "Assessment found."}</p>
-              <p role="alert" className="mt-2 text-sm leading-relaxed">
-                Keep your assessment code and password somewhere safe.
-                You need both to get back to your assessment — without them it
-                cannot be retrieved, and there is no password reset.
-              </p>
+            <>
+              <p className="mt-4 text-sm">{resumeNote || "Assessment found."}</p>
+              <AccessCard code={fetched.assessment_id} />
               <button
                 onClick={() => goTo(fetched.assessment_id, password, resumeTarget)}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-deep"
               >
                 Continue to {resumeTarget === "/interview" ? "interview" : "screening"} <ArrowRight className="h-4 w-4" aria-hidden />
               </button>
-            </div>
+            </>
           )}
         </section>
       </div>

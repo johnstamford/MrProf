@@ -20,6 +20,8 @@ export type Observation = {
   line: number | null;
   /** Extractor's one-sentence explainer (system interpretation, not a quote). */
   note?: string;
+  /** WS1: the user's own correction of this observation. Shown alongside. */
+  user_correction?: string;
   obs_index?: number;
   review_status?: ReviewState;
   review_note?: string;
@@ -83,11 +85,13 @@ export function AssertionChip({ assertion }: { assertion: Assertion }) {
 /** One grounded observation: serif quote, chip, line + segment ref. Click jumps to the transcript line. */
 export function EvidenceCard({
   observation,
+  turn,
   onReview,
   reviewing,
   reviewError,
 }: {
   observation: Observation;
+  turn?: number | null;
   onReview?: (action: ReviewAction, note: string) => Promise<void> | void;
   reviewing?: boolean;
   reviewError?: string | null;
@@ -109,14 +113,19 @@ export function EvidenceCard({
         </blockquote>
         {observation.note && (
           <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-            <span className="font-medium text-ink">Why this is here: </span>
-            {observation.note}{" "}
-            <span className="text-ink-faint">(system interpretation, not a quote)</span>
+            {observation.note}
+          </p>
+        )}
+        {observation.user_correction && (
+          <p className="mt-2 rounded-xl bg-primary-tint px-3 py-2 text-sm leading-relaxed">
+            <span className="font-medium text-primary-deep">You noted: </span>
+            {observation.user_correction}
           </p>
         )}
         <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
           <AssertionChip assertion={observation.assertion} />
           <span className="text-xs text-ink-faint">
+            {turn != null ? `turn ${turn} · ` : ""}
             {line != null ? `line ${line} · ` : ""}segment {observation.segment_id}
           </span>
         </p>
@@ -378,24 +387,6 @@ export function TranscriptView({ segments }: { segments: Segment[] }) {
         </ol>
       )}
     </div>
-  );
-}
-
-/** Box stating what the briefing did NOT conclude. Fixed wording, no clinical claims. */
-export function NotConcludedBox() {
-  return (
-    <section
-      aria-label="What this briefing did not conclude"
-      className="rounded-2xl border border-line bg-cream p-4"
-    >
-      <h2 className="text-sm font-semibold">What we did NOT conclude</h2>
-      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-ink-soft">
-        <li>No statement about whether these experiences meet any clinical criteria.</li>
-        <li>A result below the screening threshold does not exclude ADHD or other conditions.</li>
-        <li>Gaps below are missing information, not negative findings.</li>
-        <li>Only a qualified clinician can determine what explains your experiences.</li>
-      </ul>
-    </section>
   );
 }
 

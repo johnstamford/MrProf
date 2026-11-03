@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { loadSession } from "../../lib/session";
 import BriefingView, { type Briefing } from "../../components/briefing";
+import ProgressRail from "../../components/progress-rail";
 import { RiskLink } from "../../components/risk-note";
 
 type Question = {
@@ -27,17 +28,58 @@ type NextState = {
   completed: boolean;
 };
 
+type ReviewObservation = {
+  turn: number;
+  obs_index: number;
+  assertion: string;
+  quote: string;
+  segment_id: string;
+  line: number | null;
+  note: string;
+  user_correction: string;
+};
+
+type ReviewTopic = {
+  objective: string;
+  title: string;
+  status: string;
+  label: string;
+  note: string;
+  observations: ReviewObservation[];
+};
+
+type ReviewState = {
+  version: number;
+  status: string;
+  mode: string;
+  turns_answered: number;
+  topics: ReviewTopic[];
+};
+
+type Topup = { objective: string; title: string; question: string; dimension: string };
+
 function draftKey(code: string, turn: number) {
   return `mrprof.draft.${code}.${turn}`;
 }
 
 export default function InterviewPage() {
   const router = useRouter();
-  const [phase, setPhase] = useState<"loading" | "ready" | "assessing" | "done">("loading");
+  const [phase, setPhase] = useState<"loading" | "ready" | "assessing" | "review" | "done">("loading");
+  const [review, setReview] = useState<ReviewState | null>(null);
+  const [topups, setTopups] = useState<Topup[]>([]);
+  const [topupAnswers, setTopupAnswers] = useState<Record<string, string>>({});
+  const [addOpen, setAddOpen] = useState<Record<string, boolean>>({});
+  const [addText, setAddText] = useState<Record<string, string>>({});
+  const [correctOpen, setCorrectOpen] = useState<Record<string, boolean>>({});
+  const [correctText, setCorrectText] = useState<Record<string, string>>({});
+  const [reviewMsg, setReviewMsg] = useState("");
   const [version, setVersion] = useState<number | null>(null);
   const [question, setQuestion] = useState<Question | null>(null);
   const [turnsAnswered, setTurnsAnswered] = useState(0);
   const [answer, setAnswer] = useState("");
+  const [correcting, setCorrecting] = useState(false);
+  const [correction, setCorrection] = useState("");
+  const [correctMsg, setCorrectMsg] = useState("");
   const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -46,6 +88,16 @@ export default function InterviewPage() {
   const [assessProgress, setAssessProgress] = useState<{ done: number; total: number } | null>(null);
   const [reviewingKey, setReviewingKey] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  // Reviewer controls live only in explicit reviewer mode (?review=1); the
+  // patient's own briefing never shows Accept/Amend/Reject machinery.
+  const [reviewerMode, setReviewerMode] = useState(false);
+  useEffect(() => {
+    try {
+      setReviewerMode(new URLSearchParams(window.location.search).get("review") === "1");
+    } catch {
+      setReviewerMode(false);
+    }
+  }, []);
 
   const STAGES = ["Saving your answer…", "Thinking…", "Preparing the next question…"];
 
@@ -132,6 +184,37 @@ export default function InterviewPage() {
     return session ? { session, headers: { Authorization: `Bearer ${session.password}` } } : null;
   }, []);
 
+  const newKey = () =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `key-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  const loadReview = useCallback(async (): Promise<boolean> => {
+    const auth = authHeaders();
+    if (!auth) {
+      router.replace("/start");
+      return false;
+    }
+    const { session, headers } = auth;
+    const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+    const res = await fetch(`${base}/interview/review`, { headers });
+    if (res.status === 404) return false;
+    if (!res.ok) {
+      setError("could not load the review step — please try again");
+      return false;
+    }
+    const body = (await res.json()) as ReviewState;
+    setMode(body.mode === "taster" ? "taster" : "full");
+    setVersion(body.version);
+    setTurnsAnswered(body.turns_answered);
+    setReview(body);
+    setTopups([]);
+    setReviewMsg("");
+    setAssessProgress(null);
+    setPhase("review");
+    return true;
+  }, [authHeaders, router]);
+
   function failureMessage(res: Response, fallback: string): Promise<string> {
     return (async () => {
       try {
@@ -211,6 +294,11 @@ export default function InterviewPage() {
     setMode(state.mode === "taster" ? "taster" : "full");
     setVersion(state.version);
     setTurnsAnswered(state.turns_answered);
+    if (state.status === "review") {
+      // WS1: gathering done, briefing deferred until the user confirms.
+      await loadReview();
+      return;
+    }
     if (state.completed || !state.question) {
       const rep = await fetch(`${base}/interview/report`, { headers });
       if (!rep.ok) {
@@ -223,7 +311,7 @@ export default function InterviewPage() {
     }
     setQuestion(state.question);
     setPhase("ready");
-  }, [authHeaders, router]);
+  }, [authHeaders, router, loadReview]);
 
   const pollAssessment = useCallback(async (): Promise<boolean> => {
     const auth = authHeaders();
@@ -254,6 +342,12 @@ export default function InterviewPage() {
         setPhase("ready");
         return true;
       }
+      if (body.status === "review") {
+        // WS1: gathering done — the user checks the review step before any
+        // briefing is generated.
+        await loadReview();
+        return true;
+      }
       if (body.status === "complete") {
         const rep = await fetch(`${base}/interview/report`, { headers });
         if (!rep.ok) {
@@ -276,7 +370,7 @@ export default function InterviewPage() {
     }
     setError("the assessment is taking too long — please reload to check again");
     return false;
-  }, [authHeaders, router]);
+  }, [authHeaders, router, loadReview]);
 
   useEffect(() => {
     void load();
@@ -314,13 +408,222 @@ export default function InterviewPage() {
     }
   }
 
-  async function submit() {
+  async function submitCorrection() {
+    const auth = authHeaders();
+    if (!auth || version === null || turnsAnswered < 1) return;
+    const text = correction.trim();
+    if (!text) {
+      setError("please write your correction before saving");
+      return;
+    }
+    setError("");
+    setCorrectMsg("");
+    try {
+      const { session, headers } = auth;
+      const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+      const key =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `key-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const res = await fetch(`${base}/interview/correct`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...headers },
+        body: JSON.stringify({
+          corrects_turn: turnsAnswered,
+          answer_text: text,
+          base_version: version,
+          idempotency_key: key,
+        }),
+      });
+      if (res.status === 409) {
+        setError("already saved — please reload to see the latest state");
+        return;
+      }
+      if (!res.ok) {
+        setError("could not save the correction — please try again");
+        return;
+      }
+      const body = (await res.json()) as { version: number };
+      setVersion(body.version);
+      setCorrecting(false);
+      setCorrection("");
+      setCorrectMsg("Correction saved — your original answer is kept, and the correction will appear with your briefing.");
+    } catch {
+      setError("could not save the correction — please try again");
+    }
+  }
+
+  async function submitReviewAdd(objective: string, text: string) {
+    const auth = authHeaders();
+    if (!auth || version === null) return;
+    const clean = text.trim();
+    if (!clean) {
+      setError("please write your addition before saving");
+      return;
+    }
+    setError("");
+    setReviewMsg("");
+    try {
+      const { session, headers } = auth;
+      const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+      const res = await fetch(`${base}/interview/review/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...headers },
+        body: JSON.stringify({ objective, answer_text: clean, base_version: version, idempotency_key: newKey() }),
+      });
+      if (res.status === 409) {
+        setError("already saved — reloading the review step");
+        await loadReview();
+        return;
+      }
+      if (!res.ok) {
+        setError("could not save your addition — please try again");
+        return;
+      }
+      setAddText((m) => ({ ...m, [objective]: "" }));
+      setAddOpen((m) => ({ ...m, [objective]: false }));
+      setTopupAnswers((m) => {
+        const c = { ...m };
+        delete c[objective];
+        return c;
+      });
+      setReviewMsg("Saved — your addition will appear as cited evidence in your briefing.");
+      await loadReview();
+    } catch {
+      setError("could not save your addition — please try again");
+    }
+  }
+
+  async function submitReviewCorrect(turn: number, obsIndex: number, text: string) {
+    const auth = authHeaders();
+    if (!auth || version === null) return;
+    const clean = text.trim();
+    if (!clean) {
+      setError("please write your correction before saving");
+      return;
+    }
+    const key = `${turn}:${obsIndex}`;
+    setError("");
+    setReviewMsg("");
+    try {
+      const { session, headers } = auth;
+      const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+      const res = await fetch(`${base}/interview/review/correct`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...headers },
+        body: JSON.stringify({ turn, obs_index: obsIndex, answer_text: clean, base_version: version, idempotency_key: newKey() }),
+      });
+      if (res.status === 409) {
+        setError("already saved — reloading the review step");
+        await loadReview();
+        return;
+      }
+      if (!res.ok) {
+        setError("could not save your correction — please try again");
+        return;
+      }
+      setCorrectText((m) => ({ ...m, [key]: "" }));
+      setCorrectOpen((m) => ({ ...m, [key]: false }));
+      setReviewMsg("Saved — your correction will appear alongside the original note.");
+      await loadReview();
+    } catch {
+      setError("could not save your correction — please try again");
+    }
+  }
+
+  async function loadTopups() {
+    const auth = authHeaders();
+    if (!auth || topups.length > 0) return;
+    setError("");
+    try {
+      const { session, headers } = auth;
+      const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+      const res = await fetch(`${base}/interview/review/topups`, { method: "POST", headers });
+      if (!res.ok) {
+        setError("could not load follow-ups — you can still confirm below");
+        return;
+      }
+      setTopups(((await res.json()) as { topups: Topup[] }).topups ?? []);
+    } catch {
+      setError("could not load follow-ups — you can still confirm below");
+    }
+  }
+
+  async function submitConfirm() {
+    const auth = authHeaders();
+    if (!auth || version === null) return;
+    setError("");
+    try {
+      const { session, headers } = auth;
+      const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+      const res = await fetch(`${base}/interview/review/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...headers },
+        body: JSON.stringify({ base_version: version, idempotency_key: newKey() }),
+      });
+      if (res.status === 409) {
+        setError("already confirmed — reloading");
+        await load();
+        return;
+      }
+      if (!res.ok) {
+        setError("could not build your briefing — please try again");
+        return;
+      }
+      const rep = await fetch(`${base}/interview/report`, { headers });
+      if (!rep.ok) {
+        setError("confirmed, but the briefing is missing — please reload");
+        return;
+      }
+      setBriefing((await rep.json()) as Briefing);
+      setReview(null);
+      setPhase("done");
+    } catch {
+      setError("could not build your briefing — please try again");
+    }
+  }
+
+  async function continueToFull() {
+    const auth = authHeaders();
+    if (!auth) return;
+    setError("");
+    try {
+      const { session, headers } = auth;
+      const base = `/api/assessments/${encodeURIComponent(session.code)}`;
+      const nxt = await fetch(`${base}/interview/next`, { headers });
+      if (!nxt.ok) {
+        setError("could not continue — please reload");
+        return;
+      }
+      const state = (await nxt.json()) as NextState;
+      const res = await fetch(`${base}/interview/continue`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...headers },
+        body: JSON.stringify({ base_version: state.version, idempotency_key: newKey() }),
+      });
+      if (!res.ok) {
+        setError("could not continue — please try again");
+        return;
+      }
+      const body = (await res.json()) as { version: number; question: Question | null; mode: string };
+      setMode(body.mode === "taster" ? "taster" : "full");
+      setVersion(body.version);
+      setQuestion(body.question);
+      setTurnsAnswered(0);
+      setBriefing(null);
+      setPhase("ready");
+    } catch {
+      setError("could not continue — please try again");
+    }
+  }
+
+  async function submit(preset?: string) {
     const auth = authHeaders();
     if (!auth || !question || version === null) {
       setError("session lost — please start again");
       return;
     }
-    const text = answer.trim();
+    const text = (preset ?? answer).trim();
     if (!text) {
       setError("please write an answer before continuing");
       return;
@@ -496,12 +799,33 @@ export default function InterviewPage() {
         <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
           Your interview briefing
         </h1>
+        {reviewerMode && (
+          <p role="note" className="mt-2 max-w-3xl rounded-xl border border-line bg-cream px-4 py-2.5 text-sm">
+            Reviewer mode — Accept / Amend / Reject controls are enabled. They write
+            only to evidence review state, never to the transcript or screening answers.
+          </p>
+        )}
+        {briefing.mode === "taster" && !reviewerMode && (
+          <div role="note" className="no-print mt-4 max-w-3xl rounded-2xl border border-primary/30 bg-primary-tint px-4 py-3.5">
+            <p className="text-sm font-semibold text-primary-deep">This was the short taster — 8 topics were not reached.</p>
+            <p className="mt-1 text-sm text-primary-deep">
+              Continue to the full interview on the same assessment: your answers carry
+              over, and you will check a fresh review before briefing v2.
+            </p>
+            <button
+              onClick={continueToFull}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-deep"
+            >
+              Continue to the full interview <ArrowRight className="h-4 w-4" aria-hidden />
+            </button>
+          </div>
+        )}
         <div className="mt-4">
           <BriefingView
             briefing={briefing}
             reviewingKey={reviewingKey}
             reviewError={reviewError}
-            onReview={async (turn, obsIndex, action, note) => {
+            onReview={reviewerMode ? async (turn, obsIndex, action, note) => {
               const auth = authHeaders();
               if (!auth) return;
               const key = `${turn}:${obsIndex}`;
@@ -529,7 +853,7 @@ export default function InterviewPage() {
               } finally {
                 setReviewingKey(null);
               }
-            }}
+            } : undefined}
           />
         </div>
         <p className="no-print mt-8 flex flex-wrap gap-3 border-t border-line pt-6">
@@ -550,6 +874,201 @@ export default function InterviewPage() {
     );
   }
 
+  if (phase === "review" && review) {
+    return (
+      <div className="mx-auto max-w-2xl pt-10 sm:pt-14">
+        <p className="inline-block rounded-full bg-primary-tint px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary-deep">
+          Review step — nothing is final yet
+        </p>
+        <h1 className="mt-3 font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
+          Before we write your briefing
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-ink-soft sm:text-base">
+          Check that this looks like you. Every point links to your exact words.
+          Add anything we missed, or correct anything we misread — then build your briefing.
+        </p>
+
+        <div className="mt-6 space-y-4">
+          {review.topics.map((t) => (
+            <section key={t.objective} aria-label={t.title} className="rounded-2xl border border-line bg-card p-5">
+              <h2 className="flex flex-wrap items-center gap-2 font-serif text-lg font-semibold">
+                {t.title}
+                <span className="rounded-full bg-cream px-2.5 py-0.5 text-xs font-medium text-ink-soft">
+                  {t.label || t.status}
+                </span>
+              </h2>
+              {t.observations.length === 0 ? (
+                <p className="mt-2 text-sm text-ink-soft">{t.note || "Nothing recorded here yet."}</p>
+              ) : (
+                <ul className="mt-3 space-y-3">
+                  {t.observations.map((o) => {
+                    const key = `${o.turn}:${o.obs_index}`;
+                    return (
+                      <li key={key} className="rounded-xl bg-paper px-4 py-3">
+                        <blockquote className="font-serif text-[16px] leading-relaxed text-ink">
+                          &ldquo;{o.quote}&rdquo;
+                        </blockquote>
+                        {o.note && <p className="mt-1.5 text-sm text-ink-soft">{o.note}</p>}
+                        <p className="mt-1.5 text-xs text-ink-faint">
+                          turn {o.turn}
+                          {o.line != null ? ` · line ${o.line}` : ""} · segment {o.segment_id}
+                        </p>
+                        {o.user_correction && (
+                          <p className="mt-1.5 rounded-lg bg-primary-tint px-3 py-2 text-sm">
+                            <span className="font-medium text-primary-deep">Your correction: </span>
+                            {o.user_correction}
+                          </p>
+                        )}
+                        {!correctOpen[key] ? (
+                          <button
+                            onClick={() => setCorrectOpen((m) => ({ ...m, [key]: true }))}
+                            className="mt-2 text-sm font-medium text-primary hover:underline"
+                          >
+                            This isn&apos;t what I meant
+                          </button>
+                        ) : (
+                          <div className="mt-2">
+                            <label className="block text-sm font-medium">
+                              What did you mean?
+                              <textarea
+                                value={correctText[key] ?? ""}
+                                onChange={(e) => setCorrectText((m) => ({ ...m, [key]: e.target.value }))}
+                                rows={2}
+                                className="mt-1.5 w-full rounded-xl border border-line bg-card px-3 py-2 text-sm"
+                                placeholder="Say it in your own words"
+                              />
+                            </label>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              <button
+                                onClick={() => submitReviewCorrect(o.turn, o.obs_index, correctText[key] ?? "")}
+                                className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-deep"
+                              >
+                                Save correction
+                              </button>
+                              <button
+                                onClick={() => setCorrectOpen((m) => ({ ...m, [key]: false }))}
+                                className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink-soft"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {!addOpen[t.objective] ? (
+                <button
+                  onClick={() => setAddOpen((m) => ({ ...m, [t.objective]: true }))}
+                  className="mt-3 text-sm font-medium text-primary hover:underline"
+                >
+                  Add something
+                </button>
+              ) : (
+                <div className="mt-3 rounded-xl bg-paper p-4">
+                  <label className="block text-sm font-medium">
+                    Add to {t.title.toLowerCase()}
+                    <textarea
+                      value={addText[t.objective] ?? ""}
+                      onChange={(e) => setAddText((m) => ({ ...m, [t.objective]: e.target.value }))}
+                      rows={3}
+                      className="mt-1.5 w-full rounded-xl border border-line bg-card px-3 py-2 text-sm"
+                      placeholder="Anything important we missed on this topic?"
+                    />
+                  </label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => submitReviewAdd(t.objective, addText[t.objective] ?? "")}
+                      className="rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-deep"
+                    >
+                      Save addition
+                    </button>
+                    <button
+                      onClick={() => setAddOpen((m) => ({ ...m, [t.objective]: false }))}
+                      className="rounded-full border border-line px-4 py-1.5 text-xs font-medium text-ink-soft"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          ))}
+        </div>
+
+        <section aria-label="Anything else" className="mt-4 rounded-2xl border border-line bg-card p-5">
+          <h2 className="font-serif text-lg font-semibold">Anything important we didn&apos;t ask about?</h2>
+          <textarea
+            value={addText["__global"] ?? ""}
+            onChange={(e) => setAddText((m) => ({ ...m, ["__global"]: e.target.value }))}
+            rows={3}
+            className="mt-2 w-full rounded-xl border border-line bg-paper px-3 py-2 text-sm"
+            placeholder="Anything else your clinician should understand?"
+          />
+          <button
+            onClick={() => submitReviewAdd("background-goals", addText["__global"] ?? "")}
+            className="mt-2 rounded-full border border-primary px-4 py-1.5 text-xs font-semibold text-primary hover:bg-primary-tint"
+          >
+            Save as background and goals
+          </button>
+        </section>
+
+        <section aria-label="Follow-ups" className="mt-4 rounded-2xl border border-line bg-card p-5">
+          <h2 className="font-serif text-lg font-semibold">Fill the thinnest areas</h2>
+          {topups.length === 0 ? (
+            <>
+              <p className="mt-1.5 text-sm text-ink-soft">
+                Answer 1–3 quick follow-ups for the thinnest areas — or skip straight to confirm.
+              </p>
+              <button
+                onClick={loadTopups}
+                className="mt-2 rounded-full border border-primary px-4 py-1.5 text-xs font-semibold text-primary hover:bg-primary-tint"
+              >
+                Show follow-ups
+              </button>
+            </>
+          ) : (
+            <ul className="mt-2 space-y-3">
+              {topups.map((tp) => (
+                <li key={tp.objective} className="rounded-xl bg-paper px-4 py-3">
+                  <p className="font-medium">{tp.question}</p>
+                  <p className="mt-0.5 text-xs text-ink-faint">{tp.title}</p>
+                  <textarea
+                    value={topupAnswers[tp.objective] ?? ""}
+                    onChange={(e) => setTopupAnswers((m) => ({ ...m, [tp.objective]: e.target.value }))}
+                    rows={2}
+                    className="mt-2 w-full rounded-xl border border-line bg-card px-3 py-2 text-sm"
+                    placeholder="Your answer"
+                  />
+                  <button
+                    onClick={() => submitReviewAdd(tp.objective, topupAnswers[tp.objective] ?? "")}
+                    className="mt-2 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white hover:bg-primary-deep"
+                  >
+                    Save answer
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {reviewMsg && <p role="status" className="mt-4 text-sm font-medium text-primary-deep">{reviewMsg}</p>}
+        {error && <p role="alert" className="mt-4 rounded-xl border border-tension/40 bg-tension-tint px-4 py-3 text-sm font-medium">{error}</p>}
+        <button
+          onClick={submitConfirm}
+          className="mt-6 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-6 py-3.5 text-base font-semibold text-white hover:bg-primary-deep"
+        >
+          Looks right — build my briefing <ArrowRight className="h-4 w-4" aria-hidden />
+        </button>
+        <p className="mt-2 pb-10 text-center text-xs text-ink-faint">
+          Your briefing is only generated after you confirm. Closing the browser here resumes at this step.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl pt-10 sm:pt-14">
       <h1 className="font-serif text-3xl font-semibold tracking-tight">Interview</h1>
@@ -563,6 +1082,7 @@ export default function InterviewPage() {
         </p>
       )}
       <RiskLink />
+      <ProgressRail mode={mode} turnsAnswered={turnsAnswered} currentObjective={question?.objective ?? null} />
       <p className="mt-4 text-sm font-medium text-ink-soft" role="status">
         Question {question ? question.turn : "…"} · {turnsAnswered} answered so far
       </p>
@@ -600,14 +1120,69 @@ export default function InterviewPage() {
               placeholder="A few sentences with an example make for a much better briefing than a few words."
             />
           </label>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             <button
-              onClick={submit}
+              onClick={() => submit()}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-deep"
             >
               Save and continue <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
+            <button
+              onClick={() => submit("I can't remember.")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-medium text-ink-soft hover:border-primary hover:text-primary"
+            >
+              I can&apos;t remember
+            </button>
+            <button
+              onClick={() => submit("I'd rather skip this one.")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-5 py-2.5 text-sm font-medium text-ink-soft hover:border-primary hover:text-primary"
+            >
+              Skip this one
+            </button>
           </div>
+          <p className="mt-2 text-xs text-ink-faint">
+            Skipping or not remembering is a complete answer — the topic closes and is never probed.
+          </p>
+          {turnsAnswered >= 1 && (
+            <div className="mt-3">
+              {!correcting ? (
+                <button
+                  onClick={() => { setCorrecting(true); setCorrectMsg(""); }}
+                  className="text-sm font-medium text-primary hover:underline"
+                >
+                  Fix my last answer
+                </button>
+              ) : (
+                <div className="rounded-2xl border border-line bg-paper p-4">
+                  <label className="block text-sm font-semibold">
+                    Correct your last answer (the original is kept)
+                    <textarea
+                      value={correction}
+                      onChange={(e) => setCorrection(e.target.value)}
+                      rows={3}
+                      className="mt-2 w-full rounded-2xl border border-line bg-card px-4 py-3 text-base leading-relaxed"
+                      placeholder="What did you mean instead?"
+                    />
+                  </label>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      onClick={submitCorrection}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-deep"
+                    >
+                      Save correction
+                    </button>
+                    <button
+                      onClick={() => { setCorrecting(false); setCorrection(""); }}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-5 py-2 text-sm font-medium text-ink-soft hover:border-primary hover:text-primary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+              {correctMsg && <p role="status" className="mt-2 text-sm text-primary-deep">{correctMsg}</p>}
+            </div>
+          )}
         </section>
       )
       )}
