@@ -475,10 +475,16 @@ on the done screen — descriptive counts/lists only (reported / denied /
 unsure / limited-or-not-covered + screening line + take-to-appointment note),
 no interpretation. Excluded from print; reviewer mode hides it.
 
-## Out of scope (unchanged)
+## Out of scope (unchanged, except the noted hackathon exception)
 
 Clinical review/validation of topics and taxonomy; 18-item ASRS; PDF
 generation beyond print CSS; accounts; clinician dashboard; F10b risk
 workflow; real-user opening changes (F13-min stands). Synthetic success
 from any of this work is not clinical validity and must not be described
 as such — once, in the README, per WS4.
+
+Owner-authorized hackathon exception (Nov 2026): the experimental
+provisional sketch (`api/app/provisional.py`, `PROVISIONAL_SKETCH` env).
+See `AGENTS.md`. Deterministic pattern summary, never a diagnosis;
+demo surfaces carry it, real journeys only with explicit local opt-in;
+opening runbook requires it off. Revisit/remove post-hackathon.

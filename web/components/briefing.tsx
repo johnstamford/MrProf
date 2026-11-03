@@ -71,6 +71,17 @@ export type BriefingOpenArea = {
   text: string;
 };
 
+export type BriefingProvisionalSketch = {
+  experimental: boolean;
+  headline: string;
+  behaviour_reported: number;
+  reported: number;
+  denied: number;
+  uncertain: number;
+  thin_or_missing: number;
+  lines: string[];
+} | null;
+
 export type BriefingFrontSheet = {
   why: BriefingFrontQuote[];
   timeline: BriefingFrontQuote[];
@@ -87,6 +98,7 @@ export type Briefing = {
   screening?: BriefingScreening | null;
   areas?: BriefingArea[];
   front_sheet?: BriefingFrontSheet;
+  provisional_sketch?: BriefingProvisionalSketch;
   topics: BriefingTopic[];
   statements: { turn: number; question: string; answer: string }[];
   system_notes: { turn: number; objective: string; reason: string }[];
@@ -368,6 +380,25 @@ export default function BriefingView({
                   <CoverageBar coverage={briefing.coverage} />
                 </div>
               )}
+            </section>
+          )}
+
+          {briefing.provisional_sketch && (
+            <section
+              aria-label="Provisional sketch (experimental)"
+              className="rounded-2xl border border-dashed border-uncertain bg-uncertain-tint p-5"
+            >
+              <p className="inline-block rounded-full bg-uncertain px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                Experimental demo feature
+              </p>
+              <h2 className="mt-2 font-serif text-xl font-semibold">
+                {briefing.provisional_sketch.headline}
+              </h2>
+              <div className="mt-2 space-y-1.5 text-sm leading-relaxed text-ink">
+                {(briefing.provisional_sketch.lines ?? []).map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
             </section>
           )}
 

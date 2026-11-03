@@ -320,6 +320,23 @@ class BriefingFrontSheet(BaseModel):
     open_areas: list[BriefingOpenArea] = Field(default_factory=list)
 
 
+class BriefingProvisionalSketch(BaseModel):
+    """Owner-authorized experimental sketch (hackathon demo only).
+
+    Deterministic pattern summary, never a diagnosis. Present only when
+    explicitly enabled (frozen demos, or PROVISIONAL_SKETCH=on journeys).
+    """
+
+    experimental: bool = True
+    headline: str = ""
+    behaviour_reported: int = 0
+    reported: int = 0
+    denied: int = 0
+    uncertain: int = 0
+    thin_or_missing: int = 0
+    lines: list[str] = Field(default_factory=list)
+
+
 class ReviewObservationOut(BaseModel):
     turn: int
     obs_index: int
@@ -489,6 +506,9 @@ class InterviewBriefingOut(BaseModel):
     # WS1: set when the user confirms the review step. The briefing is never
     # generated before confirmation.
     user_confirmed_at: datetime | None = None
+    # Experimental provisional sketch (hackathon scope exception). Only
+    # present when explicitly enabled; never a diagnosis.
+    provisional_sketch: BriefingProvisionalSketch | None = None
     completed_at: datetime
 
 

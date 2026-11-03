@@ -36,6 +36,9 @@ policy and the clinician risk workflow stay post-hackathon.
 - Abuse caps: POST rate limit (`RATE_LIMIT_PER_MIN`), 2000-char answer cap,
   bounded model retries/budgets. Watch api logs for `rate_limited` and
   `validation_fallback` warnings.
+- Experimental provisional sketch: keep `PROVISIONAL_SKETCH=demo-only` (or
+  `off`) for the opening. Real-visitor journeys must never render it;
+  `on` is local hackathon judging only.
 - Deletion requests: with the visitor's assessment code + password,
   `DELETE /api/assessments/<code>` removes the assessment, transcript,
   all evidence docs, and all reports (verified by `test_delete_cascades`

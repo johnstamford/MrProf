@@ -9,6 +9,7 @@ Greenfield repo (baseline 26 Oct 2026): no app code exists yet. `README.md` is `
 - Distinguish agreed choices vs provisional targets vs open decisions — never silently promote a proposal to a requirement.
 - After each feature, update `FEATURE_PLAN.md` with status, verification evidence, and remaining limitations. Checkpoint working milestones in git.
 - Out of scope without explicit scope change: billing, prescribing, EHR integration, automated diagnosis, 18-item ASRS, agent-per-symptom architecture.
+- Explicit owner-authorized scope exception (Nov 2026, hackathon demo only): an experimental *provisional sketch* panel (`api/app/provisional.py`, `PROVISIONAL_SKETCH` env: `demo-only` default / `on` / `off`). Deterministic pattern summary, never a diagnosis, no probability/severity; frozen synthetic demos carry it, real journeys only with `on` (local judging only). Must be `demo-only`/`off` for any real-user opening; strip before clinical use. Revisit/remove post-hackathon.
 
 ## Planned stack (not yet implemented — verify, don't assume)
 

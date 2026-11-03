@@ -147,6 +147,16 @@ async def main_async(outdir: Path) -> int:
             br = await client.get(f"/assessments/{aid}/interview/report", headers=auth)
             br.raise_for_status()
             briefing = br.json()
+            # Frozen demos always carry the experimental sketch (demo context).
+            from app.provisional import build_provisional_sketch  # noqa: E402
+
+            ab = await client.get(f"/assessments/{aid}/interview/assessment", headers=auth)
+            ab.raise_for_status()
+            briefing["provisional_sketch"] = build_provisional_sketch(
+                ab.json().get("coverage", []),
+                {"score": screening["score"], "positive": screening["positive"],
+                 "scoring_method": screening["scoring_method"]},
+            )
 
             finished = datetime.now(timezone.utc)
             frozen = {

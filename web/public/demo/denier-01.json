@@ -61,9 +61,9 @@
         "title": "Context and background"
       }
     ],
-    "assessment_id": "9RJ3VDM3",
+    "assessment_id": "TM7BBJEJ",
     "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
-    "completed_at": "2026-11-03T18:16:43.381000",
+    "completed_at": "2026-11-03T20:25:00.163000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [
       {
@@ -385,9 +385,24 @@
       "p95_ms": 0.1
     },
     "mode": "full",
+    "provisional_sketch": {
+      "behaviour_reported": 1,
+      "denied": 10,
+      "experimental": true,
+      "headline": "Provisional sketch \u2014 experimental demo feature, not a medical conclusion",
+      "lines": [
+        "You reported difficulties in 4 of 14 areas (Background and goals; Restlessness and staying with one thing; Sleep, stress, mood, and health context; Strategies and support).",
+        "You said 10 areas were not an issue for you.",
+        "Your screening was 0/6 (original-0-6), below the threshold \u2014 which does not exclude ADHD or other conditions. This sketch does not point toward any particular condition.",
+        "Only a qualified clinician can determine what explains your experiences. Take both reports to your appointment."
+      ],
+      "reported": 4,
+      "thin_or_missing": 0,
+      "uncertain": 0
+    },
     "report_version": 1,
     "screening": {
-      "completed_at": "2026-11-03T18:16:34.834000",
+      "completed_at": "2026-11-03T20:24:51.673000",
       "positive": false,
       "score": 0,
       "scoring_method": "original-0-6"
@@ -1494,15 +1509,15 @@
       }
     ],
     "turns_answered": 19,
-    "user_confirmed_at": "2026-11-03T18:16:43.381000"
+    "user_confirmed_at": "2026-11-03T20:25:00.163000"
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-03T18:16:43.775748+00:00",
+    "exported_at": "2026-11-03T20:25:00.736277+00:00",
     "headline": "Denies difficulties, offers an alternative explanation",
     "latency_ms": {
-      "max": 205.5,
-      "mean": 194.7
+      "max": 218.0,
+      "mean": 192.4
     },
     "model": {
       "model": "dummy-stub",
@@ -1564,8 +1579,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "9RJ3VDM3",
-    "completed_at": "2026-11-03T18:16:34.834000",
+    "assessment_id": "TM7BBJEJ",
+    "completed_at": "2026-11-03T20:24:51.673000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

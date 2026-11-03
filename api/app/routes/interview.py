@@ -41,6 +41,7 @@ from ..assessment import (
     tensions_from_evidence,
 )
 from ..briefing import TOPIC_STATUS_LABELS, build_interview_briefing
+from ..provisional import sketch_mode
 from ..db import get_db
 from ..interview import (
     ANSWER_MAX_LEN,
@@ -1284,7 +1285,7 @@ async def review_correct(
     )
 
 
-async def _confirmed_briefing(db, assessment_id: str, doc: dict, iv: dict, now) -> tuple[dict, list[dict]]:
+async def _confirmed_briefing(db, assessment_id: str, doc: dict, iv: dict, now, include_sketch: bool = False) -> tuple[dict, list[dict]]:
     """Recompute coverage/tensions from current turns + stored evidence and
     build the confirmed briefing. Shared by confirm and its replay repair."""
     evidence_turns = await _extract_missing(db, assessment_id, iv.get("turns", []))
@@ -1296,7 +1297,7 @@ async def _confirmed_briefing(db, assessment_id: str, doc: dict, iv: dict, now) 
         assessment_id, {**iv, "turns": turns}, coverage, tensions, evidence_turns,
         (transcripts_doc or {}).get("segments", []),
         await db["reports"].count_documents({"assessment_id": assessment_id, "kind": "interview"}) + 1,
-        now, doc.get("screening"), user_confirmed_at=now,
+        now, doc.get("screening"), user_confirmed_at=now, include_sketch=include_sketch,
     )
     return content, turns
 
@@ -1355,7 +1356,8 @@ async def review_confirm(
         )
     db = get_db()
     now = _now()
-    content, turns = await _confirmed_briefing(db, assessment_id, doc, iv, now)
+    include_sketch = sketch_mode() == "on"
+    content, turns = await _confirmed_briefing(db, assessment_id, doc, iv, now, include_sketch)
     prior = await db["reports"].count_documents({"assessment_id": assessment_id, "kind": "interview"})
     content["report_version"] = prior + 1
     col = db["assessments"]

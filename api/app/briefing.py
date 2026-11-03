@@ -25,6 +25,7 @@ from .interview import (
     missing_dimensions,
     objective_dimensions,
 )
+from .provisional import build_provisional_sketch
 from .risk import RISK_SIGNPOST
 
 BRIEFING_BANNER = (
@@ -249,6 +250,7 @@ def build_interview_briefing(
     completed_at: datetime,
     screening: dict | None = None,
     user_confirmed_at: datetime | None = None,
+    include_sketch: bool = False,
 ) -> dict:
     """Build the fixed briefing content dict.
 
@@ -380,6 +382,7 @@ def build_interview_briefing(
         "support_note": RISK_SIGNPOST,
         "mode": interview.get("mode", "full"),
         "user_confirmed_at": user_confirmed_at,
+        "provisional_sketch": build_provisional_sketch(coverage, screening) if include_sketch else None,
         "topics": topic_entries,
         "statements": [
             {"turn": t["turn"], "question": t["question"], "answer": t["answer"]}
