@@ -30,11 +30,22 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
 from .. import interview as planner
-from ..assessment import extract_single_turn, run_round_assessment
+from .. import interview as planner
+from ..assessment import (
+    _extract_missing,
+    backfill_quality,
+    coverage_from_evidence,
+    extract_corrected_turn,
+    extract_single_turn,
+    run_round_assessment,
+    tensions_from_evidence,
+)
+from ..briefing import TOPIC_STATUS_LABELS, build_interview_briefing
 from ..db import get_db
 from ..interview import (
     ANSWER_MAX_LEN,
     HARD_TURN_CAP,
+    PLAN_ORDER,
     SKILL_VERSION,
     TOPIC_VERSION,
 )
@@ -45,19 +56,34 @@ from ..question_validation import (
     validate_question,
 )
 from ..models import (
+    ContinueRequest,
+    ContinueResult,
     EvidenceOut,
     EvidenceTurnOut,
     InterviewAnswerRequest,
     InterviewAnswerResult,
     InterviewAssessmentOut,
     InterviewBriefingOut,
+    InterviewCorrectRequest,
+    InterviewCorrectResult,
     InterviewNextOut,
     InterviewQuestionOut,
+    InterviewReviewOut,
     InterviewStartRequest,
     InterviewStartResult,
+    ReviewAddRequest,
+    ReviewAddResult,
+    ReviewConfirmRequest,
+    ReviewConfirmResult,
+    ReviewCorrectRequest,
+    ReviewCorrectResult,
+    ReviewObservationOut,
+    ReviewTopicOut,
+    ReviewTopupOut,
+    ReviewTopupsOut,
     TranscriptOut,
 )
-from ..transcripts import append_turn_segments
+from ..transcripts import append_correction_segments, append_turn_segments
 from .assessments import require_assessment
 
 router = APIRouter(prefix="/assessments", tags=["interview"])
@@ -147,7 +173,7 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
     hint = hint or {}
     prompt = planner.build_prompt(
         objective=objective, reason=reason, history=history, screening=screening,
-        last_answer=last_answer, tension=hint.get("tension"),
+        last_answer=last_answer, tension=hint.get("tension"), dimension=hint.get("dimension"),
     )
     fallbacks = {t.get("opener", "") for t in planner.load_topics().values()}
     prior_qs = [t.get("question", "") for t in history if t.get("question")]
@@ -195,10 +221,14 @@ async def _generate(assessment_id: str, objective: str, reason: str, history: li
     kind = hint.get("kind")
     probe = f"clarify:{hint['family']}" if kind == "clarify" else (kind if kind in ("followup", "inline") else None)
     quality = question.answer_quality.model_dump() if question.answer_quality is not None else None
+    if quality is None and model_info.get("provider") == "dummy":
+        # Deterministic advisory rating for the hermetic path (real judgment
+        # comes from the model). Mirrors polarity; never drives planning.
+        quality = planner.dummy_quality(last_answer)
     return question, model_info, session_blob, probe, quality
 
 
-async def _phrase_for_job(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None, tension: str | None = None) -> tuple:
+async def _phrase_for_job(assessment_id: str, objective: str, reason: str, history: list, screening: dict | None, tension: str | None = None, dimension: str | None = None) -> tuple:
     """Phrase one question for the batch job. Returns (text, model_info, session).
 
     Same F10a validation as the live path: bounded regens, then the
@@ -211,7 +241,7 @@ async def _phrase_for_job(assessment_id: str, objective: str, reason: str, histo
     last_answer = history[-1].get("answer") if history else None
     prompt = planner.build_prompt(
         objective=objective, reason=reason, history=history, screening=screening,
-        last_answer=last_answer, tension=tension,
+        last_answer=last_answer, tension=tension, dimension=dimension,
     )
     fallbacks = {t.get("opener", "") for t in planner.load_topics().values()}
     prior_qs = [t.get("question", "") for t in history if t.get("question")]
@@ -886,6 +916,14 @@ async def submit_answer_stream(
     )
 
 
+async def _correct_extract_task(assessment_id: str, turn: int) -> None:
+    """Re-extract a corrected turn in the background. Best-effort."""
+    try:
+        await extract_corrected_turn(get_db(), assessment_id, turn)
+    except Exception:  # noqa: BLE001 - background work only logs
+        log.warning("background correction task failed for %s turn %d", assessment_id, turn)
+
+
 @router.post("/{assessment_id}/interview/prefetch")
 async def trigger_prefetch(
     assessment_id: str,
@@ -908,6 +946,642 @@ async def trigger_prefetch(
         return {"scheduled": False}
     background.add_task(_prefetch_task, doc["_id"], len(iv.get("turns", [])), current.get("turn"))
     return {"scheduled": True}
+
+
+@router.post("/{assessment_id}/interview/correct", response_model=InterviewCorrectResult)
+async def correct_answer(
+    assessment_id: str,
+    body: InterviewCorrectRequest,
+    background: BackgroundTasks,
+    doc: dict = Depends(require_assessment),
+) -> InterviewCorrectResult:
+    """WS5 "Fix my last answer": append a correction to the latest turn.
+
+    Append-only: the original answer and its transcript segments are never
+    touched. The correction is stored as turn.correction plus new verbatim
+    T{turn}-C{n} transcript segments, then re-extracted as a new evidence
+    version. Only the most recently answered turn, only while its follow-up
+    question is still pending. Same version-checked atomic write +
+    idempotency replay as the answer endpoint.
+    """
+    text = body.answer_text.strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="correction must not be empty")
+    if len(body.answer_text) > ANSWER_MAX_LEN:
+        raise HTTPException(status_code=422, detail=f"correction must be at most {ANSWER_MAX_LEN} characters")
+    iv = doc.get("interview")
+    if iv is None:
+        raise HTTPException(status_code=404, detail="interview not started")
+    if iv.get("status") not in ("active", "followup") or iv.get("current") is None:
+        raise HTTPException(status_code=409, detail={"error": "interview_not_correctable"})
+    turns = iv.get("turns", [])
+    if not turns or turns[-1].get("turn") != body.corrects_turn:
+        raise HTTPException(status_code=422, detail="only the most recent answer can be corrected")
+    replay = _replay_result(doc, body.idempotency_key)
+    if replay is not None and replay.get("kind") == "interview-correct":
+        fresh = await get_db()["assessments"].find_one({"_id": doc["_id"]})
+        assert fresh is not None
+        return InterviewCorrectResult(
+            assessment_id=doc["_id"], version=replay["version"],
+            corrects_turn=body.corrects_turn, replayed=True,
+        )
+    if turns[-1].get("correction"):
+        raise HTTPException(status_code=409, detail={"error": "already_corrected"})
+    now = _now()
+    col = get_db()["assessments"]
+    result = await col.find_one_and_update(
+        {
+            "_id": doc["_id"],
+            "version": body.base_version,
+            "idem.key": {"$ne": body.idempotency_key},
+        },
+        {
+            "$set": {
+                "version": body.base_version + 1,
+                "updated_at": now,
+                "interview.turns.$[t].correction": {"text": text[:ANSWER_MAX_LEN], "corrected_at": now},
+                "interview.updated_at": now,
+            },
+            "$push": {
+                "idem": {
+                    "key": body.idempotency_key,
+                    "version": body.base_version + 1,
+                    "kind": "interview-correct",
+                    "turn": body.corrects_turn,
+                }
+            },
+        },
+        array_filters=[{"t.turn": body.corrects_turn}],
+        return_document=True,
+    )
+    if result is None:
+        current = await col.find_one({"_id": doc["_id"]})
+        assert current is not None
+        replay = _replay_result(current, body.idempotency_key)
+        if replay is not None and replay.get("kind") == "interview-correct":
+            return InterviewCorrectResult(
+                assessment_id=current["_id"], version=replay["version"],
+                corrects_turn=body.corrects_turn, replayed=True,
+            )
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "version_conflict", "current_version": current["version"]},
+        )
+    await append_correction_segments(
+        get_db(), result["_id"], body.corrects_turn, text[:ANSWER_MAX_LEN],
+        SKILL_VERSION, TOPIC_VERSION,
+    )
+    background.add_task(_correct_extract_task, result["_id"], body.corrects_turn)
+    return InterviewCorrectResult(
+        assessment_id=result["_id"], version=result["version"], corrects_turn=body.corrects_turn,
+    )
+
+
+@router.get("/{assessment_id}/interview/review", response_model=InterviewReviewOut)
+async def get_review(doc: dict = Depends(require_assessment)) -> InterviewReviewOut:
+    """WS1 review-step state. 404 until the batch job sets status review."""
+    iv = doc.get("interview")
+    if iv is None:
+        raise HTTPException(status_code=404, detail="interview not started")
+    if iv.get("status") != "review":
+        raise HTTPException(status_code=404, detail="interview not in review")
+    summary = iv.get("assessment") or {}
+    coverage = summary.get("coverage", [])
+    db = get_db()
+    evidence_turns = (
+        await db["evidence"].find({"assessment_id": doc["_id"]}).sort("turn", 1).to_list(100)
+    )
+    obs_by_turn: dict[int, list[tuple[int, dict]]] = {}
+    for d in evidence_turns:
+        latest = d["versions"][-1]
+        for o in latest["observations"]:
+            obs_by_turn.setdefault(d["turn"], []).append((d["turn"], o))
+    tdoc = await db["transcripts"].find_one({"_id": doc["_id"]})
+    line_by_segment = {s["id"]: s.get("line") for s in ((tdoc or {}).get("segments", []))}
+    turn_objective = {t["turn"]: t["objective"] for t in iv.get("turns", [])}
+    topics = []
+    for entry in coverage:
+        oid = entry["objective"]
+        observations = []
+        for t in iv.get("turns", []):
+            if t["objective"] != oid:
+                continue
+            for turn_no, obs in obs_by_turn.get(t["turn"], []):
+                if obs.get("code") != oid:
+                    continue
+                observations.append(
+                    ReviewObservationOut(
+                        turn=turn_no,
+                        obs_index=obs.get("obs_index", 0),
+                        assertion=obs.get("assertion", ""),
+                        quote=obs.get("quote", ""),
+                        segment_id=obs.get("segment_id", ""),
+                        line=line_by_segment.get(obs.get("segment_id", "")),
+                        note=obs.get("note", ""),
+                        user_correction=obs.get("user_correction", ""),
+                    )
+                )
+        topics.append(
+            ReviewTopicOut(
+                objective=oid,
+                title=entry.get("title", oid),
+                status=entry.get("status", ""),
+                label=TOPIC_STATUS_LABELS.get(entry.get("status", ""), entry.get("status", "")),
+                note=entry.get("note", ""),
+                observations=observations,
+            )
+        )
+    return InterviewReviewOut(
+        assessment_id=doc["_id"],
+        version=doc["version"],
+        status="review",
+        mode=iv.get("mode", "full"),
+        turns_answered=len(iv.get("turns", [])),
+        topics=topics,
+    )
+
+
+@router.post("/{assessment_id}/interview/review/add", response_model=ReviewAddResult)
+async def review_add(
+    assessment_id: str,
+    body: ReviewAddRequest,
+    doc: dict = Depends(require_assessment),
+) -> ReviewAddResult:
+    """WS1 per-topic addition. Stored as a new verbatim addendum turn.
+
+    The original turns are never edited; the addition is extracted like any
+    turn so it appears as cited evidence in the confirmed briefing.
+    """
+    text = body.answer_text.strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="addition must not be empty")
+    if len(body.answer_text) > ANSWER_MAX_LEN:
+        raise HTTPException(status_code=422, detail=f"addition must be at most {ANSWER_MAX_LEN} characters")
+    if body.objective not in PLAN_ORDER:
+        raise HTTPException(status_code=422, detail="unknown objective")
+    iv = doc.get("interview")
+    if iv is None:
+        raise HTTPException(status_code=404, detail="interview not started")
+    if iv.get("status") != "review":
+        raise HTTPException(status_code=409, detail={"error": "interview_not_in_review"})
+    replay = _replay_result(doc, body.idempotency_key)
+    if replay is not None and replay.get("kind") == "review-add":
+        return ReviewAddResult(
+            assessment_id=doc["_id"], version=replay["version"],
+            turn=replay["turn"], objective=body.objective, replayed=True,
+        )
+    turns = iv.get("turns", [])
+    next_turn = max([t["turn"] for t in turns] + [0]) + 1
+    now = _now()
+    col = get_db()["assessments"]
+    result = await col.find_one_and_update(
+        {
+            "_id": doc["_id"],
+            "version": body.base_version,
+            "idem.key": {"$ne": body.idempotency_key},
+        },
+        {
+            "$set": {"version": body.base_version + 1, "updated_at": now, "interview.updated_at": now},
+            "$push": {
+                "interview.turns": {
+                    "turn": next_turn,
+                    "objective": body.objective,
+                    "reason": "user addition during review",
+                    "question": "",
+                    "answer": text[:ANSWER_MAX_LEN],
+                    "answered_at": now,
+                    "probe": "addendum",
+                    "phrase_ms": None,
+                    "model_provider": "user",
+                    "model_name": "user-addendum",
+                    "skill_version": SKILL_VERSION,
+                    "topic_version": TOPIC_VERSION,
+                },
+                "idem": {
+                    "key": body.idempotency_key,
+                    "version": body.base_version + 1,
+                    "kind": "review-add",
+                    "turn": next_turn,
+                },
+            },
+        },
+        return_document=True,
+    )
+    if result is None:
+        current = await col.find_one({"_id": doc["_id"]})
+        assert current is not None
+        replay = _replay_result(current, body.idempotency_key)
+        if replay is not None and replay.get("kind") == "review-add":
+            return ReviewAddResult(
+                assessment_id=current["_id"], version=replay["version"],
+                turn=replay["turn"], objective=body.objective, replayed=True,
+            )
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "version_conflict", "current_version": current["version"]},
+        )
+    await append_turn_segments(
+        get_db(), result["_id"], next_turn, "", text[:ANSWER_MAX_LEN],
+        SKILL_VERSION, TOPIC_VERSION,
+    )
+    # Extract inline (not background): confirm recomputes coverage from stored
+    # evidence, so an addendum must be extracted before it can be confirmed.
+    await extract_single_turn(get_db(), result["_id"], next_turn)
+    return ReviewAddResult(
+        assessment_id=result["_id"], version=result["version"],
+        turn=next_turn, objective=body.objective,
+    )
+
+
+@router.post("/{assessment_id}/interview/review/correct", response_model=ReviewCorrectResult)
+async def review_correct(
+    assessment_id: str,
+    body: ReviewCorrectRequest,
+    doc: dict = Depends(require_assessment),
+) -> ReviewCorrectResult:
+    """WS1 per-observation correction ("this isn't what I meant").
+
+    Stored on the observation as user_correction, separate from reviewer
+    review_note. The original note and quote are untouched; both shown.
+    """
+    text = body.answer_text.strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="correction must not be empty")
+    if len(body.answer_text) > ANSWER_MAX_LEN:
+        raise HTTPException(status_code=422, detail=f"correction must be at most {ANSWER_MAX_LEN} characters")
+    iv = doc.get("interview")
+    if iv is None:
+        raise HTTPException(status_code=404, detail="interview not started")
+    if iv.get("status") != "review":
+        raise HTTPException(status_code=409, detail={"error": "interview_not_in_review"})
+    replay = _replay_result(doc, body.idempotency_key)
+    if replay is not None and replay.get("kind") == "review-correct":
+        return ReviewCorrectResult(
+            assessment_id=doc["_id"], version=replay["version"],
+            turn=body.turn, obs_index=body.obs_index, replayed=True,
+        )
+    db = get_db()
+    ev = await db["evidence"].find_one({"_id": f"{doc['_id']}:turn:{body.turn}"})
+    if ev is None:
+        raise HTTPException(status_code=404, detail="evidence for this turn is missing")
+    versions = ev.get("versions", [])
+    latest = versions[-1] if versions else {"observations": []}
+    observations = latest.get("observations", [])
+    if body.obs_index < 0 or body.obs_index >= len(observations):
+        raise HTTPException(status_code=404, detail="observation not found")
+    if observations[body.obs_index].get("user_correction"):
+        raise HTTPException(status_code=409, detail={"error": "already_corrected"})
+    now = _now()
+    col = db["assessments"]
+    result = await col.find_one_and_update(
+        {
+            "_id": doc["_id"],
+            "version": body.base_version,
+            "idem.key": {"$ne": body.idempotency_key},
+        },
+        {
+            "$set": {"version": body.base_version + 1, "updated_at": now, "interview.updated_at": now},
+            "$push": {
+                "idem": {
+                    "key": body.idempotency_key,
+                    "version": body.base_version + 1,
+                    "kind": "review-correct",
+                    "turn": body.turn,
+                }
+            },
+        },
+        return_document=True,
+    )
+    if result is None:
+        current = await col.find_one({"_id": doc["_id"]})
+        assert current is not None
+        replay = _replay_result(current, body.idempotency_key)
+        if replay is not None and replay.get("kind") == "review-correct":
+            return ReviewCorrectResult(
+                assessment_id=current["_id"], version=replay["version"],
+                turn=body.turn, obs_index=body.obs_index, replayed=True,
+            )
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "version_conflict", "current_version": current["version"]},
+        )
+    # Atomic single-field update on the latest version: reviewer annotations
+    # on other observations are never clobbered.
+    vpos = len(versions) - 1
+    await db["evidence"].update_one(
+        {"_id": f"{doc['_id']}:turn:{body.turn}"},
+        {
+            "$set": {
+                f"versions.{vpos}.observations.{body.obs_index}.user_correction": text[:ANSWER_MAX_LEN],
+                f"versions.{vpos}.observations.{body.obs_index}.user_corrected_at": now,
+                "updated_at": now,
+            }
+        },
+    )
+    return ReviewCorrectResult(
+        assessment_id=result["_id"], version=result["version"],
+        turn=body.turn, obs_index=body.obs_index,
+    )
+
+
+async def _confirmed_briefing(db, assessment_id: str, doc: dict, iv: dict, now) -> tuple[dict, list[dict]]:
+    """Recompute coverage/tensions from current turns + stored evidence and
+    build the confirmed briefing. Shared by confirm and its replay repair."""
+    evidence_turns = await _extract_missing(db, assessment_id, iv.get("turns", []))
+    turns = backfill_quality(iv.get("turns", []))
+    coverage = coverage_from_evidence(turns, evidence_turns)
+    tensions = tensions_from_evidence(turns, evidence_turns)
+    transcripts_doc = await db["transcripts"].find_one({"_id": assessment_id})
+    content = build_interview_briefing(
+        assessment_id, {**iv, "turns": turns}, coverage, tensions, evidence_turns,
+        (transcripts_doc or {}).get("segments", []),
+        await db["reports"].count_documents({"assessment_id": assessment_id, "kind": "interview"}) + 1,
+        now, doc.get("screening"), user_confirmed_at=now,
+    )
+    return content, turns
+
+
+@router.post("/{assessment_id}/interview/review/confirm", response_model=ReviewConfirmResult)
+async def review_confirm(
+    assessment_id: str,
+    body: ReviewConfirmRequest,
+    doc: dict = Depends(require_assessment),
+) -> ReviewConfirmResult:
+    """WS1 confirm: build the briefing exactly once, version-checked.
+
+    Coverage and tensions are recomputed from current turns + stored evidence
+    (addenda included), then the briefing is stored and the interview
+    completes. Unconfirmed journeys never produce a briefing: the report
+    endpoint 404s until this runs.
+    """
+    iv = doc.get("interview")
+    if iv is None:
+        raise HTTPException(status_code=404, detail="interview not started")
+    if iv.get("status") == "complete":
+        raise HTTPException(status_code=409, detail={"error": "interview_complete"})
+    if iv.get("status") != "review":
+        raise HTTPException(status_code=409, detail={"error": "interview_not_in_review"})
+    replay = _replay_result(doc, body.idempotency_key)
+    if replay is not None and replay.get("kind") == "review-confirm":
+        db = get_db()
+        # Repair path: the state write won but the process died before the
+        # report insert. Rebuild and store it (same report version).
+        exists = await db["reports"].count_documents(
+            {"assessment_id": assessment_id, "kind": "interview", "report_version": replay["report_version"]}
+        )
+        if not exists:
+            fresh = await db["assessments"].find_one({"_id": doc["_id"]})
+            assert fresh is not None
+            fiv = fresh.get("interview") or {}
+            content, _ = await _confirmed_briefing(db, assessment_id, fresh, fiv, _now())
+            content["report_version"] = replay["report_version"]
+            await db["reports"].insert_one(
+                {
+                    "assessment_id": assessment_id,
+                    "kind": "interview",
+                    "report_version": replay["report_version"],
+                    "answer_idem_key": None,
+                    "content": {**content, "completed_at": _now()},
+                    "created_at": _now(),
+                }
+            )
+        fresh = await db["assessments"].find_one({"_id": doc["_id"]})
+        assert fresh is not None
+        confirmed_at = (fresh.get("interview") or {}).get("user_confirmed_at")
+        return ReviewConfirmResult(
+            assessment_id=doc["_id"], version=replay["version"],
+            report_version=replay["report_version"], user_confirmed_at=confirmed_at,
+            replayed=True,
+        )
+    db = get_db()
+    now = _now()
+    content, turns = await _confirmed_briefing(db, assessment_id, doc, iv, now)
+    prior = await db["reports"].count_documents({"assessment_id": assessment_id, "kind": "interview"})
+    content["report_version"] = prior + 1
+    col = db["assessments"]
+    result = await col.find_one_and_update(
+        {
+            "_id": doc["_id"],
+            "version": body.base_version,
+            "idem.key": {"$ne": body.idempotency_key},
+        },
+        {
+            "$set": {
+                "version": body.base_version + 1,
+                "stage": "complete",
+                "updated_at": now,
+                "interview.status": "complete",
+                "interview.current": None,
+                "interview.followups": [],
+                "interview.turns": turns,
+                "interview.user_confirmed_at": now,
+                "interview.updated_at": now,
+            },
+            "$push": {
+                "idem": {
+                    "key": body.idempotency_key,
+                    "version": body.base_version + 1,
+                    "kind": "review-confirm",
+                    "report_version": prior + 1,
+                }
+            },
+        },
+        return_document=True,
+    )
+    if result is None:
+        current = await col.find_one({"_id": doc["_id"]})
+        assert current is not None
+        replay = _replay_result(current, body.idempotency_key)
+        if replay is not None and replay.get("kind") == "review-confirm":
+            confirmed_at = (current.get("interview") or {}).get("user_confirmed_at")
+            return ReviewConfirmResult(
+                assessment_id=current["_id"], version=replay["version"],
+                report_version=replay["report_version"], user_confirmed_at=confirmed_at,
+                replayed=True,
+            )
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "version_conflict", "current_version": current["version"]},
+        )
+    await db["reports"].insert_one(
+        {
+            "assessment_id": assessment_id,
+            "kind": "interview",
+            "report_version": prior + 1,
+            "answer_idem_key": None,
+            "content": {**content, "completed_at": now},
+            "created_at": now,
+        }
+    )
+    return ReviewConfirmResult(
+        assessment_id=result["_id"], version=result["version"],
+        report_version=prior + 1, user_confirmed_at=now,
+    )
+
+
+@router.post("/{assessment_id}/interview/review/topups", response_model=ReviewTopupsOut)
+async def review_topups(
+    assessment_id: str,
+    background: BackgroundTasks,
+    doc: dict = Depends(require_assessment),
+) -> ReviewTopupsOut:
+    """WS2-C: up to 3 quick follow-up questions for the thinnest areas.
+
+    Read-only besides model phrasing: no version bump, no state change. The
+    user answers through review/add (or skips straight to confirm).
+    Uncertain topics are never probed.
+    """
+    from ..interview import DIMENSION_GUIDANCE
+
+    iv = doc.get("interview")
+    if iv is None:
+        raise HTTPException(status_code=404, detail="interview not started")
+    if iv.get("status") != "review":
+        raise HTTPException(status_code=409, detail={"error": "interview_not_in_review"})
+    summary = iv.get("assessment") or {}
+    coverage = summary.get("coverage", [])
+    turns = iv.get("turns", [])
+    db = get_db()
+    evidence_turns = (
+        await db["evidence"].find({"assessment_id": assessment_id}).sort("turn", 1).to_list(100)
+    )
+    from ..assessment import objective_observations, objective_quality
+
+    obs_by_oid = objective_observations(turns, evidence_turns)
+    quality_by_oid = objective_quality(turns)
+    candidates = [e for e in coverage if e.get("status") in ("thin", "unasked", "pending")]
+    topups = []
+    for entry in candidates[:3]:
+        oid = entry["objective"]
+        missing = planner.missing_dimensions(oid, obs_by_oid.get(oid, []), quality_by_oid.get(oid))
+        dim = missing[0] if missing else ""
+        reason = (
+            f"Review top-up for {entry.get('title', oid)}: ask for {DIMENSION_GUIDANCE[dim]}, once"
+            if dim
+            else f"Review top-up for {entry.get('title', oid)}: invite one concrete detail, once"
+        )
+        try:
+            text, _, _ = await _phrase_for_job(
+                assessment_id, oid, reason, turns, doc.get("screening"),
+                None, dim or None,
+            )
+        except LLMError as exc:
+            raise HTTPException(status_code=exc.status, detail={"error": exc.code, "message": exc.message})
+        topups.append(ReviewTopupOut(objective=oid, title=entry.get("title", oid), question=text, dimension=dim))
+    return ReviewTopupsOut(assessment_id=assessment_id, topups=topups)
+
+
+@router.post("/{assessment_id}/interview/continue", response_model=ContinueResult)
+async def continue_full(
+    assessment_id: str,
+    body: ContinueRequest,
+    background: BackgroundTasks,
+    doc: dict = Depends(require_assessment),
+) -> ContinueResult:
+    """WS2-C taster→full upgrade: resume the same assessment as a full interview.
+
+    Version-checked, idempotent. The 8 unasked objectives are asked in fixed
+    order (+ bounded follow-ups), then a fresh review step and briefing v2.
+    Briefing v1 is retained (reports are versioned). Full-mode interviews
+    reject this (no downgrade offer exists).
+    """
+    iv = doc.get("interview")
+    if iv is None:
+        raise HTTPException(status_code=404, detail="interview not started")
+    if iv.get("mode") != "taster":
+        raise HTTPException(status_code=422, detail="only a taster interview can continue to full")
+    if iv.get("status") != "complete":
+        raise HTTPException(status_code=409, detail={"error": "interview_not_complete"})
+    replay = _replay_result(doc, body.idempotency_key)
+    if replay is not None and replay.get("kind") == "mode-upgrade":
+        fresh = await get_db()["assessments"].find_one({"_id": doc["_id"]})
+        assert fresh is not None
+        fiv = fresh.get("interview") or {}
+        current = fiv.get("current")
+        return ContinueResult(
+            assessment_id=doc["_id"], version=replay["version"], mode="full",
+            question=_question_out(current) if current else None, replayed=True,
+        )
+    turns = iv.get("turns", [])
+    objective, reason, done, hint = planner.plan_next(turns, [], False, "full")
+    if done:
+        raise HTTPException(status_code=409, detail={"error": "nothing_left_to_ask"})
+    try:
+        question, model_info, session_blob, _, _ = await _generate(
+            assessment_id, objective, reason, turns, doc.get("screening"), hint=hint,
+        )
+    except LLMError as exc:
+        raise HTTPException(status_code=exc.status, detail={"error": exc.code, "message": exc.message})
+    now = _now()
+    col = get_db()["assessments"]
+    next_turn_doc = {
+        "turn": max([t["turn"] for t in turns] + [0]) + 1,
+        "objective": question.objective,
+        "reason": question.reason,
+        "question": question.question_text,
+        "answer": None,
+        "probe": None,
+        "phrase_ms": model_info.get("phrase_ms"),
+        "model_provider": model_info["provider"],
+        "model_name": model_info["model"],
+        "skill_version": SKILL_VERSION,
+        "topic_version": TOPIC_VERSION,
+    }
+    result = await col.find_one_and_update(
+        {
+            "_id": doc["_id"],
+            "version": body.base_version,
+            "idem.key": {"$ne": body.idempotency_key},
+        },
+        {
+            "$set": {
+                "version": body.base_version + 1,
+                "stage": "interview",
+                "updated_at": now,
+                "interview.status": "active",
+                "interview.mode": "full",
+                "interview.current": next_turn_doc,
+                "interview.session": session_blob,
+                "interview.followups": [],
+                "interview.assessed_turns": len(turns),
+                "interview.rounds_done": 0,
+                "interview.assessment": None,
+                "interview.prefetch": None,
+                "interview.updated_at": now,
+            },
+            "$push": {
+                "idem": {
+                    "key": body.idempotency_key,
+                    "version": body.base_version + 1,
+                    "kind": "mode-upgrade",
+                }
+            },
+        },
+        return_document=True,
+    )
+    if result is None:
+        current = await col.find_one({"_id": doc["_id"]})
+        assert current is not None
+        replay = _replay_result(current, body.idempotency_key)
+        if replay is not None and replay.get("kind") == "mode-upgrade":
+            fiv = current.get("interview") or {}
+            cur = fiv.get("current")
+            return ContinueResult(
+                assessment_id=current["_id"], version=replay["version"], mode="full",
+                question=_question_out(cur) if cur else None, replayed=True,
+            )
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "version_conflict", "current_version": current["version"]},
+        )
+    await append_turn_segments(
+        get_db(), result["_id"], next_turn_doc["turn"], next_turn_doc["question"], None,
+        SKILL_VERSION, TOPIC_VERSION,
+    )
+    return ContinueResult(
+        assessment_id=result["_id"], version=result["version"], mode="full",
+        question=_question_out(next_turn_doc),
+    )
 
 
 @router.get("/{assessment_id}/interview/next", response_model=InterviewNextOut)

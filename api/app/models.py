@@ -128,6 +128,28 @@ class InterviewAnswerRequest(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=128)
 
 
+class InterviewCorrectRequest(BaseModel):
+    """WS5 "Fix my last answer": append a correction to the latest turn.
+
+    The original answer is never edited; the correction is stored as an
+    addendum (transcript C-segments + turn.correction) and re-extracted.
+    Only the most recently answered turn can be corrected, and only while
+    its follow-up question is still pending.
+    """
+
+    corrects_turn: int = Field(ge=1)
+    answer_text: str = Field(min_length=1, max_length=2000)
+    base_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=128)
+
+
+class InterviewCorrectResult(BaseModel):
+    assessment_id: str
+    version: int
+    corrects_turn: int
+    replayed: bool = False
+
+
 class InterviewQuestionOut(BaseModel):
     turn: int
     objective: str
@@ -230,6 +252,11 @@ class BriefingTopicObservation(BaseModel):
     review_status: str = "pending"
     review_note: str = ""
     reviewed_at: datetime | None = None
+    # WS5 in-loop fix (answer-level) and WS1 review correction
+    # (observation-level) are stored separately and shown alongside the
+    # untouched original note and quote.
+    user_correction: str = ""
+    user_corrected_at: datetime | None = None
     obs_index: int = 0
 
 
@@ -237,6 +264,8 @@ class BriefingTopicTurn(BaseModel):
     turn: int
     question: str
     answer: str
+    # WS5 user correction addendum (original answer untouched).
+    correction: str | None = None
     observations: list[BriefingTopicObservation] = Field(default_factory=list)
 
 
@@ -246,7 +275,157 @@ class BriefingTopic(BaseModel):
     status: str
     label: str = ""
     note: str
+    # WS2-B dimension line (e.g. example/frequency/timeframe/setting); empty
+    # until populated, rendered only when present.
+    coverage_detail: str = ""
     turns: list[BriefingTopicTurn] = Field(default_factory=list)
+
+
+class BriefingFrontQuote(BaseModel):
+    """One front-sheet evidence card: an exact stored quote with its anchor."""
+
+    turn: int
+    objective: str
+    title: str
+    assertion: str = ""
+    quote: str
+    segment_id: str
+    line: int | None = None
+    period: str = ""
+    review_status: str = "pending"
+    review_note: str = ""
+    obs_index: int = 0
+    # WS1: the user's own correction of this observation ("this isn't what
+    # I meant"). Original note and quote untouched; both shown.
+    user_correction: str = ""
+
+
+class BriefingOpenArea(BaseModel):
+    """One 'worth exploring together' item: a gap, an uncertainty, or an
+    unresolved tension, phrased as an open area rather than a finding."""
+
+    kind: str
+    ref: str
+    title: str
+    text: str
+
+
+class BriefingFrontSheet(BaseModel):
+    """One-page front sheet assembled from stored evidence only."""
+
+    why: list[BriefingFrontQuote] = Field(default_factory=list)
+    timeline: list[BriefingFrontQuote] = Field(default_factory=list)
+    impact: list[BriefingFrontQuote] = Field(default_factory=list)
+    context: list[BriefingFrontQuote] = Field(default_factory=list)
+    open_areas: list[BriefingOpenArea] = Field(default_factory=list)
+
+
+class ReviewObservationOut(BaseModel):
+    turn: int
+    obs_index: int
+    assertion: str
+    quote: str
+    segment_id: str
+    line: int | None = None
+    note: str = ""
+    user_correction: str = ""
+
+
+class ReviewTopicOut(BaseModel):
+    objective: str
+    title: str
+    status: str
+    label: str = ""
+    note: str = ""
+    observations: list[ReviewObservationOut] = Field(default_factory=list)
+
+
+class InterviewReviewOut(BaseModel):
+    """WS1 review-step state: what the user checks before the briefing."""
+
+    assessment_id: str
+    version: int
+    status: str
+    mode: str = "full"
+    turns_answered: int
+    topics: list[ReviewTopicOut] = Field(default_factory=list)
+
+
+class ReviewAddRequest(BaseModel):
+    """WS1 per-topic (or global) addition: free text stored as a new verbatim
+    addendum turn. Originals untouched."""
+
+    objective: str = Field(min_length=1, max_length=64)
+    answer_text: str = Field(min_length=1, max_length=2000)
+    base_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=128)
+
+
+class ReviewAddResult(BaseModel):
+    assessment_id: str
+    version: int
+    turn: int
+    objective: str
+    replayed: bool = False
+
+
+class ReviewCorrectRequest(BaseModel):
+    """WS1 per-observation correction ("this isn't what I meant")."""
+
+    turn: int = Field(ge=1)
+    obs_index: int = Field(ge=0)
+    answer_text: str = Field(min_length=1, max_length=2000)
+    base_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=128)
+
+
+class ReviewCorrectResult(BaseModel):
+    assessment_id: str
+    version: int
+    turn: int
+    obs_index: int
+    replayed: bool = False
+
+
+class ReviewConfirmRequest(BaseModel):
+    base_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=128)
+
+
+class ReviewConfirmResult(BaseModel):
+    assessment_id: str
+    version: int
+    report_version: int
+    user_confirmed_at: datetime
+    replayed: bool = False
+
+
+class ReviewTopupOut(BaseModel):
+    objective: str
+    title: str
+    question: str
+    dimension: str = ""
+
+
+class ReviewTopupsOut(BaseModel):
+    assessment_id: str
+    topups: list[ReviewTopupOut] = Field(default_factory=list)
+
+
+class ContinueRequest(BaseModel):
+    """WS2-C taster→full upgrade: resume the same assessment for the full
+    interview. Full-mode users never see a downgrade offer."""
+
+    base_version: int = Field(ge=1)
+    idempotency_key: str = Field(min_length=8, max_length=128)
+
+
+class ContinueResult(BaseModel):
+    assessment_id: str
+    version: int
+    mode: str
+    question: InterviewQuestionOut | None = None
+    replayed: bool = False
 
 
 class BriefingArea(BaseModel):
@@ -295,6 +474,7 @@ class InterviewBriefingOut(BaseModel):
     turns_answered: int
     screening: BriefingScreeningSnapshot | None = None
     areas: list[BriefingArea] = Field(default_factory=list)
+    front_sheet: BriefingFrontSheet | None = None
     topics: list[BriefingTopic] = Field(default_factory=list)
     statements: list[BriefingStatement]
     system_notes: list[BriefingSystemNote]
@@ -306,6 +486,9 @@ class InterviewBriefingOut(BaseModel):
     latency_summary: BriefingLatencySummary = Field(default_factory=BriefingLatencySummary)
     support_note: str = ""
     mode: str = "full"
+    # WS1: set when the user confirms the review step. The briefing is never
+    # generated before confirmation.
+    user_confirmed_at: datetime | None = None
     completed_at: datetime
 
 

@@ -36,7 +36,8 @@ from .llm import (
 log = logging.getLogger("mrprof")
 
 EXTRACTOR_VERSION = "extractor-v0.1"
-TAXONOMY_VERSION = "taxonomy-v0.2-draft"
+TAXONOMY_VERSION = "taxonomy-v0.3-draft"
+TAXONOMY_FILE = "v0.3.yaml"
 ALLOWED_ASSERTIONS = ("present", "explicitly-denied", "uncertain")
 
 _UNCERTAIN_RE = re.compile(
@@ -79,7 +80,7 @@ class ExtractionResult(BaseModel):
 @lru_cache(maxsize=1)
 def load_taxonomy() -> dict:
     """Parse the draft taxonomy (same minimal subset shape as topics)."""
-    path = Path(__file__).parent / "taxonomy" / "v0.2.yaml"
+    path = Path(__file__).parent / "taxonomy" / TAXONOMY_FILE
     meta: dict[str, str] = {}
     codes: dict[str, dict[str, str]] = {}
     current: dict[str, str] | None = None
@@ -164,6 +165,35 @@ def _minimal_span(text: str, needle: str | None) -> str:
     return sentences[0]
 
 
+def _first_cue(text: str, patterns: tuple[str, ...]) -> str:
+    """First matching cue phrase in fixed pattern order (deterministic)."""
+    lowered = text.lower()
+    for p in patterns:
+        if re.search(p, lowered):
+            m = re.search(p, lowered)
+            return m.group(0) if m else ""
+    return ""
+
+
+_PERIOD_CUES = (
+    r"childhood", r"\bschool\b", r"\byears\b", r"\bmonths?\b", r"\bweeks?\b",
+    r"\bsince\b", r"\bago\b", r"recently", r"lately", r"these days",
+    r"when i was", r"age \d+", r"primary school", r"teenage", r"over the years",
+    r"this (week|month|year)", r"last (week|month|year)", r"\byesterday\b",
+)
+_SETTING_CUES = (
+    r"\bwork\b", r"\boffice\b", r"\bmeeting\w*\b", r"\bhome\b", r"\bclass\b",
+    r"\bdriving\b", r"\bshop\w*\b", r"\bbed\b", r"\bkitchen\b", r"\bgym\b",
+    r"\btrain\b", r"\bbus\b", r"\bparty\b", r"at (the )?(desk|table|counter)",
+)
+_FREQUENCY_CUES = (
+    r"\boften\b", r"\balways\b", r"\bnever\b", r"\brarely\b", r"\bsometimes\b",
+    r"\busually\b", r"\bdaily\b", r"\bweekly\b", r"\bmonthly\b",
+    r"every (day|week|month|morning|night)", r"\bconstantly\b", r"\bregularly\b",
+    r"times a (week|month|day)", r"\bcouple of times\b",
+)
+
+
 def dummy_extract(objective: str, segments: list[dict], answer: str) -> ExtractionResult:
     """Deterministic stub extraction: assertion heuristic + exact segment quote."""
     answer_segs = [s for s in segments if s["role"] == "A"]
@@ -184,6 +214,9 @@ def dummy_extract(objective: str, segments: list[dict], answer: str) -> Extracti
         "explicitly-denied": "States this is not an issue for them; the quote is the supporting span.",
         "uncertain": "Expresses uncertainty on this topic; the quote is the supporting span.",
     }[assertion]
+    # WS2-B: the hermetic path fills dimension fields from explicit cues
+    # only (no inference). Vague answers stay missing and earn a targeted
+    # follow-up; detailed answers fill in. Deterministic by construction.
     return ExtractionResult(
         observations=[
             ExtractedObservation(
@@ -191,6 +224,9 @@ def dummy_extract(objective: str, segments: list[dict], answer: str) -> Extracti
                 assertion=assertion,
                 segment_id=target["id"],
                 quote=_minimal_span(target["text"], needle),
+                period=_first_cue(answer, _PERIOD_CUES),
+                setting=_first_cue(answer, _SETTING_CUES),
+                frequency=_first_cue(answer, _FREQUENCY_CUES),
                 note=explainer,
             )
         ]
@@ -289,6 +325,47 @@ async def extract_turn(
             log.warning("malformed extractor output (attempt %d), retrying once", attempt)
     assert last_error is not None
     raise last_error
+
+
+async def append_evidence_version(db, *, assessment_id: str, turn: int, result: ExtractionResult, info: dict, covered: list[str], gaps: list[str]) -> dict:
+    """Append a new version to an existing per-turn evidence doc (corrections).
+
+    WS5 "Fix my last answer": the original version is never rewritten; the
+    correction re-extraction is stored as a new latest version, so reviewers
+    see both. No-op (returns existing) when there is no evidence doc yet —
+    the batch job's _extract_missing will extract the turn including its
+    correction segments.
+    """
+    from datetime import datetime, timezone
+
+    existing = await db["evidence"].find_one({"_id": f"{assessment_id}:turn:{turn}"})
+    if existing is None:
+        return {}
+    now = datetime.now(timezone.utc)
+    observations = []
+    for i, o in enumerate(result.observations):
+        dumped = o.model_dump()
+        dumped["obs_index"] = i
+        observations.append(dumped)
+    version = len(existing.get("versions", [])) + 1
+    await db["evidence"].update_one(
+        {"_id": f"{assessment_id}:turn:{turn}"},
+        {
+            "$push": {
+                "versions": {
+                    "version": version,
+                    "taxonomy_version": TAXONOMY_VERSION,
+                    "extractor": info,
+                    "observations": observations,
+                    "coverage": {"covered": covered, "gaps": gaps},
+                    "created_at": now,
+                    "correction_of": version - 1,
+                }
+            },
+            "$set": {"updated_at": now},
+        },
+    )
+    return await db["evidence"].find_one({"_id": f"{assessment_id}:turn:{turn}"})
 
 
 async def upsert_evidence(db, *, assessment_id: str, turn: int, result: ExtractionResult, info: dict, covered: list[str], gaps: list[str]) -> dict:

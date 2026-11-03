@@ -42,8 +42,15 @@ def _auth(password: str) -> dict:
 
 
 def test_taster_objectives_are_a_prefix_flag():
-    assert TASTER_OBJECTIVES == PLAN_ORDER[:6]
-    assert round1_objectives("taster") == PLAN_ORDER[:6]
+    assert TASTER_OBJECTIVES == (
+        "attention-focus",
+        "organization",
+        "task-completion",
+        "forgetfulness",
+        "restlessness",
+        "impulsivity",
+    )
+    assert round1_objectives("taster") == TASTER_OBJECTIVES
     assert round1_objectives("full") == PLAN_ORDER
     # Six taster turns complete round 1 (no follow-ups queued here).
     turns = [
@@ -52,9 +59,9 @@ def test_taster_objectives_are_a_prefix_flag():
     ]
     obj, _, done, _ = plan_next(turns, [], mode="taster")
     assert done is True
-    # Same six turns in full mode still have eight objectives to go.
+    # Same six turns in full mode: background-goals (now first) is next.
     obj, _, done, _ = plan_next(turns, [], mode="full")
-    assert (done, obj) == (False, PLAN_ORDER[6])
+    assert (done, obj) == (False, "background-goals")
 
 
 def test_taster_coverage_marks_rest_as_gaps():
@@ -64,7 +71,7 @@ def test_taster_coverage_marks_rest_as_gaps():
     ]
     statuses = {e["objective"]: e["status"] for e in coverage_summary(turns)}
     assert all(statuses[t] == "covered" for t in TASTER_OBJECTIVES)
-    assert all(statuses[t] == "unasked" for t in PLAN_ORDER[6:])
+    assert all(statuses[t] == "unasked" for t in PLAN_ORDER if t not in TASTER_OBJECTIVES)
 
 
 def test_taster_followup_cap():
@@ -101,7 +108,7 @@ async def _poll(client, base, headers, tries: int = 20) -> dict:
         res = await client.get(f"{base}/interview/assessment", headers=headers)
         assert res.status_code == 200, res.text
         body = res.json()
-        if body["status"] in ("followup", "complete"):
+        if body["status"] in ("followup", "review", "complete"):
             return body
         await asyncio.sleep(0.2)
     raise AssertionError("assessment stuck")
@@ -138,18 +145,20 @@ async def test_taster_journey_completes_with_gaps_and_latency(client):
     assert last["status"] == "assessing" and last["question"] is None
 
     final = await _poll(client, base, headers)
-    assert final["status"] in ("followup", "complete")
+    assert final["status"] in ("followup", "review", "complete")
     nxt = await client.get(f"{base}/interview/next", headers=headers)
     assert nxt.json()["mode"] == "taster"
 
-    # Drive to completion through any follow-ups.
+    # Drive to the review step through any follow-ups, then confirm.
     for _ in range(6):
         state = (await client.get(f"{base}/interview/next", headers=headers)).json()
         if state["completed"]:
             break
+        if state.get("status") == "review":
+            break
         if state["question"] is None:
             final = await _poll(client, base, headers)
-            if final["status"] == "complete":
+            if final["status"] in ("review", "complete"):
                 break
             state = (await client.get(f"{base}/interview/next", headers=headers)).json()
             if state["completed"] or state["question"] is None:
@@ -164,6 +173,15 @@ async def test_taster_journey_completes_with_gaps_and_latency(client):
             headers=headers,
         )
         assert res.status_code == 200, res.text
+    # WS1: confirm the review step so the briefing is generated.
+    nxt = await client.get(f"{base}/interview/next", headers=headers)
+    assert nxt.json()["status"] == "review", nxt.json()
+    res = await client.post(
+        f"{base}/interview/review/confirm",
+        json={"base_version": nxt.json()["version"], "idempotency_key": f"t-cfm-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
     rep = await client.get(f"{base}/interview/report", headers=headers)
     assert rep.status_code == 200, rep.text
     body = rep.json()

@@ -15,7 +15,16 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from .interview import FAMILIES, PLAN_ORDER, detail_score, load_topics
+from .interview import (
+    DIMENSION_LABELS,
+    FAMILIES,
+    PLAN_ORDER,
+    detail_score,
+    effective_answer,
+    load_topics,
+    missing_dimensions,
+    objective_dimensions,
+)
 from .risk import RISK_SIGNPOST
 
 BRIEFING_BANNER = (
@@ -33,16 +42,17 @@ TOPIC_STATUS_LABELS = {
     "pending": "Not covered",
 }
 
-# The four clinician-facing areas. Rollup priority: uncertainty first (needs
-# attention), then reported detail, denial, limited, and finally gaps. Counts
-# are always shown alongside the headline so mixed areas stay honest.
+# Headline rule (WS3): the dominant status wins (largest member count);
+# ties break Reported → Explicitly denied → Uncertain → Limited →
+# Not covered. Counts are always shown alongside the headline so mixed
+# areas stay honest.
 FAMILY_META = (
     ("functioning", "Daily functioning"),
     ("course", "History and course"),
     ("impact", "Settings and impact"),
     ("context", "Context and background"),
 )
-_FAMILY_ROLLUP_PRIORITY = ("unable", "covered", "denied", "thin", "unasked", "pending")
+_FAMILY_HEADLINE_TIEBREAK = ("covered", "denied", "unable", "thin", "unasked", "pending")
 
 COMPLETION_NOTE = (
     "Information gathering has ended within the turn budget. Topics below were "
@@ -92,17 +102,15 @@ def family_rollup(coverage: list[dict]) -> list[dict]:
     every member so mixed areas (e.g. 5 denied + 1 reported) stay honest.
     """
     by_objective = {e["objective"]: e for e in coverage}
-    rank = {s: i for i, s in enumerate(_FAMILY_ROLLUP_PRIORITY)}
+    tie = {s: i for i, s in enumerate(_FAMILY_HEADLINE_TIEBREAK)}
     areas = []
     for key, title in FAMILY_META:
         members = FAMILIES.get(key, ())
         counts: dict[str, int] = {}
-        win = "unasked"
         for oid in members:
             status = (by_objective.get(oid) or {}).get("status", "unasked")
             counts[status] = counts.get(status, 0) + 1
-            if rank.get(status, 99) < rank.get(win, 99):
-                win = status
+        win = max(counts, key=lambda s: (counts[s], -tie.get(s, 99)))
         areas.append(
             {
                 "key": key,
@@ -116,6 +124,120 @@ def family_rollup(coverage: list[dict]) -> list[dict]:
     return areas
 
 
+def build_front_sheet(
+    coverage: list[dict],
+    tensions: list[dict],
+    evidence_turns: list[dict],
+    segments: list[dict],
+    clarified: set[str],
+) -> dict:
+    """Assemble the one-page front sheet from stored evidence. Deterministic.
+
+    All content is existing stored fields only: background-goals quotes,
+    screening (added by the caller snapshot), timeline (course observations
+    with a stated period), impact and context observations, and "worth
+    exploring together" (gaps, unable topics, unresolved tensions as open
+    areas). Every entry carries its quote/line/turn anchor; nothing new is
+    claimed.
+    """
+    topics = load_topics()
+    titles = {oid: topics[oid].get("title", oid) for oid in PLAN_ORDER}
+    line_by_segment = {s["id"]: s.get("line") for s in segments}
+    by_code: dict[str, list[tuple[int, dict]]] = {}
+    for doc in evidence_turns:
+        latest = doc["versions"][-1]
+        for obs in latest["observations"]:
+            by_code.setdefault(obs.get("code", ""), []).append((doc["turn"], obs))
+
+    def card(turn: int, obs: dict, oid: str) -> dict:
+        return {
+            "turn": turn,
+            "objective": oid,
+            "title": titles.get(oid, oid),
+            "assertion": obs.get("assertion", ""),
+            "quote": obs.get("quote", ""),
+            "segment_id": obs.get("segment_id", ""),
+            "line": line_by_segment.get(obs.get("segment_id", "")),
+            "period": obs.get("period") or "",
+            "review_status": obs.get("review_status", "pending"),
+            "review_note": obs.get("review_note", ""),
+            "user_correction": obs.get("user_correction", ""),
+            "obs_index": obs.get("obs_index", 0),
+        }
+
+    def quotes_for(oids: list[str], *, period_only: bool = False) -> list[dict]:
+        out = []
+        for oid in oids:
+            for turn, obs in by_code.get(oid, []):
+                if period_only and not (obs.get("period") or ""):
+                    continue
+                out.append(card(turn, obs, oid))
+        return out
+
+    open_areas = []
+    for entry in coverage:
+        status = entry["status"]
+        if status in ("unasked", "thin", "pending"):
+            open_areas.append(
+                {
+                    "kind": "gap",
+                    "ref": entry["objective"],
+                    "title": entry["title"],
+                    "text": f"{entry['title']}: {entry['note']}",
+                }
+            )
+        elif status == "unable":
+            open_areas.append(
+                {
+                    "kind": "uncertain",
+                    "ref": entry["objective"],
+                    "title": entry["title"],
+                    "text": f"{entry['title']}: could not recall or say — not pressed further",
+                }
+            )
+    for tension in tensions:
+        family = tension["family"]
+        area_title = dict(FAMILY_META).get(family, family)
+        if family in clarified:
+            continue
+        open_areas.append(
+            {
+                "kind": "tension",
+                "ref": family,
+                "title": area_title,
+                "text": (
+                    f"{area_title}: turn {tension['denial_turn']} reported no difficulty "
+                    f"while turn {tension['present_turn']} described difficulty — "
+                    "both accounts retained, not revisited in a follow-up"
+                ),
+            }
+        )
+    return {
+        "why": quotes_for(["background-goals"]),
+        "timeline": quotes_for(["childhood-onset", "persistence-course"], period_only=True),
+        "impact": quotes_for(["settings", "impact-work", "impact-relationships"]),
+        "context": quotes_for(["context-factors", "strategies"]),
+        "open_areas": open_areas,
+    }
+
+
+def coverage_detail_line(objective: str, observations: list[dict], quality=None) -> str:
+    """Small per-topic dimension line for the briefing (WS2-B → WS3).
+
+    Built from the same matrix as the follow-up queue: which of the
+    objective's dimensions the stored evidence fills. Empty for topics with
+    no present observation (denied/uncertain/unasked render nothing).
+    """
+    if not any((o or {}).get("assertion") == "present" for o in observations or []):
+        return ""
+    missing = set(missing_dimensions(objective, observations, quality))
+    parts = [
+        f"{DIMENSION_LABELS[d]} {'\u2014' if d in missing else '\u2713'}"
+        for d in objective_dimensions(objective)
+    ]
+    return "Coverage detail: " + " \u00b7 ".join(parts)
+
+
 def build_interview_briefing(
     assessment_id: str,
     interview: dict,
@@ -126,6 +248,7 @@ def build_interview_briefing(
     report_version: int,
     completed_at: datetime,
     screening: dict | None = None,
+    user_confirmed_at: datetime | None = None,
 ) -> dict:
     """Build the fixed briefing content dict.
 
@@ -153,7 +276,7 @@ def build_interview_briefing(
             if obs.get(field)
         )
         quality = t.get("quality")
-        level = detail_score(t.get("answer"), quality, filled)
+        level = detail_score(effective_answer(t), quality, filled)
         level_counts[min(max(level, 0), 3)] += 1
     detail_summary = {
         "level_counts": level_counts,
@@ -168,11 +291,16 @@ def build_interview_briefing(
     for entry in coverage:
         oid = entry["objective"]
         topic_turns = []
+        topic_obs: list[dict] = []
+        topic_quality = None
         for t in turns_by_objective.get(oid, []):
+            if t.get("quality") is not None:
+                topic_quality = t["quality"]
             observations = []
             for obs in obs_by_turn.get(t["turn"], []):
                 if obs["code"] != oid:
                     continue
+                topic_obs.append(obs)
                 observations.append(
                     {
                         "assertion": obs["assertion"],
@@ -184,14 +312,17 @@ def build_interview_briefing(
                         "review_status": obs.get("review_status", "pending"),
                         "review_note": obs.get("review_note", ""),
                         "reviewed_at": obs.get("reviewed_at"),
+                        "user_correction": obs.get("user_correction", ""),
                         "obs_index": obs.get("obs_index", 0),
                     }
                 )
+            correction = t.get("correction") or {}
             topic_turns.append(
                 {
                     "turn": t["turn"],
                     "question": t["question"],
                     "answer": t["answer"],
+                    "correction": correction.get("text") if isinstance(correction, dict) else None,
                     "observations": observations,
                 }
             )
@@ -202,6 +333,8 @@ def build_interview_briefing(
                 "status": entry["status"],
                 "label": TOPIC_STATUS_LABELS.get(entry["status"], entry["status"]),
                 "note": entry["note"],
+                # WS2-B fills this dimension line from stored evidence.
+                "coverage_detail": coverage_detail_line(oid, topic_obs, topic_quality),
                 "turns": topic_turns,
             }
         )
@@ -241,10 +374,12 @@ def build_interview_briefing(
         "turns_answered": len(turns),
         "screening": screening_snapshot,
         "areas": family_rollup(coverage),
+        "front_sheet": build_front_sheet(coverage, tensions, evidence_turns, segments, clarified),
         "detail_summary": detail_summary,
         "latency_summary": latency_summary(turns),
         "support_note": RISK_SIGNPOST,
         "mode": interview.get("mode", "full"),
+        "user_confirmed_at": user_confirmed_at,
         "topics": topic_entries,
         "statements": [
             {"turn": t["turn"], "question": t["question"], "answer": t["answer"]}

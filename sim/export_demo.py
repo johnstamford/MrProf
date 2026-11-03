@@ -112,7 +112,8 @@ async def main_async(outdir: Path) -> int:
                     break
                 question = body.get("question")
                 if question is None:
-                    # Batch assessment running: poll until follow-up or completion.
+                    # Batch assessment running: poll until follow-up, the WS1
+                    # review step, or completion.
                     for _ in range(120):
                         await asyncio.sleep(2)
                         chk = await client.get(f"/assessments/{aid}/interview/assessment", headers=auth)
@@ -121,10 +122,19 @@ async def main_async(outdir: Path) -> int:
                         if ab["status"] == "followup" and ab.get("question"):
                             question = ab["question"]
                             break
+                        if ab["status"] == "review":
+                            # Simulated user confirms the review unchanged.
+                            cfm = await _post(
+                                client, f"/assessments/{aid}/interview/review/confirm",
+                                {"base_version": version, "idempotency_key": _new_key("demo-confirm")}, auth,
+                            )
+                            version = cfm.json()["version"]
+                            question = None
+                            break
                         if ab["status"] == "complete":
                             question = None
                             break
-                    if question is None and ab["status"] == "complete":
+                    if question is None and ab["status"] in ("complete", "review"):
                         break
                     if question is None:
                         raise RuntimeError(f"assessment poll timed out for {profile['id']}")

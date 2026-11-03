@@ -106,7 +106,7 @@ async def test_delete_cascades_across_linked_records(client):
         res = await client.post(
             f"{base}/interview/answer",
             json={
-                "answer_text": f"delete-cascade detailed answer {i} with an example",
+                "answer_text": f"For example, last week at work task {i} slipped twice; it happens every week since January.",
                 "base_version": version,
                 "idempotency_key": f"del-{uuid.uuid4().hex[:8]}",
             },
@@ -114,12 +114,21 @@ async def test_delete_cascades_across_linked_records(client):
         )
         assert res.status_code == 200, res.text
         version = res.json()["version"]
-    # Let the batch job finish so evidence + briefing exist before delete.
+    # Let the batch job finish, then confirm the WS1 review step so the
+    # interview briefing exists before delete.
     for _ in range(30):
         res = await client.get(f"{base}/interview/assessment", headers=headers)
-        if res.json()["status"] == "complete":
+        if res.json()["status"] == "review":
             break
         await asyncio.sleep(0.2)
+    assert res.json()["status"] == "review"
+    nxt = await client.get(f"{base}/interview/next", headers=headers)
+    res = await client.post(
+        f"{base}/interview/review/confirm",
+        json={"base_version": nxt.json()["version"], "idempotency_key": f"del-cfm-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
 
     from app.db import get_db
 

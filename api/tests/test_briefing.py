@@ -75,6 +75,7 @@ def _coverage_for(objectives_statuses: dict) -> list[dict]:
 
 
 def test_unit_briefing_separates_patient_from_system():
+    from app.interview import TOPIC_VERSION
     from datetime import datetime, timezone
 
     from app.interview import PLAN_ORDER
@@ -105,7 +106,7 @@ def test_unit_briefing_separates_patient_from_system():
     assert content["topics"][0]["turns"][0]["observations"] == []
     assert content["transcript"] == []
     assert content["skill_version"] == "skill-v0.4-draft"
-    assert content["topic_version"] == "topics-v0.4-draft"
+    assert content["topic_version"] == TOPIC_VERSION
     # No diagnostic, probability, or severity language.
     blob = " ".join([content["banner"], content["completion_note"]]).lower()
     for banned in ("you have adhd", "probability", "severity", "mild", "moderate", "severe", "%"):
@@ -128,7 +129,7 @@ async def _run_full_journey(client, created) -> None:
         res = await client.post(
             f"{base}/interview/answer",
             json={
-                "answer_text": "a few words of detail here",
+                "answer_text": "For example, last week at work I lost track of my tasks twice; it happens every week since January.",
                 "base_version": version,
                 "idempotency_key": f"fk6-ans-{uuid.uuid4().hex[:8]}",
             },
@@ -145,10 +146,21 @@ async def _run_full_journey(client, created) -> None:
     for _ in range(30):
         poll = await client.get(f"{base}/interview/assessment", headers=headers)
         assert poll.status_code == 200
-        if poll.json()["status"] == "complete":
-            return
+        if poll.json()["status"] == "review":
+            break
         await asyncio.sleep(0.2)
-    raise AssertionError("batch assessment did not complete")
+    else:
+        raise AssertionError("batch assessment did not complete")
+    # WS1: no briefing until the user confirms the review step.
+    assert (await client.get(f"{base}/interview/report", headers=headers)).status_code == 404
+    nxt = await client.get(f"{base}/interview/next", headers=headers)
+    assert nxt.json()["status"] == "review"
+    res = await client.post(
+        f"{base}/interview/review/confirm",
+        json={"base_version": nxt.json()["version"], "idempotency_key": f"fk6-cfm-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
 
 
 async def test_briefing_lifecycle(client):
@@ -167,6 +179,8 @@ async def test_briefing_lifecycle(client):
     from app.interview import PLAN_ORDER
 
     assert body["report_version"] == 1 and body["turns_answered"] == len(PLAN_ORDER)
+    assert body["user_confirmed_at"] is not None
+    assert len(body["front_sheet"]["open_areas"]) == 0
     assert len(body["statements"]) == len(PLAN_ORDER) and len(body["system_notes"]) == len(PLAN_ORDER)
     assert body["gaps"] == []  # full run asks every planned objective
     assert [c["objective"] for c in body["coverage"]] == list(PLAN_ORDER)
@@ -216,19 +230,24 @@ def test_family_rollup_and_screening_snapshot():
         {"objective": oid, "title": oid, "status": "denied", "turns": [1], "note": "t"}
         for oid in PLAN_ORDER
     ]
-    # functioning: 5 denied + 1 reported -> headline Reported with honest counts.
-    coverage[0] = {**coverage[0], "status": "covered"}
-    # course: uncertainty wins over gaps.
-    coverage[6] = {**coverage[6], "status": "unable"}
+    # functioning: 5 denied + 1 reported -> headline Explicitly denied
+    # (dominant count wins) with honest counts.
+    coverage[[e["objective"] for e in coverage].index("attention-focus")] = {
+        **coverage[[e["objective"] for e in coverage].index("attention-focus")], "status": "covered",
+    }
+    # course: 1 unable + 1 denied -> tie breaks to Explicitly denied.
+    coverage[[e["objective"] for e in coverage].index("childhood-onset")] = {
+        **coverage[[e["objective"] for e in coverage].index("childhood-onset")], "status": "unable",
+    }
     areas = family_rollup(coverage)
     assert [a["key"] for a in areas] == ["functioning", "course", "impact", "context"]
     assert [a["objectives"] for a in areas] == [list(FAMILIES[k]) for k in ("functioning", "course", "impact", "context")]
     by_key = {a["key"]: a for a in areas}
-    assert by_key["functioning"]["status"] == "covered"
+    assert by_key["functioning"]["status"] == "denied"
     assert by_key["functioning"]["counts"] == {"denied": 5, "covered": 1}
-    assert by_key["functioning"]["label"] == "Reported"
-    assert by_key["course"]["status"] == "unable"
-    assert by_key["course"]["label"] == "Uncertain"
+    assert by_key["functioning"]["label"] == "Explicitly denied"
+    assert by_key["course"]["status"] == "denied"
+    assert by_key["course"]["label"] == "Explicitly denied"
     assert by_key["impact"]["status"] == "denied"
 
     screening = {"score": 4, "scoring_method": "original-0-6", "positive": True,
@@ -241,7 +260,15 @@ def test_family_rollup_and_screening_snapshot():
     assert content["screening"]["scoring_method"] == "original-0-6"
     assert content["screening"]["positive"] is True
     assert len(content["areas"]) == 4
-    assert content["topics"][0]["label"] == "Reported"
+    assert content["topics"][0]["objective"] == "background-goals"
+    assert content["topics"][0]["label"] == "Explicitly denied"
+    covered_topic = next(t for t in content["topics"] if t["objective"] == "attention-focus")
+    assert covered_topic["label"] == "Reported"
+    assert content["topics"][0]["coverage_detail"] == ""
+    # Front sheet assembled from stored evidence (empty here — no evidence).
+    assert set(content["front_sheet"]) == {"why", "timeline", "impact", "context", "open_areas"}
+    assert content["front_sheet"]["why"] == []
+    assert [a["kind"] for a in content["front_sheet"]["open_areas"]] == ["uncertain"]
 
     noscreen = build_interview_briefing(
         "AID12345", {"turns": [], "skill_version": "s", "topic_version": "t"},

@@ -40,7 +40,7 @@ async def _poll(client, base, headers, tries: int = 30) -> dict:
         res = await client.get(f"{base}/interview/assessment", headers=headers)
         assert res.status_code == 200, res.text
         body = res.json()
-        if body["status"] in ("followup", "complete"):
+        if body["status"] in ("followup", "review", "complete"):
             return body
         await asyncio.sleep(0.2)
     raise AssertionError("assessment stuck")
@@ -63,7 +63,7 @@ async def finished(client):
         res = await client.post(
             f"{base}/interview/answer",
             json={
-                "answer_text": f"a substantive detailed answer about this area number {i}",
+                "answer_text": f"For example, last week at work area {i} slipped twice; it happens every week since January.",
                 "base_version": version,
                 "idempotency_key": f"rev-{UID}-{i}-{uuid.uuid4().hex[:4]}",
             },
@@ -72,7 +72,15 @@ async def finished(client):
         assert res.status_code == 200, res.text
         version = res.json()["version"]
     final = await _poll(client, base, headers)
-    assert final["status"] == "complete", final
+    assert final["status"] == "review", final
+    # WS1: confirm the review step so the briefing (and evidence) exists.
+    nxt = await client.get(f"{base}/interview/next", headers=headers)
+    res = await client.post(
+        f"{base}/interview/review/confirm",
+        json={"base_version": nxt.json()["version"], "idempotency_key": f"rev-{UID}-{uuid.uuid4().hex[:4]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
     return {**created, "headers": headers, "base": base}
 
 

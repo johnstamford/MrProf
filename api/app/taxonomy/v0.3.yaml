@@ -1,0 +1,105 @@
+# Evidence taxonomy — v0.3 DRAFT (NOT clinically reviewed)
+version: taxonomy-v0.3-draft
+status: draft — not clinically reviewed. Codes are a starting scaffold for traceability plumbing only; no clinical adequacy is claimed.
+assertions: present, explicitly-denied, uncertain, missing
+source_types: self-report
+note: Informant and document source types land in a later version.
+codes:
+  - id: background-goals
+    family: background-and-goals
+    label: Presenting concerns, goals, previous assessments, family history
+    includes: Why the person seeks assessment now, goals, prior assessments, family history if offered.
+    excludes: Clinical interpretation of the background.
+    example_present: "I want to understand why work has always been a struggle."
+    example_denied: "No previous assessments, nothing in the family that I know of."
+  - id: attention-focus
+    family: reported-behavior
+    label: Sustaining attention, distractibility
+    includes: Descriptions of staying focused, losing focus, or being distracted during ordinary activities.
+    excludes: Task difficulty caused by a stated external barrier.
+    example_present: "I lose track of conversations halfway through."
+    example_denied: "No, I can concentrate fine when I need to."
+  - id: organization
+    family: reported-behavior
+    label: Organizing tasks, time, and belongings
+    includes: Descriptions of planning, ordering tasks, managing time, or keeping track of belongings.
+    excludes: Ordinary messiness with no reported difficulty.
+    example_present: "My desk and my calendar are chaos and I miss things."
+    example_denied: "No, I am well organized."
+  - id: task-completion
+    family: reported-behavior
+    label: Starting, staying with, or finishing tasks
+    includes: Descriptions of trouble getting started, staying with, or completing ordinary tasks.
+    excludes: Task difficulty caused by a stated external barrier.
+    example_present: "I stare at the form for an hour and never start it."
+    example_denied: "No, starting tasks is fine for me."
+  - id: forgetfulness
+    family: reported-behavior
+    label: Forgetting appointments, obligations, or items
+    includes: Descriptions of forgetting to do things or losing track of belongings.
+    excludes: Ordinary absent-mindedness with no reported consequence.
+    example_present: "I walked out without my keys twice this week."
+    example_denied: "No, I rarely forget things."
+  - id: restlessness
+    family: reported-behavior
+    label: Restlessness or difficulty staying with one activity
+    includes: Descriptions of fidgeting, feeling driven, or trouble staying seated or with one thing.
+    excludes: Ordinary exercise, task-avoidance without restlessness.
+    example_present: "I have to get up three times during every meeting."
+    example_denied: "No, I can sit still without any problem."
+  - id: impulsivity
+    family: reported-behavior
+    label: Acting quickly, interrupting, impatience
+    includes: Descriptions of acting before thinking, interrupting others, or difficulty waiting.
+    excludes: Deliberate risk-taking described without impulse language.
+    example_present: "I blurt things out in meetings before I can stop myself."
+    example_denied: "No, I am usually patient."
+  - id: childhood-onset
+    family: development-and-course
+    label: Childhood and school years
+    includes: What is remembered of childhood and school related to these experiences.
+    excludes: Causal explanations for childhood events.
+    example_present: "My school reports always said I was away with the fairies."
+    example_denied: "No, school was never a problem."
+  - id: persistence-course
+    family: development-and-course
+    label: Duration, persistence, and change over time
+    includes: How long experiences lasted, persistence, and change over the years.
+    excludes: Causal explanations for why the course changed.
+    example_present: "This has been going on since primary school."
+    example_denied: "No, this only started last month after the new job."
+  - id: settings
+    family: functional-impact
+    label: Experiences across settings
+    includes: Whether experiences differ between settings such as home and work or study.
+    excludes: Judgments about which setting matters more.
+    example_present: "At home it is fine, but at work I fall apart."
+    example_denied: "No, it is the same everywhere."
+  - id: impact-work
+    family: functional-impact
+    label: Impact on work or study
+    includes: Concrete examples of consequences in work or education.
+    excludes: General dissatisfaction with no linked example.
+    example_present: "I missed two deadlines last month and got a written warning."
+    example_denied: "No, it has never really affected my work."
+  - id: impact-relationships
+    family: functional-impact
+    label: Impact on relationships and daily life
+    includes: Concrete examples of consequences for relationships or daily life.
+    excludes: General dissatisfaction with no linked example.
+    example_present: "My partner says I never listen when they talk to me."
+    example_denied: "No, my relationships are fine."
+  - id: context-factors
+    family: context-and-contributors
+    label: Sleep, stress, mood, or health context
+    includes: Factors the person links with better or worse periods.
+    excludes: Stated causal attribution; record the link as reported, never as causation.
+    example_present: "Everything is worse when I have slept badly."
+    example_denied: "No, sleep makes no difference as far as I can tell."
+  - id: strategies
+    family: coping-and-support
+    label: Strategies, routines, reminders, or support used
+    includes: Workarounds, reminders, routines, help from others, extra effort.
+    excludes: Treatments prescribed by a clinician (record as reported, no dosing detail needed).
+    example_present: "I set three alarms and my partner checks I am up."
+    example_denied: "No, I do not use anything like that."

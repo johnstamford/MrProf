@@ -23,7 +23,9 @@ def _new_key(prefix: str) -> str:
 async def _await_question(client, base: str, auth: dict, deadline: float) -> tuple[str, dict | None]:
     """Poll the batch assessment until a follow-up question or completion.
 
-    Returns ("question", q), ("complete", None), or ("timeout", None).
+    Returns ("question", q), ("review", None), ("complete", None), or
+    ("timeout", None). WS1: gathering ends at the review step; the driver
+    confirms it like a user who checks everything and finds it right.
     """
     while True:
         if time.monotonic() > deadline:
@@ -34,6 +36,8 @@ async def _await_question(client, base: str, auth: dict, deadline: float) -> tup
         body = res.json()
         if body["status"] == "followup" and body.get("question"):
             return "question", body["question"]
+        if body["status"] == "review":
+            return "review", None
         if body["status"] == "complete":
             return "complete", None
         # status assessing/processing: keep polling; question arrives via next.
@@ -149,12 +153,23 @@ async def run_journey(
             break
         question = body.get("question")
         if question is None:
-            # Batch assessment running: poll until a follow-up or completion.
+            # Batch assessment running: poll until a follow-up, the review
+            # step, or completion.
             outcome, question = await _await_question(
                 client, f"{base}/assessments/{assessment_id}", auth, deadline
             )
             assess_polls += 1
             if outcome == "complete":
+                break
+            if outcome == "review":
+                # WS1 review step: simulated user checks everything and
+                # confirms without changes.
+                res = await _post(
+                    client, f"{base}/assessments/{assessment_id}/interview/review/confirm",
+                    {"base_version": version, "idempotency_key": _new_key("sim-confirm")},
+                    auth,
+                )
+                version = res.json()["version"]
                 break
             if outcome == "timeout" or question is None:
                 stop_reason = "time_budget"

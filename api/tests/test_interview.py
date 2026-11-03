@@ -56,7 +56,7 @@ def _auth(password: str) -> dict:
 
 
 async def _poll_assessment(client, base: str, headers: dict, tries: int = 20) -> dict:
-    """Poll GET .../interview/assessment until followup or complete.
+    """Poll GET .../interview/assessment until followup, review, or complete.
 
     The batch job runs as a background task; with the dummy provider it
     finishes in milliseconds, so this returns almost immediately.
@@ -67,14 +67,27 @@ async def _poll_assessment(client, base: str, headers: dict, tries: int = 20) ->
         res = await client.get(f"{base}/interview/assessment", headers=headers)
         assert res.status_code == 200, res.text
         body = res.json()
-        if body["status"] in ("followup", "complete"):
+        if body["status"] in ("followup", "review", "complete"):
             return body
         await asyncio.sleep(0.2)
     raise AssertionError(f"assessment stuck at {body['status']}")
 
 
+async def _confirm(client, base: str, headers: dict) -> dict:
+    """WS1: confirm the review step so the briefing is generated."""
+    nxt = await client.get(f"{base}/interview/next", headers=headers)
+    assert nxt.status_code == 200, nxt.text
+    res = await client.post(
+        f"{base}/interview/review/confirm",
+        json={"base_version": nxt.json()["version"], "idempotency_key": f"fk5-cfm-{uuid.uuid4().hex[:8]}"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
+    return res.json()
+
+
 def test_unit_planner_round1_fixed_order():
-    assert plan_next([])[0] == PLAN_ORDER[0] == "attention-focus"
+    assert plan_next([])[0] == PLAN_ORDER[0] == "background-goals"
     assert plan_next([{"objective": PLAN_ORDER[0], "answer": "x" * 40}])[0] == PLAN_ORDER[1]
     assert plan_next([{"objective": t, "answer": "y" * 40} for t in PLAN_ORDER[:5]])[0] == PLAN_ORDER[5]
     # Round 1 asks every objective once; no live probes mid-round.
@@ -398,7 +411,7 @@ async def test_start_answer_resume_complete(client):
     body = started["response"].json()
     assert body["version"] == 2 and body["stage"] == "interview"
     assert body["question"]["turn"] == 1 and body["question"]["objective"] == PLAN_ORDER[0]
-    assert "focused" in body["question"]["text"].lower()
+    assert "brings you" in body["question"]["text"].lower()
     assert body["question"]["model_provider"] == "dummy"
 
     nxt = await client.get(f"{base}/interview/next", headers=headers)
@@ -412,7 +425,7 @@ async def test_start_answer_resume_complete(client):
         key = f"fk5-ans-{uuid.uuid4().hex[:8]}"
         res = await client.post(
             f"{base}/interview/answer",
-            json={"answer_text": f"answer number {i} with some detail", "base_version": version, "idempotency_key": key},
+            json={"answer_text": f"For example, last week at work task {i} slipped twice; it happens every week since January.", "base_version": version, "idempotency_key": key},
             headers=headers,
         )
         assert res.status_code == 200, res.text
@@ -426,8 +439,11 @@ async def test_start_answer_resume_complete(client):
     assert last["status"] == "assessing" and last["turn_answered"] == len(PLAN_ORDER)
 
     final = await _poll_assessment(client, base, headers)
-    assert final["status"] == "complete"
+    assert final["status"] == "review"
     assert final["extract_total"] == len(PLAN_ORDER) and final["extracted"] == len(PLAN_ORDER)
+    # WS1: the briefing waits for the review confirmation.
+    assert (await client.get(f"{base}/interview/report", headers=headers)).status_code == 404
+    await _confirm(client, base, headers)
     nxt2 = await client.get(f"{base}/interview/next", headers=headers)
     assert nxt2.json()["completed"] is True and nxt2.json()["question"] is None
 
@@ -505,7 +521,7 @@ async def test_preextracted_turns_skip_batch_redo(client):
     for i in range(2):
         res = await client.post(
             f"{base}/interview/answer",
-            json={"answer_text": f"pre-extracted detailed answer {i}", "base_version": version, "idempotency_key": f"fk5-pre-{uuid.uuid4().hex[:8]}"},
+            json={"answer_text": f"For example, last week at work item {i} slipped twice; it happens every week since January.", "base_version": version, "idempotency_key": f"fk5-pre-{uuid.uuid4().hex[:8]}"},
             headers=headers,
         )
         assert res.status_code == 200, res.text
@@ -519,13 +535,13 @@ async def test_preextracted_turns_skip_batch_redo(client):
     for i in range(2, len(PLAN_ORDER)):
         res = await client.post(
             f"{base}/interview/answer",
-            json={"answer_text": f"answer number {i} with some detail", "base_version": version, "idempotency_key": f"fk5-pre-{uuid.uuid4().hex[:8]}"},
+            json={"answer_text": f"For example, last week at work task {i} slipped twice; it happens every week since January.", "base_version": version, "idempotency_key": f"fk5-pre-{uuid.uuid4().hex[:8]}"},
             headers=headers,
         )
         assert res.status_code == 200, res.text
         version = res.json()["version"]
     final = await _poll_assessment(client, base, headers)
-    assert final["status"] in ("followup", "complete")
+    assert final["status"] in ("followup", "review", "complete")
     assert final["extract_total"] == len(PLAN_ORDER) and final["extracted"] == len(PLAN_ORDER)
 
 
@@ -548,7 +564,7 @@ def _marker_prefetch(for_turn: int, objective: str, text: str = "PREFETCHED MARK
         "model_provider": "dummy",
         "model_name": "dummy-stub",
         "skill_version": "skill-v0.4-draft",
-        "topic_version": "topics-v0.4-draft",
+        "topic_version": TOPIC_VERSION,
         "session": {"session_id": "test"},
     }
 
@@ -657,7 +673,7 @@ async def test_round2_followup_flow(client):
         elif oid in thin_targets:
             ans = "y"
         else:
-            ans = f"substantive detail about {oid} yes indeed"
+            ans = f"For example, last week at work {oid} slipped twice; it happens every week since January."
         res = await client.post(
             f"{base}/interview/answer",
             json={"answer_text": ans, "base_version": version, "idempotency_key": f"fk5-r2-{uuid.uuid4().hex[:8]}"},
@@ -691,7 +707,8 @@ async def test_round2_followup_flow(client):
         if res.json()["status"] == "assessing":
             break
     final = await _poll_assessment(client, base, headers)
-    assert final["status"] == "complete"
+    assert final["status"] == "review"
+    await _confirm(client, base, headers)
     rep = await client.get(f"{base}/interview/report", headers=headers)
     assert rep.status_code == 200
     assert rep.json()["turns_answered"] == len(PLAN_ORDER) + 4  # 14 + 2 inline + 2 follow-up

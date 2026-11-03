@@ -44,6 +44,58 @@ def segment_text(text: str, turn: int, role: str, start_line: int) -> tuple[list
     return segments, line
 
 
+async def append_correction_segments(
+    db, assessment_id: str, turn: int, correction_text: str,
+    skill_version: str, topic_version: str,
+) -> list[dict]:
+    """Append a user correction as verbatim segments. Append-only addendum.
+
+    WS5 "Fix my last answer": the original answer segments are never
+    touched; the correction is stored as new T{turn}-C{n} segments (role
+    "C", rendered as the user's own words) with fresh global line numbers,
+    citable from evidence like any other span.
+    """
+    doc = await db["transcripts"].find_one({"_id": assessment_id})
+    existing = {s["id"] for s in (doc.get("segments", []) if doc else [])} if doc else set()
+    start_line = (doc.get("lines", 0) + 1) if doc else 1
+    segments = []
+    line = start_line
+    for n, para in enumerate(split_paragraphs(correction_text), start=1):
+        segments.append(
+            {"id": f"T{turn}-C{n}", "turn": turn, "role": "C", "n": n, "text": para, "line": line}
+        )
+        line += 1
+    fresh = [s for s in segments if s["id"] not in existing]
+    now = datetime.now(timezone.utc)
+    try:
+        if doc is None:
+            await db["transcripts"].insert_one(
+                {
+                    "_id": assessment_id,
+                    "assessment_id": assessment_id,
+                    "skill_version": skill_version,
+                    "topic_version": topic_version,
+                    "segments": fresh,
+                    "lines": line - 1,
+                    "created_at": now,
+                    "updated_at": now,
+                }
+            )
+        elif fresh:
+            await db["transcripts"].update_one(
+                {"_id": assessment_id},
+                {
+                    "$push": {"segments": {"$each": fresh}},
+                    "$set": {"lines": line - 1, "updated_at": now},
+                },
+            )
+    except DuplicateKeyError:
+        pass  # concurrent writer won the insert; segments dedupe by ID
+    except Exception as exc:  # noqa: BLE001 - transcript is secondary to the turn write
+        log.warning("correction append failed for %s turn %d: %s", assessment_id, turn, type(exc).__name__)
+    return segments
+
+
 async def append_turn_segments(
     db, assessment_id: str, turn: int, question: str, answer: str | None,
     skill_version: str, topic_version: str,

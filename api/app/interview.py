@@ -18,11 +18,15 @@ from functools import lru_cache
 from pathlib import Path
 
 SKILL_VERSION = "skill-v0.4-draft"
-TOPIC_VERSION = "topics-v0.4-draft"
-TOPICS_FILE = "v0.4.yaml"
+TOPIC_VERSION = "topics-v0.6-draft"
+TOPICS_FILE = "v0.6.yaml"
 
-# Round 1 asks every objective once in fixed order.
+# Round 1 asks every objective once in fixed order. WS2-D: the goals opener
+# ("what brings you here") goes first — late abandonment no longer loses the
+# most appointment-relevant content. Depth on background/family history is
+# handled by the normal dimension follow-up if it stays uncovered.
 PLAN_ORDER = (
+    "background-goals",
     "attention-focus",
     "organization",
     "task-completion",
@@ -36,13 +40,19 @@ PLAN_ORDER = (
     "impact-relationships",
     "context-factors",
     "strategies",
-    "background-goals",
 )
 ROUND1_TURNS = len(PLAN_ORDER)
 # Taster mode (F10a): a short ~6-question flag, not a forked topic set.
-# First six behavior objectives in fixed order; everything else surfaces
-# as gaps in coverage/briefing.
-TASTER_OBJECTIVES = PLAN_ORDER[:6]
+# The six behaviour objectives as an explicit tuple (not a PLAN_ORDER slice,
+# which moved when the goals opener went first).
+TASTER_OBJECTIVES = (
+    "attention-focus",
+    "organization",
+    "task-completion",
+    "forgetfulness",
+    "restlessness",
+    "impulsivity",
+)
 TASTER_MAX_FOLLOWUPS = 2
 INTERVIEW_MODES = ("full", "taster")
 # Round 2 works a bounded follow-up queue set by the batch assessment.
@@ -76,6 +86,15 @@ _DENIAL_PHRASES = (
 _UNCERTAIN_RE = re.compile(
     r"(don't know|do not know|can't remember|cannot remember|not sure|unsure"
     r"|dunno|no idea|can't recall|cannot recall)",
+    re.IGNORECASE,
+)
+# Explicit skip-outs (WS5 "Skip this one" button inserts one of these).
+# Anchored: only a standalone skip-out counts, so a substantive answer that
+# merely mentions skipping is never swallowed. Skip-outs are complete
+# answers (uncertain-like): the topic closes and is never probed.
+_SKIP_RE = re.compile(
+    r"^(i('d| would) rather skip( this( one)?)?|skip( this( one)?)?|pass"
+    r"|i('d| would) rather not( answer| say)?|no answer)\.?$",
     re.IGNORECASE,
 )
 
@@ -148,6 +167,8 @@ def polarity(answer: str | None) -> str:
     if not text:
         return "empty"
     lowered = text.lower()
+    if _SKIP_RE.match(text):
+        return "uncertain-like"
     if _UNCERTAIN_RE.search(text):
         return "uncertain-like"
     if _DENIAL_RE.match(text) or any(p in lowered for p in _DENIAL_PHRASES):
@@ -155,6 +176,19 @@ def polarity(answer: str | None) -> str:
     if len(text) < SHORT_ANSWER_LEN:
         return "thin"
     return "present-like"
+
+
+def effective_answer(turn: dict) -> str | None:
+    """Answer text driving polarity/coverage: a later correction wins.
+
+    The original stays stored on the turn; the correction is an addendum
+    (WS5 "Fix my last answer", WS1 review). Planning and coverage must read
+    what the person most recently said about the objective.
+    """
+    correction = turn.get("correction") or {}
+    if isinstance(correction, dict) and correction.get("text"):
+        return correction["text"]
+    return turn.get("answer")
 
 
 def _needs_detail_invite(last_answer: str | None) -> bool:
@@ -200,6 +234,92 @@ def detail_score(answer: str | None, quality=None, fields_filled: int = 0) -> in
     return base
 
 
+# WS2-B: per-objective evidence dimensions (interview-coverage definition:
+# which detail was given — example, frequency, timeframe, setting). This is
+# not a clinical-criteria mapping. Dimensions come from the topics YAML
+# (topics-v0.5-draft); denial/uncertainty are complete answers and exempt.
+DIMENSION_PRIORITY = ("example", "frequency", "period", "setting")
+DIMENSION_LABELS = {"example": "example", "frequency": "frequency", "period": "timeframe", "setting": "setting"}
+DIMENSION_GUIDANCE = {
+    "example": "one concrete recent occasion",
+    "frequency": "how often this happens",
+    "period": "when this started or what life period it belongs to",
+    "setting": "where this shows up",
+}
+
+
+def objective_dimensions(objective: str) -> tuple[str, ...]:
+    """Dimensions to cover for one objective, in priority order."""
+    raw = (load_topics().get(objective) or {}).get("dimensions", "")
+    dims = tuple(d.strip() for d in raw.split(",") if d.strip() in DIMENSION_PRIORITY)
+    if dims:
+        return tuple(d for d in DIMENSION_PRIORITY if d in dims)
+    return DIMENSION_PRIORITY
+
+
+def _quality_detail(quality) -> int | None:
+    if isinstance(quality, dict):
+        d = quality.get("detail")
+    elif quality is not None:
+        d = getattr(quality, "detail", None)
+    else:
+        d = None
+    return d if isinstance(d, int) and not isinstance(d, bool) else None
+
+
+def _quality_has_example(quality) -> bool:
+    if isinstance(quality, dict):
+        return quality.get("has_example") is True
+    if quality is not None:
+        return getattr(quality, "has_example", None) is True
+    return False
+
+
+def missing_dimensions(objective: str, observations: list[dict], quality=None) -> list[str]:
+    """Dimensions still missing for one objective, priority-ordered.
+
+    Filled means the extractor stored it: period/setting/frequency non-empty;
+    example means the interviewer noted a concrete example (has_example) or
+    the turn scored detail 3 (grounded). Topics with no present observation
+    (denied/uncertain/pending) are exempt — those are complete answers, and
+    pending topics keep today's thin/pending handling.
+    """
+    if not any((o or {}).get("assertion") == "present" for o in observations or []):
+        return []
+    filled = set()
+    for o in observations or []:
+        if (o.get("period") or "").strip():
+            filled.add("period")
+        if (o.get("setting") or "").strip():
+            filled.add("setting")
+        if (o.get("frequency") or "").strip():
+            filled.add("frequency")
+    if _quality_has_example(quality) or _quality_detail(quality) == 3:
+        filled.add("example")
+    return [d for d in objective_dimensions(objective) if d not in filled]
+
+
+# WS2-B: deterministic example-cue detection for the dummy quality path.
+# Real judgment comes from the model; the stub only mirrors polarity and
+# flags explicit example language so hermetic tests stay meaningful.
+_EXAMPLE_CUE_RE = re.compile(
+    r"(for example|for instance|\be\.g\.|\byesterday\b|last (week|month|year)"
+    r"|this (week|month)|recently|\bexample\b|time when|once when)",
+    re.IGNORECASE,
+)
+
+
+def dummy_quality(answer: str | None) -> dict:
+    """Deterministic advisory quality for the dummy interviewer path."""
+    pol = polarity(answer)
+    detail = 0 if pol in ("empty", "thin") else (1 if pol in ("denial-like", "uncertain-like") else 2)
+    return {
+        "detail": detail,
+        "has_example": bool(_EXAMPLE_CUE_RE.search(answer or "")),
+        "has_context": False,
+    }
+
+
 # Effort nudge: after this many consecutive thin answers the next question
 # carries a supportive banner (frontend-rendered) asking for more concrete
 # detail. Denials and uncertainty break the chain — they are complete
@@ -220,7 +340,7 @@ def needs_effort_nudge(turns: list[dict], nudge_shown: bool = False) -> bool:
     """True after EFFORT_NUDGE_STREAK consecutive thin answers, once per round."""
     if nudge_shown or len(turns) < EFFORT_NUDGE_STREAK:
         return False
-    return all(polarity(t.get("answer")) == "thin" for t in turns[-EFFORT_NUDGE_STREAK:])
+    return all(polarity(effective_answer(t)) == "thin" for t in turns[-EFFORT_NUDGE_STREAK:])
 
 
 def round1_objectives(mode: str = "full") -> tuple[str, ...]:
@@ -250,7 +370,7 @@ def family_tensions(turns: list[dict]) -> list[dict]:
         for t in turns:
             if t.get("objective") not in members:
                 continue
-            pol = polarity(t.get("answer"))
+            pol = polarity(effective_answer(t))
             if pol == "present-like" and present_turn is None:
                 present_turn = t.get("turn")
             elif pol == "denial-like" and denial_turn is None:
@@ -279,7 +399,7 @@ def plan_next(
     the chain; caller passes nudge_shown so it fires once per round).
     Probe and nudge decisions are deterministic code over the turns
     (including answer text for the thin check only); the model only phrases.
-    mode="taster" asks TASTER_OBJECTIVES (first 6) once; the rest surface
+    mode="taster" asks the six behaviour objectives once; the rest surface
     as gaps. Taster is a flag, not a forked topic set.
     """
     followups = followups or []
@@ -289,7 +409,7 @@ def plan_next(
         return "", f"interview complete at cap ({n} answered turns)", True, None
     if not followups and turns:
         last = turns[-1]
-        if polarity(last.get("answer")) == "thin":
+        if polarity(effective_answer(last)) == "thin":
             used = sum(1 for t in turns if (t.get("probe") or "") == "inline")
             probed = {t["objective"] for t in turns if (t.get("probe") or "") == "inline"}
             if last["objective"] not in probed and used < INLINE_PROBE_BUDGET:
@@ -314,6 +434,8 @@ def plan_next(
     if consumed < len(followups):
         item = followups[consumed]
         hint = {"kind": "followup", "tension": item.get("tension")} if item.get("tension") else {"kind": "followup"}
+        if item.get("dimension"):
+            hint["dimension"] = item["dimension"]
         if needs_effort_nudge(turns, nudge_shown):
             hint["effort_nudge"] = True
         return item["objective"], item["reason"], False, hint
@@ -340,7 +462,7 @@ def coverage_summary(turns: list[dict]) -> list[dict]:
                 }
             )
             continue
-        pols = [polarity(t.get("answer")) for t in answered]
+        pols = [polarity(effective_answer(t)) for t in answered]
         turn_nos = [t["turn"] for t in answered]
         if any(p == "present-like" for p in pols):
             status, note = "covered", "substantive account recorded"
@@ -370,6 +492,7 @@ def build_prompt(
     screening: dict | None,
     last_answer: str | None = None,
     tension: str | None = None,
+    dimension: str | None = None,
 ) -> list[str]:
     lines = [
         f"Assigned objective: {objective}. Ask ONE question for this objective only.",
@@ -396,6 +519,13 @@ def build_prompt(
             + tension
             + ". Ask one neutral question to understand both sides. "
             "Do not accuse, do not assume error, and accept either account as reported."
+        )
+    elif dimension in DIMENSION_GUIDANCE:
+        lines.append(
+            "One detail is still missing for this topic: "
+            + DIMENSION_GUIDANCE[dimension]
+            + ". Ask one short question for exactly that, once, without pressuring. "
+            "A short question add-on is enough; do not lecture about answer length."
         )
     elif _needs_detail_invite(last_answer):
         lines.append(

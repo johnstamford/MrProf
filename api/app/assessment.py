@@ -7,8 +7,8 @@ completes, this job runs once over the full transcript:
 2. Synthesize deterministically in code: coverage per objective,
    cross-turn tensions, and a bounded follow-up queue.
 3. Round 1 with follow-ups -> store the queue, phrase the first follow-up
-   question, status followup. Otherwise (or round 2) -> build the briefing,
-   status complete.
+   question, status followup. Otherwise (or round 2) -> status review:
+   the briefing is built only after the WS1 user review-and-confirm step.
 
 The model only phrases questions. Gap detection, tension detection, and
 stop rules are code. Idempotent: per-turn evidence docs dedupe, and the job
@@ -22,18 +22,21 @@ import logging
 import time
 from datetime import datetime, timezone
 
-from .briefing import build_interview_briefing
-from .extraction import EXTRACTOR_VERSION, TAXONOMY_VERSION, extract_turn, upsert_evidence
+from .extraction import EXTRACTOR_VERSION, TAXONOMY_VERSION, append_evidence_version, extract_turn, upsert_evidence
 from .interview import (
+    DIMENSION_GUIDANCE,
+    DIMENSION_LABELS,
     FAMILIES,
     MAX_FOLLOWUPS,
     PLAN_ORDER,
+    dummy_quality,
+    effective_answer,
     load_topics,
     max_followups,
+    missing_dimensions,
     polarity,
 )
-from .transcripts import append_turn_segments
-from .transcripts import append_turn_segments
+from .transcripts import append_correction_segments, append_turn_segments
 
 log = logging.getLogger("mrprof")
 
@@ -73,7 +76,7 @@ def coverage_from_evidence(turns: list[dict], evidence_turns: list[dict]) -> lis
             summary.append({**base, "status": "pending", "note": "evidence extraction did not complete"})
             continue
         assertions = entry["assertions"]
-        pols = [polarity(t.get("answer")) for t in answered]
+        pols = [polarity(effective_answer(t)) for t in answered]
         if "present" in assertions and any(p == "present-like" for p in pols):
             summary.append({**base, "status": "covered", "note": "substantive account recorded"})
         elif "present" in assertions:
@@ -130,12 +133,14 @@ def build_followups(
     queue: list[dict] = []
     used: set[str] = set()
 
-    def _take(oid: str, reason: str, tension: str | None = None) -> None:
+    def _take(oid: str, reason: str, tension: str | None = None, dimension: str | None = None) -> None:
         if oid not in used and len(queue) < limit:
             used.add(oid)
             item: dict = {"objective": oid, "reason": reason}
             if tension:
                 item["tension"] = tension
+            if dimension:
+                item["dimension"] = dimension
             queue.append(item)
 
     for tension in tensions:
@@ -150,6 +155,24 @@ def build_followups(
             f"in turn {tension['denial_turn']} no difficulty was reported, "
             f"but turn {tension['present_turn']} described difficulty",
         )
+    # WS2-B: present topics with missing evidence dimensions come before
+    # thin/pending ones. Denials and uncertainty are exempt (complete
+    # answers, never probed); pending topics keep today's handling below.
+    covered = [e for e in coverage_from_evidence(turns, evidence_turns) if e["status"] == "covered"]
+    if covered:
+        obs_by_oid = objective_observations(turns, evidence_turns)
+        quality_by_oid = objective_quality(turns)
+        for entry in covered:
+            oid = entry["objective"]
+            missing = missing_dimensions(oid, obs_by_oid.get(oid, []), quality_by_oid.get(oid))
+            if missing:
+                dim = missing[0]
+                _take(
+                    oid,
+                    f"{entry['title']} is reported but {DIMENSION_LABELS[dim]} is missing: "
+                    f"ask for {DIMENSION_GUIDANCE[dim]}, once, no pressure",
+                    dimension=dim,
+                )
     for entry in coverage_from_evidence(turns, evidence_turns):
         if entry["status"] in ("pending", "thin"):
             _take(
@@ -168,12 +191,62 @@ def tension_member_deny(members: tuple[str, ...], coverage: dict) -> str:
     return members[0]
 
 
+def objective_observations(turns: list[dict], evidence_turns: list[dict]) -> dict[str, list[dict]]:
+    """Latest observations grouped by objective for the answered turns."""
+    by_turn = {t["turn"]: t for t in turns}
+    out: dict[str, list[dict]] = {}
+    for doc in evidence_turns:
+        turn = by_turn.get(doc["turn"])
+        if turn is None:
+            continue
+        latest = doc["versions"][-1]
+        out.setdefault(turn["objective"], []).extend(latest["observations"])
+    return out
+
+
+def objective_quality(turns: list[dict]) -> dict[str, dict | None]:
+    """Latest advisory quality per objective (None when the model omitted it)."""
+    out: dict[str, dict | None] = {}
+    for t in turns:
+        if t.get("quality") is not None:
+            out[t["objective"]] = t["quality"]
+    return {t["objective"]: out.get(t["objective"]) for t in turns}
+
+
+def backfill_quality(turns: list[dict]) -> list[dict]:
+    """Fill missing advisory quality with the deterministic heuristic.
+
+    The interviewer rates an answer while phrasing the next question, so the
+    final round-1 answer (and any the model skipped) carries no rating. The
+    fallback mirrors polarity for detail and flags explicit example language;
+    a stored model rating always wins when present. Advisory only — planning
+    never depends on it beyond the WS2-B example check.
+    """
+    out = []
+    for t in turns:
+        if t.get("quality") is None:
+            t = {**t, "quality": dummy_quality(effective_answer(t))}
+        out.append(t)
+    return out
+
+
 async def write_assess_progress(db, assessment_id: str, done: int, total: int) -> None:
     """Record batch-extraction progress for the assessing UI. Best-effort."""
     await db["assessments"].update_one(
         {"_id": assessment_id},
         {"$set": {"interview.assess_progress": {"done": done, "total": total}}},
     )
+
+
+def _turn_text_for_extraction(turn: dict) -> str:
+    """Answer text the extractor reads: original plus any later correction.
+
+    Segments carry both verbatim; the combined string keeps the dummy
+    classifier and any answer-scanning logic honest about what was said.
+    """
+    base = turn.get("answer") or ""
+    correction = (turn.get("correction") or {}).get("text")
+    return f"{base}\n{correction}" if correction else base
 
 
 async def extract_single_turn(db, assessment_id: str, turn_number: int) -> dict | None:
@@ -202,7 +275,7 @@ async def extract_single_turn(db, assessment_id: str, turn_number: int) -> dict 
             result, info = await extract_turn(
                 objective=turn["objective"],
                 segments=segments,
-                answer=turn.get("answer") or "",
+                answer=_turn_text_for_extraction(turn),
                 session_id=assessment_id,
             )
         except Exception as exc:  # noqa: BLE001 - pending is a valid outcome
@@ -214,6 +287,49 @@ async def extract_single_turn(db, assessment_id: str, turn_number: int) -> dict 
         return await upsert_evidence(db, assessment_id=assessment_id, turn=turn_number, result=result, info=info, covered=covered, gaps=gaps)
     except Exception:  # noqa: BLE001 - background extraction never fails the loop
         log.warning("background extraction failed for %s turn %d", assessment_id, turn_number)
+        return None
+
+
+async def extract_corrected_turn(db, assessment_id: str, turn_number: int) -> dict | None:
+    """Re-extract one turn after a WS5 user correction. Best-effort.
+
+    The original evidence version is never rewritten; the correction
+    re-extraction (original + correction segments) is appended as a new
+    latest version. When no evidence doc exists yet, there is nothing to
+    version — the batch job extracts the turn (with correction segments)
+    in the normal path.
+    """
+    try:
+        if not await db["evidence"].find_one({"_id": f"{assessment_id}:turn:{turn_number}"}):
+            return None
+        doc = await db["assessments"].find_one({"_id": assessment_id})
+        turns = (doc.get("interview") or {}).get("turns", []) if doc else []
+        turn = next((t for t in turns if t.get("turn") == turn_number), None)
+        correction = (turn or {}).get("correction") or {}
+        if turn is None or not correction.get("text"):
+            return None
+        tdoc = await db["transcripts"].find_one({"_id": assessment_id})
+        segments = [s for s in (tdoc.get("segments", []) if tdoc else []) if s.get("turn") == turn_number]
+        if not segments:
+            return None
+        try:
+            result, info = await extract_turn(
+                objective=turn["objective"],
+                segments=segments,
+                answer=_turn_text_for_extraction(turn),
+                session_id=assessment_id,
+            )
+        except Exception as exc:  # noqa: BLE001 - pending is a valid outcome
+            log.warning("correction extraction pending for %s turn %d: %s", assessment_id, turn_number, type(exc).__name__)
+            return None
+        covered = sorted({t["objective"] for t in turns if t.get("turn", 0) <= turn_number})
+        gaps = [o for o in PLAN_ORDER if o not in {t["objective"] for t in turns}]
+        return await append_evidence_version(
+            db, assessment_id=assessment_id, turn=turn_number,
+            result=result, info=info, covered=covered, gaps=gaps,
+        )
+    except Exception:  # noqa: BLE001 - background extraction never fails the loop
+        log.warning("correction extraction failed for %s turn %d", assessment_id, turn_number)
         return None
 
 
@@ -244,7 +360,7 @@ async def _extract_missing(db, assessment_id: str, turns: list[dict]) -> list[di
                     result, info = await extract_turn(
                         objective=turn["objective"],
                         segments=turn_segs,
-                        answer=turn.get("answer") or "",
+                        answer=_turn_text_for_extraction(turn),
                         session_id=assessment_id,
                     )
                 except Exception as exc:  # noqa: BLE001 - pending is a valid outcome
@@ -302,6 +418,7 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
             "batch extraction done for %s: %d/%d evidence in %.1fs (background pre-extracted the rest)",
             assessment_id, len(evidence_turns), len(turns), time.monotonic() - job_started,
         )
+        turns = backfill_quality(turns)
         coverage = coverage_from_evidence(turns, evidence_turns)
         tensions = tensions_from_evidence(turns, evidence_turns)
         followups = build_followups(turns, evidence_turns, tensions, mode) if rounds_done == 0 else []
@@ -319,7 +436,7 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
         if followups:
             first = followups[0]
             q_text, model_info, session_blob = await phrase(
-                assessment_id, first["objective"], first["reason"], turns, doc.get("screening"), first.get("tension")
+                assessment_id, first["objective"], first["reason"], turns, doc.get("screening"), first.get("tension"), first.get("dimension")
             )
             current = {
                 "turn": len(turns) + 1,
@@ -342,6 +459,7 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
                         "interview.current": current,
                         "interview.session": session_blob,
                         "interview.followups": followups,
+                        "interview.turns": turns,
                         "interview.assessed_turns": len(turns),
                         "interview.rounds_done": rounds_done + 1,
                         "interview.assessment": summary,
@@ -355,31 +473,17 @@ async def run_round_assessment(db, assessment_id: str, phrase) -> dict:
                 iv.get("skill_version", ""), iv.get("topic_version", ""),
             )
         else:
-            prior = await db["reports"].count_documents({"assessment_id": assessment_id, "kind": "interview"})
-            transcripts_doc = await db["transcripts"].find_one({"_id": assessment_id})
-            content = build_interview_briefing(
-                assessment_id, iv, coverage, tensions, evidence_turns,
-                (transcripts_doc or {}).get("segments", []), prior + 1, now,
-                doc.get("screening"),
-            )
-            await db["reports"].insert_one(
-                {
-                    "assessment_id": assessment_id,
-                    "kind": "interview",
-                    "report_version": prior + 1,
-                    "answer_idem_key": None,
-                    "content": {**content, "completed_at": now},
-                    "created_at": now,
-                }
-            )
+            # WS1: gathering is done but the briefing is deferred — the user
+            # checks and confirms the review step first. No briefing exists
+            # (and no report endpoint resolves) before confirmation.
             await db["assessments"].find_one_and_update(
                 {"_id": assessment_id},
                 {
                     "$set": {
-                        "stage": "complete",
-                        "interview.status": "complete",
+                        "interview.status": "review",
                         "interview.current": None,
                         "interview.followups": [],
+                        "interview.turns": turns,
                         "interview.assessed_turns": len(turns),
                         "interview.rounds_done": rounds_done + 1,
                         "interview.assessment": summary,

@@ -66,8 +66,9 @@ async def test_dummy_journey_completes_with_isolation(client, profile_id):
     patient = DummyPatient(persona)
     run = await run_journey(client, "", persona, patient, profile["screening"])
     assert run["stop_reason"] == "complete"
-    # 14 openers; a bounded probe fires only for thin answers or tension.
-    assert len(run["turns"]) in (14, 15)
+    # 14 openers; bounded probes fire for thin answers, missing evidence
+    # dimensions (WS2-B), or tension: at most 3 inline + 6 follow-ups.
+    assert len(run["turns"]) in range(14, 24)
     assert run["patient_calls"] == len(run["turns"])
     # Isolation: driver payload shape fixed; patient words only, never briefs.
     assert ALLOWED_ANSWER_KEYS == {"answer_text", "base_version", "idempotency_key"}
@@ -109,6 +110,6 @@ async def test_artifacts_sealed(tmp_path, client):
     ref = json.loads((dest / "reference_transcript.json").read_text())
     assert ref["ground_truth_facts"] == profile["facts"]
     results = json.loads((dest / "results.json").read_text())
-    assert results["stop_reason"] == "complete" and results["turns"] in (14, 15)
+    assert results["stop_reason"] == "complete" and results["turns"] in range(14, 24)
     creds = json.loads((dest / "credentials.json").read_text())
     assert creds["assessment_id"] == run["assessment_id"] and creds["password"] == run["password"]
