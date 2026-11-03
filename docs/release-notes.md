@@ -1,6 +1,21 @@
-# Release notes (pre-submission stub)
+# Release notes (F14 — pre-submission)
 
-## Done (Features 1–16, F10a, F11-min, F12-min, F13-min, 15–16)
+## Done (Features 1–16, F10a, F11-min, F12-min, F13-min, 15–16, WS0–WS5, F14 metrics)
+
+- Assessment sessions (code + password), ASRS v1.1 6Q deterministic scoring
+  (`original-0-6`), screening + interview briefings with exact-quote citations.
+- Full adaptive interview (14 objectives, taster 6), batch evidence extraction,
+  dimension-driven follow-ups, tensions/contradictions retained, user
+  review-and-confirm before any briefing, reviewer annotate
+  (accept/amend/reject), 3-section clinician report with front sheet,
+  frozen synthetic demo set (`/demo`, 4 personas), Tailwind UI overhaul,
+  consent/invite/delete/rate-limit hardening.
+- F14 10-run metrics pass (3 Nov 2026,
+  `docs/eval/f14-10run-20261103T204353.md`): 10/10 complete (8 full +
+  2 taster), 174/174 quotes exact, 0 banned-language hits. Full journeys
+  19–20 turns, taster 8 turns; 10/10 reports reopenable; backend suite
+  107 passed, 1 skipped. Hermetic dummy path (~200 ms/turn in-process);
+  live-model turns take ~10–17 s each.
 
 - Assessment sessions (code + password), ASRS v1.1 6Q deterministic scoring
   (`original-0-6`), screening + interview briefings with exact-quote citations.

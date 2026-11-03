@@ -643,6 +643,24 @@ synthetic scenarios.
 
 **Milestone C:** Public MVP stretch goal, if the agreed readiness conditions are met. For judging, Milestone C means F13-min 2-day opening only.
 
+**Status (3 Nov 2026): ✅ F14 hackathon must-haves done — metrics + presentation notes.**
+- 10-run hermetic pass (`sim/f14_eval.py`, report
+  `docs/eval/f14-10run-20261103T204353.md`): 10/10 complete (8 full +
+  2 taster), 174/174 quote-exactness, 0 banned hits. Full 19–20 turns,
+  taster 8 turns; 10/10 screening + briefing reopenable; front sheet +
+  areas present on all 10 briefings. Backend suite 107 passed, 1 skipped.
+- F14 acceptance verified by inspection: honest `Question N · M answered`
+  progress (no countdown), labeled controls + `aria` states, loading and
+  failure/retry paths, share-by-invite-link only (no personal report
+  sharing), watermarked `/demo` doubles as the shareable artifact, routes
+  200, print stylesheet + JSON export in place.
+- `PRESENTATION_NOTES.md`: 60-sec demo script, what-it-does/does-not,
+  the 10-run table, journey numbers, limitations-once, and Q&A lines.
+  `docs/release-notes.md` finalized with the same numbers.
+- Remaining: live demo rehearsal on the judging stack; post-hackathon
+  items (F10b, F11-full PDF/dashboard, 10×3 eval, clinical review) stay
+  out of scope.
+
 ## 15. Frozen synthetic demo report set (NEW 29 Oct 2026, owner-agreed)
 
 **Deliver:** Four frozen, committed demo reports (vague / denier / contradictor /
