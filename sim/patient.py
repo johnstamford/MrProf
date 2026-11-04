@@ -33,11 +33,17 @@ class DummyPatient:
 
     def answer(self, question: str, turn: int, objective: str) -> str:  # noqa: ARG002
         self.calls += 1
-        base = self._persona["script"][objective]["answer"]
+        entry = self._persona["script"][objective]
+        base = entry["answer"]
         seen = self._seen.get(objective, 0)
         self._seen[objective] = seen + 1
         if seen == 0:
             return base
+        # Re-asked objective (dimension follow-up / top-up): use the tailored
+        # follow-up variant when the profile provides one, else fall back to
+        # the base answer plus a generic no-new-facts addendum.
+        if isinstance(entry.get("followup"), str) and entry["followup"]:
+            return entry["followup"]
         return base + self._REPEAT_ADDENDUM
 
 

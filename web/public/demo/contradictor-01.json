@@ -63,9 +63,9 @@
         "title": "Context and background"
       }
     ],
-    "assessment_id": "P3QXERJW",
+    "assessment_id": "FMGG37C8",
     "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
-    "completed_at": "2026-11-04T00:33:27.090000",
+    "completed_at": "2026-11-04T00:45:29.386000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [
       {
@@ -215,12 +215,12 @@
       }
     ],
     "detail_summary": {
-      "grounded_turns": 10,
+      "grounded_turns": 11,
       "level_counts": [
         0,
+        5,
         4,
-        6,
-        10
+        11
       ],
       "total_turns": 20
     },
@@ -334,7 +334,7 @@
           "objective": "childhood-onset",
           "obs_index": 0,
           "period": "school",
-          "quote": "School was never a problem.",
+          "quote": "School was never a problem, as I said \u2014 no detentions, no interventions, nothing my parents were called in for.",
           "review_note": "",
           "review_status": "pending",
           "segment_id": "T15-A1",
@@ -378,7 +378,7 @@
           "objective": "background-goals",
           "obs_index": 0,
           "period": "",
-          "quote": "I am here because work suggested an assessment after the missed deadlines piled up.",
+          "quote": "Work paying for the referral concentrated my mind, put it that way.",
           "review_note": "",
           "review_status": "pending",
           "segment_id": "T16-A1",
@@ -415,7 +415,7 @@
     },
     "report_version": 1,
     "screening": {
-      "completed_at": "2026-11-04T00:33:18.377000",
+      "completed_at": "2026-11-04T00:45:20.347000",
       "positive": false,
       "score": 3,
       "scoring_method": "original-0-6"
@@ -423,42 +423,42 @@
     "skill_version": "skill-v0.4-draft",
     "statements": [
       {
-        "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps.",
+        "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. I am taking this seriously.",
         "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
         "turn": 1
       },
       {
-        "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice.",
+        "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice, which they do.",
         "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
         "turn": 2
       },
       {
-        "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days.",
+        "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. Then it is back to chaos.",
         "question": "How do you find organizing your time, your tasks, or your belongings?",
         "turn": 3
       },
       {
-        "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week.",
+        "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. The intention is there, the doing is not.",
         "question": "What kinds of tasks are hardest for you to start or finish?",
         "turn": 4
       },
       {
-        "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad.",
+        "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad, and honestly it drives me a bit mad too.",
         "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
         "turn": 5
       },
       {
-        "answer": "In long meetings I fidget quite a lot, clicking pens and shifting about in my chair. An hour sat still feels endless to me.",
+        "answer": "In long meetings I fidget quite a lot, clicking pens and shifting about in my chair. An hour sat still feels endless to me \u2014 I am counting down the minutes by halfway.",
         "question": "When you need to sit still or stay with one thing, what is that like for you?",
         "turn": 6
       },
       {
-        "answer": "I do jump in a bit. If I have the answer I will just say it rather than waiting. Sometimes that lands badly and I wish I had held back.",
+        "answer": "I do jump in a bit. If I have the answer I will just say it rather than waiting. Sometimes that lands badly and I wish I had held back, especially in front of senior people.",
         "question": "How are you with waiting your turn, or holding back when you want to jump in?",
         "turn": 7
       },
       {
-        "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then.",
+        "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. Honestly it all seems fine in hindsight.",
         "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
         "turn": 8
       },
@@ -483,42 +483,42 @@
         "turn": 12
       },
       {
-        "answer": "Whether any of this goes back to childhood, I am not sure. I honestly cannot say if I was like this as a kid or if it started later.",
+        "answer": "Whether any of this goes back to childhood, I am not sure. I honestly cannot say if I was like this as a kid or if it started later. The early years are a blur.",
         "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
         "turn": 13
       },
       {
-        "answer": "I try keeping lists, and they help for a day or two. Then I lose the list, or stop looking at it, and I am back where I started.",
+        "answer": "I try keeping lists, and they help for a day or two. Then I lose the list, or stop looking at it, and I am back where I started. It is a bit of a cycle at this point.",
         "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
         "turn": 14
       },
       {
-        "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "School was never a problem, as I said \u2014 no detentions, no interventions, nothing my parents were called in for. Just normal school.",
         "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
         "turn": 15
       },
       {
-        "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "Work paying for the referral concentrated my mind, put it that way. I do not want to be the person who keeps dropping things \u2014 I want to fix it.",
         "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
         "turn": 16
       },
       {
-        "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "It is the worst on calls, actually \u2014 no faces to anchor me, and suddenly everyone is agreeing to something and I have no idea what. I just nod along.",
         "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
         "turn": 17
       },
       {
-        "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "The longest I ever stuck with a planner was maybe a fortnight, and I was so proud of myself. Then one busy week and it was over.",
         "question": "How do you find organizing your time, your tasks, or your belongings?",
         "turn": 18
       },
       {
-        "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "Last month was bad for this \u2014 two things I just never started until someone chased me. I had weeks. I cannot explain where the weeks went.",
         "question": "What kinds of tasks are hardest for you to start or finish?",
         "turn": 19
       },
       {
-        "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "Yesterday I went upstairs for my wallet, came down with a book, and had to go back up. My partner just watched the whole thing happen.",
         "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
         "turn": 20
       }
@@ -677,7 +677,7 @@
         "title": "Background and goals",
         "turns": [
           {
-            "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps.",
+            "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. I am taking this seriously.",
             "correction": null,
             "observations": [
               {
@@ -699,7 +699,7 @@
             "turn": 1
           },
           {
-            "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "Work paying for the referral concentrated my mind, put it that way. I do not want to be the person who keeps dropping things \u2014 I want to fix it.",
             "correction": null,
             "observations": [
               {
@@ -708,7 +708,7 @@
                 "line": 32,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I am here because work suggested an assessment after the missed deadlines piled up.",
+                "quote": "Work paying for the referral concentrated my mind, put it that way.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -731,7 +731,7 @@
         "title": "Sustaining attention",
         "turns": [
           {
-            "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice.",
+            "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice, which they do.",
             "correction": null,
             "observations": [
               {
@@ -753,16 +753,16 @@
             "turn": 2
           },
           {
-            "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "It is the worst on calls, actually \u2014 no faces to anchor me, and suddenly everyone is agreeing to something and I have no idea what. I just nod along.",
             "correction": null,
             "observations": [
               {
-                "assertion": "present",
+                "assertion": "uncertain",
                 "criterion_links": [],
                 "line": 34,
-                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "note": "Expresses uncertainty on this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I zone out in the middle of things more than I would like.",
+                "quote": "It is the worst on calls, actually \u2014 no faces to anchor me, and suddenly everyone is agreeing to something and I have no idea what.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -777,7 +777,7 @@
         ]
       },
       {
-        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2014 \u00b7 setting \u2713",
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2713 \u00b7 setting \u2713",
         "label": "Reported",
         "note": "substantive account recorded",
         "objective": "organization",
@@ -785,7 +785,7 @@
         "title": "Organization and time",
         "turns": [
           {
-            "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days.",
+            "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. Then it is back to chaos.",
             "correction": null,
             "observations": [
               {
@@ -807,7 +807,7 @@
             "turn": 3
           },
           {
-            "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "The longest I ever stuck with a planner was maybe a fortnight, and I was so proud of myself. Then one busy week and it was over.",
             "correction": null,
             "observations": [
               {
@@ -816,7 +816,7 @@
                 "line": 36,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "Organizing things is not my strong point.",
+                "quote": "The longest I ever stuck with a planner was maybe a fortnight, and I was so proud of myself.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -831,7 +831,7 @@
         ]
       },
       {
-        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2713 \u00b7 timeframe \u2713 \u00b7 setting \u2713",
+        "coverage_detail": "Coverage detail: example \u2713 \u00b7 frequency \u2713 \u00b7 timeframe \u2713 \u00b7 setting \u2713",
         "label": "Reported",
         "note": "substantive account recorded",
         "objective": "task-completion",
@@ -839,7 +839,7 @@
         "title": "Starting and finishing tasks",
         "turns": [
           {
-            "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week.",
+            "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. The intention is there, the doing is not.",
             "correction": null,
             "observations": [
               {
@@ -861,7 +861,7 @@
             "turn": 4
           },
           {
-            "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "Last month was bad for this \u2014 two things I just never started until someone chased me. I had weeks. I cannot explain where the weeks went.",
             "correction": null,
             "observations": [
               {
@@ -870,7 +870,7 @@
                 "line": 38,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "At work I miss deadlines more than I would like to admit.",
+                "quote": "Last month was bad for this \u2014 two things I just never started until someone chased me.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -885,7 +885,7 @@
         ]
       },
       {
-        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2014 \u00b7 setting \u2014",
+        "coverage_detail": "Coverage detail: example \u2713 \u00b7 frequency \u2014 \u00b7 timeframe \u2713 \u00b7 setting \u2014",
         "label": "Reported",
         "note": "substantive account recorded",
         "objective": "forgetfulness",
@@ -893,7 +893,7 @@
         "title": "Forgetfulness in daily life",
         "turns": [
           {
-            "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad.",
+            "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad, and honestly it drives me a bit mad too.",
             "correction": null,
             "observations": [
               {
@@ -915,7 +915,7 @@
             "turn": 5
           },
           {
-            "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "Yesterday I went upstairs for my wallet, came down with a book, and had to go back up. My partner just watched the whole thing happen.",
             "correction": null,
             "observations": [
               {
@@ -924,7 +924,7 @@
                 "line": 40,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it.",
+                "quote": "Yesterday I went upstairs for my wallet, came down with a book, and had to go back up.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -947,7 +947,7 @@
         "title": "Restlessness and staying with one thing",
         "turns": [
           {
-            "answer": "In long meetings I fidget quite a lot, clicking pens and shifting about in my chair. An hour sat still feels endless to me.",
+            "answer": "In long meetings I fidget quite a lot, clicking pens and shifting about in my chair. An hour sat still feels endless to me \u2014 I am counting down the minutes by halfway.",
             "correction": null,
             "observations": [
               {
@@ -979,7 +979,7 @@
         "title": "Acting quickly and patience",
         "turns": [
           {
-            "answer": "I do jump in a bit. If I have the answer I will just say it rather than waiting. Sometimes that lands badly and I wish I had held back.",
+            "answer": "I do jump in a bit. If I have the answer I will just say it rather than waiting. Sometimes that lands badly and I wish I had held back, especially in front of senior people.",
             "correction": null,
             "observations": [
               {
@@ -1011,7 +1011,7 @@
         "title": "Childhood and school years",
         "turns": [
           {
-            "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then.",
+            "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. Honestly it all seems fine in hindsight.",
             "correction": null,
             "observations": [
               {
@@ -1033,7 +1033,7 @@
             "turn": 8
           },
           {
-            "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "School was never a problem, as I said \u2014 no detentions, no interventions, nothing my parents were called in for. Just normal school.",
             "correction": null,
             "observations": [
               {
@@ -1042,7 +1042,7 @@
                 "line": 30,
                 "note": "States this is not an issue for them; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "School was never a problem.",
+                "quote": "School was never a problem, as I said \u2014 no detentions, no interventions, nothing my parents were called in for.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -1193,7 +1193,7 @@
         "title": "Sleep, stress, mood, and health context",
         "turns": [
           {
-            "answer": "Whether any of this goes back to childhood, I am not sure. I honestly cannot say if I was like this as a kid or if it started later.",
+            "answer": "Whether any of this goes back to childhood, I am not sure. I honestly cannot say if I was like this as a kid or if it started later. The early years are a blur.",
             "correction": null,
             "observations": [
               {
@@ -1225,7 +1225,7 @@
         "title": "Strategies and support",
         "turns": [
           {
-            "answer": "I try keeping lists, and they help for a day or two. Then I lose the list, or stop looking at it, and I am back where I started.",
+            "answer": "I try keeping lists, and they help for a day or two. Then I lose the list, or stop looking at it, and I am back where I started. It is a bit of a cycle at this point.",
             "correction": null,
             "observations": [
               {
@@ -1263,7 +1263,7 @@
         "line": 2,
         "n": 1,
         "role": "A",
-        "text": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps.",
+        "text": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. I am taking this seriously.",
         "turn": 1
       },
       {
@@ -1279,7 +1279,7 @@
         "line": 4,
         "n": 1,
         "role": "A",
-        "text": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice.",
+        "text": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice, which they do.",
         "turn": 2
       },
       {
@@ -1295,7 +1295,7 @@
         "line": 6,
         "n": 1,
         "role": "A",
-        "text": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days.",
+        "text": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. Then it is back to chaos.",
         "turn": 3
       },
       {
@@ -1311,7 +1311,7 @@
         "line": 8,
         "n": 1,
         "role": "A",
-        "text": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week.",
+        "text": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. The intention is there, the doing is not.",
         "turn": 4
       },
       {
@@ -1327,7 +1327,7 @@
         "line": 10,
         "n": 1,
         "role": "A",
-        "text": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad.",
+        "text": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad, and honestly it drives me a bit mad too.",
         "turn": 5
       },
       {
@@ -1343,7 +1343,7 @@
         "line": 12,
         "n": 1,
         "role": "A",
-        "text": "In long meetings I fidget quite a lot, clicking pens and shifting about in my chair. An hour sat still feels endless to me.",
+        "text": "In long meetings I fidget quite a lot, clicking pens and shifting about in my chair. An hour sat still feels endless to me \u2014 I am counting down the minutes by halfway.",
         "turn": 6
       },
       {
@@ -1359,7 +1359,7 @@
         "line": 14,
         "n": 1,
         "role": "A",
-        "text": "I do jump in a bit. If I have the answer I will just say it rather than waiting. Sometimes that lands badly and I wish I had held back.",
+        "text": "I do jump in a bit. If I have the answer I will just say it rather than waiting. Sometimes that lands badly and I wish I had held back, especially in front of senior people.",
         "turn": 7
       },
       {
@@ -1375,7 +1375,7 @@
         "line": 16,
         "n": 1,
         "role": "A",
-        "text": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then.",
+        "text": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. Honestly it all seems fine in hindsight.",
         "turn": 8
       },
       {
@@ -1455,7 +1455,7 @@
         "line": 26,
         "n": 1,
         "role": "A",
-        "text": "Whether any of this goes back to childhood, I am not sure. I honestly cannot say if I was like this as a kid or if it started later.",
+        "text": "Whether any of this goes back to childhood, I am not sure. I honestly cannot say if I was like this as a kid or if it started later. The early years are a blur.",
         "turn": 13
       },
       {
@@ -1471,7 +1471,7 @@
         "line": 28,
         "n": 1,
         "role": "A",
-        "text": "I try keeping lists, and they help for a day or two. Then I lose the list, or stop looking at it, and I am back where I started.",
+        "text": "I try keeping lists, and they help for a day or two. Then I lose the list, or stop looking at it, and I am back where I started. It is a bit of a cycle at this point.",
         "turn": 14
       },
       {
@@ -1487,7 +1487,7 @@
         "line": 30,
         "n": 1,
         "role": "A",
-        "text": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "School was never a problem, as I said \u2014 no detentions, no interventions, nothing my parents were called in for. Just normal school.",
         "turn": 15
       },
       {
@@ -1503,7 +1503,7 @@
         "line": 32,
         "n": 1,
         "role": "A",
-        "text": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "Work paying for the referral concentrated my mind, put it that way. I do not want to be the person who keeps dropping things \u2014 I want to fix it.",
         "turn": 16
       },
       {
@@ -1519,7 +1519,7 @@
         "line": 34,
         "n": 1,
         "role": "A",
-        "text": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "It is the worst on calls, actually \u2014 no faces to anchor me, and suddenly everyone is agreeing to something and I have no idea what. I just nod along.",
         "turn": 17
       },
       {
@@ -1535,7 +1535,7 @@
         "line": 36,
         "n": 1,
         "role": "A",
-        "text": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "The longest I ever stuck with a planner was maybe a fortnight, and I was so proud of myself. Then one busy week and it was over.",
         "turn": 18
       },
       {
@@ -1551,7 +1551,7 @@
         "line": 38,
         "n": 1,
         "role": "A",
-        "text": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "Last month was bad for this \u2014 two things I just never started until someone chased me. I had weeks. I cannot explain where the weeks went.",
         "turn": 19
       },
       {
@@ -1567,20 +1567,20 @@
         "line": 40,
         "n": 1,
         "role": "A",
-        "text": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "Yesterday I went upstairs for my wallet, came down with a book, and had to go back up. My partner just watched the whole thing happen.",
         "turn": 20
       }
     ],
     "turns_answered": 20,
-    "user_confirmed_at": "2026-11-04T00:33:27.090000"
+    "user_confirmed_at": "2026-11-04T00:45:29.386000"
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-04T00:33:27.666291+00:00",
+    "exported_at": "2026-11-04T00:45:30.001072+00:00",
     "headline": "Gives conflicting accounts across turns",
     "latency_ms": {
-      "max": 204.3,
-      "mean": 193.4
+      "max": 229.1,
+      "mean": 208.4
     },
     "model": {
       "model": "dummy-stub",
@@ -1642,8 +1642,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "P3QXERJW",
-    "completed_at": "2026-11-04T00:33:18.377000",
+    "assessment_id": "FMGG37C8",
+    "completed_at": "2026-11-04T00:45:20.347000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

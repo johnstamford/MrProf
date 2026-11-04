@@ -26,7 +26,11 @@ def extract_persona(profile: dict) -> dict:
         "uncertain": list(profile["uncertain"]),
         "contradictions": [list(c) for c in profile["contradictions"]],
         "script": {
-            objective: {"answer": entry["answer"], "basis": entry["basis"]}
+            objective: {
+                "answer": entry["answer"],
+                "basis": entry["basis"],
+                **({"followup": entry["followup"]} if "followup" in entry else {}),
+            }
             for objective, entry in profile["script"].items()
         },
     }

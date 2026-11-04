@@ -1,7 +1,7 @@
 {
   "demos": [
     {
-      "exported_at": "2026-11-04T00:33:08.511413+00:00",
+      "exported_at": "2026-11-04T00:45:10.089501+00:00",
       "headline": "Vague short answers",
       "id": "vague-01",
       "proves": "Follow-ups turn thin answers into checkable evidence.",
@@ -10,7 +10,7 @@
       "turns": 20
     },
     {
-      "exported_at": "2026-11-04T00:33:18.001763+00:00",
+      "exported_at": "2026-11-04T00:45:19.948825+00:00",
       "headline": "Denies difficulties, offers an alternative explanation",
       "id": "denier-01",
       "proves": "Denials are recorded as denied \u2014 never flipped into absence of evidence.",
@@ -19,7 +19,7 @@
       "turns": 19
     },
     {
-      "exported_at": "2026-11-04T00:33:27.666291+00:00",
+      "exported_at": "2026-11-04T00:45:30.001072+00:00",
       "headline": "Gives conflicting accounts across turns",
       "id": "contradictor-01",
       "proves": "Contradictions stay visible, with both accounts retained.",
@@ -28,7 +28,7 @@
       "turns": 20
     },
     {
-      "exported_at": "2026-11-04T00:33:37.357722+00:00",
+      "exported_at": "2026-11-04T00:45:40.049447+00:00",
       "headline": "Incomplete recall with partial detail",
       "id": "recall-01",
       "proves": "\u201cI cannot remember\u201d is respected and logged as a gap, not a finding.",

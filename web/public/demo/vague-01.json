@@ -62,9 +62,9 @@
         "title": "Context and background"
       }
     ],
-    "assessment_id": "J3G5BDUX",
+    "assessment_id": "YQFSK4YQ",
     "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
-    "completed_at": "2026-11-04T00:33:07.935000",
+    "completed_at": "2026-11-04T00:45:09.475000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [],
     "coverage": [
@@ -202,12 +202,12 @@
       }
     ],
     "detail_summary": {
-      "grounded_turns": 11,
+      "grounded_turns": 9,
       "level_counts": [
         0,
-        2,
+        4,
         7,
-        11
+        9
       ],
       "total_turns": 20
     },
@@ -314,20 +314,6 @@
           "title": "Childhood and school years",
           "turn": 8,
           "user_correction": ""
-        },
-        {
-          "assertion": "present",
-          "line": 40,
-          "objective": "childhood-onset",
-          "obs_index": 0,
-          "period": "school",
-          "quote": "I do not really remember much about school in that way.",
-          "review_note": "",
-          "review_status": "pending",
-          "segment_id": "T20-A1",
-          "title": "Childhood and school years",
-          "turn": 20,
-          "user_correction": ""
         }
       ],
       "why": [
@@ -337,7 +323,7 @@
           "objective": "background-goals",
           "obs_index": 0,
           "period": "",
-          "quote": "I do not know what happens next, I have never done anything like this before.",
+          "quote": "I do not know what happens next \u2014 I have never done anything like this before, so be gentle with me.",
           "review_note": "",
           "review_status": "pending",
           "segment_id": "T1-A1",
@@ -373,7 +359,7 @@
     },
     "report_version": 1,
     "screening": {
-      "completed_at": "2026-11-04T00:32:59.213000",
+      "completed_at": "2026-11-04T00:45:00.502000",
       "positive": false,
       "score": 3,
       "scoring_method": "original-0-6"
@@ -381,17 +367,17 @@
     "skill_version": "skill-v0.4-draft",
     "statements": [
       {
-        "answer": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next, I have never done anything like this before.",
+        "answer": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next \u2014 I have never done anything like this before, so be gentle with me.",
         "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
         "turn": 1
       },
       {
-        "answer": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much.",
+        "answer": "I lose the thread of things quite a lot, to be honest. Like someone will be talking and I realise I missed the middle bit entirely. It is worse when there is background noise or I am tired, though I could not really say by how much.",
         "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
         "turn": 2
       },
       {
-        "answer": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week.",
+        "answer": "My way of organizing things is mostly piles, really \u2014 piles of post on the counter, piles of tabs open on my laptop, that sort of thing. Every so often I have a big sort-out and it feels great for about a week, and then it all slides back.",
         "question": "How do you find organizing your time, your tasks, or your belongings?",
         "turn": 3
       },
@@ -401,22 +387,22 @@
         "turn": 4
       },
       {
-        "answer": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places. I do not know if that is worse than average or everyone does it.",
+        "answer": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places \u2014 on top of the fridge, in a coat I have not worn for weeks. I do not know if that is worse than average or everyone does it.",
         "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
         "turn": 5
       },
       {
-        "answer": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late.",
+        "answer": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late and I am still awake.",
         "question": "When you need to sit still or stay with one thing, what is that like for you?",
         "turn": 6
       },
       {
-        "answer": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say.",
+        "answer": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say \u2014 nobody has ever pulled me up on it, exactly.",
         "question": "How are you with waiting your turn, or holding back when you want to jump in?",
         "turn": 7
       },
       {
-        "answer": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like.",
+        "answer": "I do not really remember much about school in that way. I got through it, I think my reports were fine \u2014 probably said something like 'could try harder', which, well. But I could not tell you anything specific about what I was like back then.",
         "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
         "turn": 8
       },
@@ -426,12 +412,12 @@
         "turn": 9
       },
       {
-        "answer": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background.",
+        "answer": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background wherever I am.",
         "question": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
         "turn": 10
       },
       {
-        "answer": "Work is mostly okay, though the odd thing slips. Nothing dramatic, just the occasional missed email or turning up flustered. I muddle through.",
+        "answer": "Work is mostly okay, though the odd thing slips. The occasional missed email or turning up flustered because I left late again. I muddle through, and nobody has had a serious word with me about it.",
         "question": "Can you describe a recent time when these experiences affected your work or studies?",
         "turn": 11
       },
@@ -441,7 +427,7 @@
         "turn": 12
       },
       {
-        "answer": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though.",
+        "answer": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though. They all blur together.",
         "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
         "turn": 13
       },
@@ -451,32 +437,32 @@
         "turn": 14
       },
       {
-        "answer": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "Sorry, I know that was a bit roundabout. The gist is just that I drift off mid-conversation a lot, especially when I am already tired \u2014 I do not really have a clearer way of putting it than that.",
         "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
         "turn": 15
       },
       {
-        "answer": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "I mean the piles thing mostly works until it does not. I will be looking for one specific letter and realise it is somewhere in week three of the pile, if that makes sense.",
         "question": "How do you find organizing your time, your tasks, or your belongings?",
         "turn": 16
       },
       {
-        "answer": "Honestly it is mostly bills and that kind of paperwork. I put the envelopes on the counter meaning to deal with them, and then somehow it is weeks later and there is a late fee. It just never quite feels like the right moment to sit down with them. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "The bills thing is the classic example, yeah. It is not that I do not know how to pay them, I just keep not doing it until the reminder turns red, and then I feel silly about it.",
         "question": "What kinds of tasks are hardest for you to start or finish?",
         "turn": 17
       },
       {
-        "answer": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "It is more the mental busy-ness than tossing and turning, if that distinction makes sense. My body is tired but my head just will not switch off.",
         "question": "When you need to sit still or stay with one thing, what is that like for you?",
         "turn": 18
       },
       {
-        "answer": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "Like if I already know the answer I will just blurt it out rather than wait my turn. It is not a big deal, just something I notice about myself.",
         "question": "How are you with waiting your turn, or holding back when you want to jump in?",
         "turn": 19
       },
       {
-        "answer": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "I have asked my mum about it before and even she just says I was 'lively'. That could mean anything, could it not? I genuinely cannot recall specifics.",
         "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
         "turn": 20
       }
@@ -635,7 +621,7 @@
         "title": "Background and goals",
         "turns": [
           {
-            "answer": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next, I have never done anything like this before.",
+            "answer": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next \u2014 I have never done anything like this before, so be gentle with me.",
             "correction": null,
             "observations": [
               {
@@ -644,7 +630,7 @@
                 "line": 2,
                 "note": "Expresses uncertainty on this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I do not know what happens next, I have never done anything like this before.",
+                "quote": "I do not know what happens next \u2014 I have never done anything like this before, so be gentle with me.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -667,7 +653,7 @@
         "title": "Sustaining attention",
         "turns": [
           {
-            "answer": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much.",
+            "answer": "I lose the thread of things quite a lot, to be honest. Like someone will be talking and I realise I missed the middle bit entirely. It is worse when there is background noise or I am tired, though I could not really say by how much.",
             "correction": null,
             "observations": [
               {
@@ -676,7 +662,7 @@
                 "line": 4,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit.",
+                "quote": "I lose the thread of things quite a lot, to be honest.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -689,7 +675,7 @@
             "turn": 2
           },
           {
-            "answer": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "Sorry, I know that was a bit roundabout. The gist is just that I drift off mid-conversation a lot, especially when I am already tired \u2014 I do not really have a clearer way of putting it than that.",
             "correction": null,
             "observations": [
               {
@@ -698,7 +684,7 @@
                 "line": 30,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit.",
+                "quote": "Sorry, I know that was a bit roundabout.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -721,7 +707,7 @@
         "title": "Organization and time",
         "turns": [
           {
-            "answer": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week.",
+            "answer": "My way of organizing things is mostly piles, really \u2014 piles of post on the counter, piles of tabs open on my laptop, that sort of thing. Every so often I have a big sort-out and it feels great for about a week, and then it all slides back.",
             "correction": null,
             "observations": [
               {
@@ -730,7 +716,7 @@
                 "line": 6,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing.",
+                "quote": "My way of organizing things is mostly piles, really \u2014 piles of post on the counter, piles of tabs open on my laptop, that sort of thing.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -743,7 +729,7 @@
             "turn": 3
           },
           {
-            "answer": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "I mean the piles thing mostly works until it does not. I will be looking for one specific letter and realise it is somewhere in week three of the pile, if that makes sense.",
             "correction": null,
             "observations": [
               {
@@ -752,7 +738,7 @@
                 "line": 32,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing.",
+                "quote": "I mean the piles thing mostly works until it does not.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -767,7 +753,7 @@
         ]
       },
       {
-        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2713 \u00b7 timeframe \u2713 \u00b7 setting \u2014",
+        "coverage_detail": "Coverage detail: example \u2713 \u00b7 frequency \u2713 \u00b7 timeframe \u2713 \u00b7 setting \u2014",
         "label": "Reported",
         "note": "substantive account recorded",
         "objective": "task-completion",
@@ -797,16 +783,16 @@
             "turn": 4
           },
           {
-            "answer": "Honestly it is mostly bills and that kind of paperwork. I put the envelopes on the counter meaning to deal with them, and then somehow it is weeks later and there is a late fee. It just never quite feels like the right moment to sit down with them. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "The bills thing is the classic example, yeah. It is not that I do not know how to pay them, I just keep not doing it until the reminder turns red, and then I feel silly about it.",
             "correction": null,
             "observations": [
               {
-                "assertion": "present",
+                "assertion": "uncertain",
                 "criterion_links": [],
                 "line": 34,
-                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "note": "Expresses uncertainty on this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "Honestly it is mostly bills and that kind of paperwork.",
+                "quote": "It is not that I do not know how to pay them, I just keep not doing it until the reminder turns red, and then I feel silly about it.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -829,7 +815,7 @@
         "title": "Forgetfulness in daily life",
         "turns": [
           {
-            "answer": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places. I do not know if that is worse than average or everyone does it.",
+            "answer": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places \u2014 on top of the fridge, in a coat I have not worn for weeks. I do not know if that is worse than average or everyone does it.",
             "correction": null,
             "observations": [
               {
@@ -861,7 +847,7 @@
         "title": "Restlessness and staying with one thing",
         "turns": [
           {
-            "answer": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late.",
+            "answer": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late and I am still awake.",
             "correction": null,
             "observations": [
               {
@@ -883,7 +869,7 @@
             "turn": 6
           },
           {
-            "answer": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "It is more the mental busy-ness than tossing and turning, if that distinction makes sense. My body is tired but my head just will not switch off.",
             "correction": null,
             "observations": [
               {
@@ -892,7 +878,7 @@
                 "line": 36,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day.",
+                "quote": "It is more the mental busy-ness than tossing and turning, if that distinction makes sense.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -915,7 +901,7 @@
         "title": "Acting quickly and patience",
         "turns": [
           {
-            "answer": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say.",
+            "answer": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say \u2014 nobody has ever pulled me up on it, exactly.",
             "correction": null,
             "observations": [
               {
@@ -937,7 +923,7 @@
             "turn": 7
           },
           {
-            "answer": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "Like if I already know the answer I will just blurt it out rather than wait my turn. It is not a big deal, just something I notice about myself.",
             "correction": null,
             "observations": [
               {
@@ -946,7 +932,7 @@
                 "line": 38,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I suppose I can be a bit quick to jump in, especially when I am excited about something.",
+                "quote": "Like if I already know the answer I will just blurt it out rather than wait my turn.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -969,7 +955,7 @@
         "title": "Childhood and school years",
         "turns": [
           {
-            "answer": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like.",
+            "answer": "I do not really remember much about school in that way. I got through it, I think my reports were fine \u2014 probably said something like 'could try harder', which, well. But I could not tell you anything specific about what I was like back then.",
             "correction": null,
             "observations": [
               {
@@ -991,16 +977,16 @@
             "turn": 8
           },
           {
-            "answer": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "I have asked my mum about it before and even she just says I was 'lively'. That could mean anything, could it not? I genuinely cannot recall specifics.",
             "correction": null,
             "observations": [
               {
-                "assertion": "present",
+                "assertion": "uncertain",
                 "criterion_links": [],
                 "line": 40,
-                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "note": "Expresses uncertainty on this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I do not really remember much about school in that way.",
+                "quote": "I have asked my mum about it before and even she just says I was 'lively'.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -1055,7 +1041,7 @@
         "title": "Different settings",
         "turns": [
           {
-            "answer": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background.",
+            "answer": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background wherever I am.",
             "correction": null,
             "observations": [
               {
@@ -1087,7 +1073,7 @@
         "title": "Impact on work or study",
         "turns": [
           {
-            "answer": "Work is mostly okay, though the odd thing slips. Nothing dramatic, just the occasional missed email or turning up flustered. I muddle through.",
+            "answer": "Work is mostly okay, though the odd thing slips. The occasional missed email or turning up flustered because I left late again. I muddle through, and nobody has had a serious word with me about it.",
             "correction": null,
             "observations": [
               {
@@ -1151,7 +1137,7 @@
         "title": "Sleep, stress, mood, and health context",
         "turns": [
           {
-            "answer": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though.",
+            "answer": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though. They all blur together.",
             "correction": null,
             "observations": [
               {
@@ -1221,7 +1207,7 @@
         "line": 2,
         "n": 1,
         "role": "A",
-        "text": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next, I have never done anything like this before.",
+        "text": "I am here because I keep wondering about it, really. Nobody sent me, I just thought it was worth looking into. I do not know what happens next \u2014 I have never done anything like this before, so be gentle with me.",
         "turn": 1
       },
       {
@@ -1237,7 +1223,7 @@
         "line": 4,
         "n": 1,
         "role": "A",
-        "text": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much.",
+        "text": "I lose the thread of things quite a lot, to be honest. Like someone will be talking and I realise I missed the middle bit entirely. It is worse when there is background noise or I am tired, though I could not really say by how much.",
         "turn": 2
       },
       {
@@ -1253,7 +1239,7 @@
         "line": 6,
         "n": 1,
         "role": "A",
-        "text": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week.",
+        "text": "My way of organizing things is mostly piles, really \u2014 piles of post on the counter, piles of tabs open on my laptop, that sort of thing. Every so often I have a big sort-out and it feels great for about a week, and then it all slides back.",
         "turn": 3
       },
       {
@@ -1285,7 +1271,7 @@
         "line": 10,
         "n": 1,
         "role": "A",
-        "text": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places. I do not know if that is worse than average or everyone does it.",
+        "text": "I am always hunting for my keys or my glasses, that kind of thing. They turn up in silly places \u2014 on top of the fridge, in a coat I have not worn for weeks. I do not know if that is worse than average or everyone does it.",
         "turn": 5
       },
       {
@@ -1301,7 +1287,7 @@
         "line": 12,
         "n": 1,
         "role": "A",
-        "text": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late.",
+        "text": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late and I am still awake.",
         "turn": 6
       },
       {
@@ -1317,7 +1303,7 @@
         "line": 14,
         "n": 1,
         "role": "A",
-        "text": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say.",
+        "text": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say \u2014 nobody has ever pulled me up on it, exactly.",
         "turn": 7
       },
       {
@@ -1333,7 +1319,7 @@
         "line": 16,
         "n": 1,
         "role": "A",
-        "text": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like.",
+        "text": "I do not really remember much about school in that way. I got through it, I think my reports were fine \u2014 probably said something like 'could try harder', which, well. But I could not tell you anything specific about what I was like back then.",
         "turn": 8
       },
       {
@@ -1365,7 +1351,7 @@
         "line": 20,
         "n": 1,
         "role": "A",
-        "text": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background.",
+        "text": "It is probably a bit of everything, home and out and about. I have never really compared, to be honest. It is just there in the background wherever I am.",
         "turn": 10
       },
       {
@@ -1381,7 +1367,7 @@
         "line": 22,
         "n": 1,
         "role": "A",
-        "text": "Work is mostly okay, though the odd thing slips. Nothing dramatic, just the occasional missed email or turning up flustered. I muddle through.",
+        "text": "Work is mostly okay, though the odd thing slips. The occasional missed email or turning up flustered because I left late again. I muddle through, and nobody has had a serious word with me about it.",
         "turn": 11
       },
       {
@@ -1413,7 +1399,7 @@
         "line": 26,
         "n": 1,
         "role": "A",
-        "text": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though.",
+        "text": "My sleep is a bit all over the place, I suppose that does not help. I could not really tell you how much of it is tiredness and how much is just me, though. They all blur together.",
         "turn": 13
       },
       {
@@ -1445,7 +1431,7 @@
         "line": 30,
         "n": 1,
         "role": "A",
-        "text": "I lose the thread of things quite a lot, like someone will be talking and I realise I missed the middle bit. It is worse when there is background noise or I am tired, though I could not really say by how much. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "Sorry, I know that was a bit roundabout. The gist is just that I drift off mid-conversation a lot, especially when I am already tired \u2014 I do not really have a clearer way of putting it than that.",
         "turn": 15
       },
       {
@@ -1461,7 +1447,7 @@
         "line": 32,
         "n": 1,
         "role": "A",
-        "text": "My way of organizing things is mostly piles \u2014 piles of post, piles of tabs open, that sort of thing. Every so often I have a big sort-out and it feels great for about a week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "I mean the piles thing mostly works until it does not. I will be looking for one specific letter and realise it is somewhere in week three of the pile, if that makes sense.",
         "turn": 16
       },
       {
@@ -1477,7 +1463,7 @@
         "line": 34,
         "n": 1,
         "role": "A",
-        "text": "Honestly it is mostly bills and that kind of paperwork. I put the envelopes on the counter meaning to deal with them, and then somehow it is weeks later and there is a late fee. It just never quite feels like the right moment to sit down with them. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "The bills thing is the classic example, yeah. It is not that I do not know how to pay them, I just keep not doing it until the reminder turns red, and then I feel silly about it.",
         "turn": 17
       },
       {
@@ -1493,7 +1479,7 @@
         "line": 36,
         "n": 1,
         "role": "A",
-        "text": "When I am trying to wind down at night my mind just stays busy, going over random stuff from the day. I will be lying there thinking about an email I forgot to send or something someone said, and then suddenly it is really late. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "It is more the mental busy-ness than tossing and turning, if that distinction makes sense. My body is tired but my head just will not switch off.",
         "turn": 18
       },
       {
@@ -1509,7 +1495,7 @@
         "line": 38,
         "n": 1,
         "role": "A",
-        "text": "I suppose I can be a bit quick to jump in, especially when I am excited about something. Whether that is more than most people, I could not really say. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "Like if I already know the answer I will just blurt it out rather than wait my turn. It is not a big deal, just something I notice about myself.",
         "turn": 19
       },
       {
@@ -1525,20 +1511,20 @@
         "line": 40,
         "n": 1,
         "role": "A",
-        "text": "I do not really remember much about school in that way. I got through it, I think my reports were fine, but I could not tell you anything specific about what I was like. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "I have asked my mum about it before and even she just says I was 'lively'. That could mean anything, could it not? I genuinely cannot recall specifics.",
         "turn": 20
       }
     ],
     "turns_answered": 20,
-    "user_confirmed_at": "2026-11-04T00:33:07.935000"
+    "user_confirmed_at": "2026-11-04T00:45:09.475000"
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-04T00:33:08.511413+00:00",
+    "exported_at": "2026-11-04T00:45:10.089501+00:00",
     "headline": "Vague short answers",
     "latency_ms": {
-      "max": 213.3,
-      "mean": 195.1
+      "max": 231.8,
+      "mean": 205.9
     },
     "model": {
       "model": "dummy-stub",
@@ -1600,8 +1586,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "J3G5BDUX",
-    "completed_at": "2026-11-04T00:32:59.213000",
+    "assessment_id": "YQFSK4YQ",
+    "completed_at": "2026-11-04T00:45:00.502000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

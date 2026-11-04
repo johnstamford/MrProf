@@ -3,8 +3,8 @@
     "areas": [
       {
         "counts": {
-          "covered": 1,
-          "denied": 5
+          "covered": 2,
+          "denied": 4
         },
         "key": "functioning",
         "label": "Explicitly denied",
@@ -61,9 +61,9 @@
         "title": "Context and background"
       }
     ],
-    "assessment_id": "H36EKN58",
+    "assessment_id": "J6GE9YVW",
     "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
-    "completed_at": "2026-11-04T00:33:17.414000",
+    "completed_at": "2026-11-04T00:45:19.318000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [
       {
@@ -76,10 +76,22 @@
           "Acting quickly and patience"
         ],
         "clarified": true,
-        "denial_turn": 2,
+        "denial_turn": 3,
         "family": "functioning",
         "note": "revisited in a round-2 follow-up; both accounts retained",
-        "present_turn": 6
+        "present_turn": 2
+      },
+      {
+        "areas": [
+          "Sleep, stress, mood, and health context",
+          "Strategies and support",
+          "Background and goals"
+        ],
+        "clarified": true,
+        "denial_turn": 14,
+        "family": "context",
+        "note": "revisited in a round-2 follow-up; both accounts retained",
+        "present_turn": 13
       }
     ],
     "coverage": [
@@ -94,9 +106,9 @@
         ]
       },
       {
-        "note": "difficulty denied; accepted as reported",
+        "note": "substantive account recorded",
         "objective": "attention-focus",
-        "status": "denied",
+        "status": "covered",
         "title": "Sustaining attention",
         "turns": [
           2,
@@ -216,12 +228,12 @@
       }
     ],
     "detail_summary": {
-      "grounded_turns": 2,
+      "grounded_turns": 3,
       "level_counts": [
         0,
         11,
-        6,
-        2
+        5,
+        3
       ],
       "total_turns": 19
     },
@@ -246,8 +258,8 @@
           "line": 36,
           "objective": "context-factors",
           "obs_index": 0,
-          "period": "",
-          "quote": "Like I said, it is the coffee and the shifts.",
+          "period": "week",
+          "quote": "I even did the experiment \u2014 one week decaf on annual leave, calm as you like.",
           "review_note": "",
           "review_status": "pending",
           "segment_id": "T18-A1",
@@ -270,12 +282,12 @@
           "user_correction": ""
         },
         {
-          "assertion": "present",
+          "assertion": "explicitly-denied",
           "line": 38,
           "objective": "strategies",
           "obs_index": 0,
           "period": "",
-          "quote": "I do not really use anything, no lists or reminders.",
+          "quote": "No apps, no notebooks, nothing stuck to the fridge.",
           "review_note": "",
           "review_status": "pending",
           "segment_id": "T19-A1",
@@ -366,7 +378,7 @@
           "objective": "background-goals",
           "obs_index": 0,
           "period": "",
-          "quote": "Honestly I am mostly here because my partner suggested it.",
+          "quote": "Happy to go through the motions, but my expectation is a clean bill of health.",
           "review_note": "",
           "review_status": "pending",
           "segment_id": "T16-A1",
@@ -382,27 +394,27 @@
       "count": 19,
       "max_ms": 0.1,
       "p50_ms": 0.0,
-      "p95_ms": 0.009999999999999787
+      "p95_ms": 0.1
     },
     "mode": "full",
     "provisional_sketch": {
-      "behaviour_reported": 1,
-      "denied": 10,
+      "behaviour_reported": 2,
+      "denied": 9,
       "experimental": true,
       "headline": "Provisional sketch \u2014 experimental demo feature, not a medical conclusion",
       "lines": [
-        "You reported difficulties in 4 of 14 areas (Background and goals; Restlessness and staying with one thing; Sleep, stress, mood, and health context; Strategies and support).",
-        "You said 10 areas were not an issue for you.",
+        "You reported difficulties in 5 of 14 areas (Background and goals; Sustaining attention; Restlessness and staying with one thing; Sleep, stress, mood, and health context; Strategies and support).",
+        "You said 9 areas were not an issue for you.",
         "Your screening was 0/6 (original-0-6), below the threshold \u2014 which does not exclude ADHD or other conditions. This sketch does not point toward any particular condition.",
         "Only a qualified clinician can determine what explains your experiences. Take both reports to your appointment."
       ],
-      "reported": 4,
+      "reported": 5,
       "thin_or_missing": 0,
       "uncertain": 0
     },
     "report_version": 1,
     "screening": {
-      "completed_at": "2026-11-04T00:33:08.898000",
+      "completed_at": "2026-11-04T00:45:10.484000",
       "positive": false,
       "score": 0,
       "scoring_method": "original-0-6"
@@ -415,22 +427,22 @@
         "turn": 1
       },
       {
-        "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+        "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble at all. This has honestly never been an issue in my life.",
         "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
         "turn": 2
       },
       {
-        "answer": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work comment on it.",
+        "answer": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work actually comment on it, which always makes me laugh given why I am here.",
         "question": "How do you find organizing your time, your tasks, or your belongings?",
         "turn": 3
       },
       {
-        "answer": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about with staring at a task and not beginning.",
+        "answer": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about where you stare at a task and cannot begin.",
         "question": "What kinds of tasks are hardest for you to start or finish?",
         "turn": 4
       },
       {
-        "answer": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good.",
+        "answer": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good, ask anyone who knows me.",
         "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
         "turn": 5
       },
@@ -440,67 +452,67 @@
         "turn": 6
       },
       {
-        "answer": "No, I am a patient person. I wait my turn and think before I speak. Nobody would call me impulsive.",
+        "answer": "No, I am a patient person. I wait my turn and think before I speak. Nobody who knows me would call me impulsive, I am fairly confident of that.",
         "question": "How are you with waiting your turn, or holding back when you want to jump in?",
         "turn": 7
       },
       {
-        "answer": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is nothing to dig up there.",
+        "answer": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is genuinely nothing to dig up there \u2014 I was a boringly normal kid that way.",
         "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
         "turn": 8
       },
       {
-        "answer": "No, there is no course to describe, because there has never been a problem. Things have been steady all along.",
+        "answer": "No, there is no course to describe, because there has never been a problem. Things have been steady all along \u2014 same person at fifteen as at thirty, more or less.",
         "question": "How have these kinds of experiences changed over the years, as far as you can tell?",
         "turn": 9
       },
       {
-        "answer": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine.",
+        "answer": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine. I do not have a 'bad setting' because there is nothing going wrong.",
         "question": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
         "turn": 10
       },
       {
-        "answer": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise.",
+        "answer": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise. My manager would tell me straight.",
         "question": "Can you describe a recent time when these experiences affected your work or studies?",
         "turn": 11
       },
       {
-        "answer": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters.",
+        "answer": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters \u2014 birthdays remembered, promises kept.",
         "question": "How do these experiences affect the people around you, or your day-to-day life outside work?",
         "turn": 12
       },
       {
-        "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+        "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. Fix the rota and the espresso and there is nothing left.",
         "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
         "turn": 13
       },
       {
-        "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+        "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system \u2014 why fix what is not broken?",
         "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
         "turn": 14
       },
       {
-        "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "Really, focus is one of my stronger suits. Give me something boring and I will still get through it \u2014 it has never felt like effort.",
         "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
         "turn": 15
       },
       {
-        "answer": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "Happy to go through the motions, but my expectation is a clean bill of health. Then I can tell my partner I told them so.",
         "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
         "turn": 16
       },
       {
-        "answer": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "Like I said \u2014 cut the coffee on my days off and I am perfectly calm. That tells me everything I need to know about where the jitters come from.",
         "question": "When you need to sit still or stay with one thing, what is that like for you?",
         "turn": 17
       },
       {
-        "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "I even did the experiment \u2014 one week decaf on annual leave, calm as you like. Case closed, as far as I am concerned.",
         "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
         "turn": 18
       },
       {
-        "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "answer": "No apps, no notebooks, nothing stuck to the fridge. My head does the job fine on its own.",
         "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
         "turn": 19
       }
@@ -674,7 +686,7 @@
             "turn": 1
           },
           {
-            "answer": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "Happy to go through the motions, but my expectation is a clean bill of health. Then I can tell my partner I told them so.",
             "correction": null,
             "observations": [
               {
@@ -683,7 +695,7 @@
                 "line": 32,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "Honestly I am mostly here because my partner suggested it.",
+                "quote": "Happy to go through the motions, but my expectation is a clean bill of health.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -698,15 +710,15 @@
         ]
       },
       {
-        "coverage_detail": "",
-        "label": "Explicitly denied",
-        "note": "difficulty denied; accepted as reported",
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2713 \u00b7 timeframe \u2014 \u00b7 setting \u2014",
+        "label": "Reported",
+        "note": "substantive account recorded",
         "objective": "attention-focus",
-        "status": "denied",
+        "status": "covered",
         "title": "Sustaining attention",
         "turns": [
           {
-            "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+            "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble at all. This has honestly never been an issue in my life.",
             "correction": null,
             "observations": [
               {
@@ -728,16 +740,16 @@
             "turn": 2
           },
           {
-            "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "Really, focus is one of my stronger suits. Give me something boring and I will still get through it \u2014 it has never felt like effort.",
             "correction": null,
             "observations": [
               {
-                "assertion": "explicitly-denied",
+                "assertion": "present",
                 "criterion_links": [],
                 "line": 30,
-                "note": "States this is not an issue for them; the quote is the supporting span.",
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "No, concentrating is fine for me.",
+                "quote": "Really, focus is one of my stronger suits.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -760,7 +772,7 @@
         "title": "Organization and time",
         "turns": [
           {
-            "answer": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work comment on it.",
+            "answer": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work actually comment on it, which always makes me laugh given why I am here.",
             "correction": null,
             "observations": [
               {
@@ -792,7 +804,7 @@
         "title": "Starting and finishing tasks",
         "turns": [
           {
-            "answer": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about with staring at a task and not beginning.",
+            "answer": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about where you stare at a task and cannot begin.",
             "correction": null,
             "observations": [
               {
@@ -824,7 +836,7 @@
         "title": "Forgetfulness in daily life",
         "turns": [
           {
-            "answer": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good.",
+            "answer": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good, ask anyone who knows me.",
             "correction": null,
             "observations": [
               {
@@ -878,7 +890,7 @@
             "turn": 6
           },
           {
-            "answer": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "Like I said \u2014 cut the coffee on my days off and I am perfectly calm. That tells me everything I need to know about where the jitters come from.",
             "correction": null,
             "observations": [
               {
@@ -887,7 +899,7 @@
                 "line": 34,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "If I am restless it is the coffee, honestly.",
+                "quote": "Like I said \u2014 cut the coffee on my days off and I am perfectly calm.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -910,7 +922,7 @@
         "title": "Acting quickly and patience",
         "turns": [
           {
-            "answer": "No, I am a patient person. I wait my turn and think before I speak. Nobody would call me impulsive.",
+            "answer": "No, I am a patient person. I wait my turn and think before I speak. Nobody who knows me would call me impulsive, I am fairly confident of that.",
             "correction": null,
             "observations": [
               {
@@ -942,7 +954,7 @@
         "title": "Childhood and school years",
         "turns": [
           {
-            "answer": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is nothing to dig up there.",
+            "answer": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is genuinely nothing to dig up there \u2014 I was a boringly normal kid that way.",
             "correction": null,
             "observations": [
               {
@@ -974,7 +986,7 @@
         "title": "How things changed over time",
         "turns": [
           {
-            "answer": "No, there is no course to describe, because there has never been a problem. Things have been steady all along.",
+            "answer": "No, there is no course to describe, because there has never been a problem. Things have been steady all along \u2014 same person at fifteen as at thirty, more or less.",
             "correction": null,
             "observations": [
               {
@@ -1006,7 +1018,7 @@
         "title": "Different settings",
         "turns": [
           {
-            "answer": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine.",
+            "answer": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine. I do not have a 'bad setting' because there is nothing going wrong.",
             "correction": null,
             "observations": [
               {
@@ -1038,7 +1050,7 @@
         "title": "Impact on work or study",
         "turns": [
           {
-            "answer": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise.",
+            "answer": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise. My manager would tell me straight.",
             "correction": null,
             "observations": [
               {
@@ -1070,7 +1082,7 @@
         "title": "Impact on relationships and daily life",
         "turns": [
           {
-            "answer": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters.",
+            "answer": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters \u2014 birthdays remembered, promises kept.",
             "correction": null,
             "observations": [
               {
@@ -1102,7 +1114,7 @@
         "title": "Sleep, stress, mood, and health context",
         "turns": [
           {
-            "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+            "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. Fix the rota and the espresso and there is nothing left.",
             "correction": null,
             "observations": [
               {
@@ -1124,7 +1136,7 @@
             "turn": 13
           },
           {
-            "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "I even did the experiment \u2014 one week decaf on annual leave, calm as you like. Case closed, as far as I am concerned.",
             "correction": null,
             "observations": [
               {
@@ -1133,7 +1145,7 @@
                 "line": 36,
                 "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "Like I said, it is the coffee and the shifts.",
+                "quote": "I even did the experiment \u2014 one week decaf on annual leave, calm as you like.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -1156,7 +1168,7 @@
         "title": "Strategies and support",
         "turns": [
           {
-            "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+            "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system \u2014 why fix what is not broken?",
             "correction": null,
             "observations": [
               {
@@ -1178,16 +1190,16 @@
             "turn": 14
           },
           {
-            "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+            "answer": "No apps, no notebooks, nothing stuck to the fridge. My head does the job fine on its own.",
             "correction": null,
             "observations": [
               {
-                "assertion": "present",
+                "assertion": "explicitly-denied",
                 "criterion_links": [],
                 "line": 38,
-                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "note": "States this is not an issue for them; the quote is the supporting span.",
                 "obs_index": 0,
-                "quote": "I do not really use anything, no lists or reminders.",
+                "quote": "No apps, no notebooks, nothing stuck to the fridge.",
                 "review_note": "",
                 "review_status": "pending",
                 "reviewed_at": null,
@@ -1232,7 +1244,7 @@
         "line": 4,
         "n": 1,
         "role": "A",
-        "text": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+        "text": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble at all. This has honestly never been an issue in my life.",
         "turn": 2
       },
       {
@@ -1248,7 +1260,7 @@
         "line": 6,
         "n": 1,
         "role": "A",
-        "text": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work comment on it.",
+        "text": "No, organization is not a problem for me. Everything has its place and I keep a tidy calendar. People at work actually comment on it, which always makes me laugh given why I am here.",
         "turn": 3
       },
       {
@@ -1264,7 +1276,7 @@
         "line": 8,
         "n": 1,
         "role": "A",
-        "text": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about with staring at a task and not beginning.",
+        "text": "No, starting tasks is honestly fine for me. Once I decide to do something I just get on with it. I have never really had that problem people talk about where you stare at a task and cannot begin.",
         "turn": 4
       },
       {
@@ -1280,7 +1292,7 @@
         "line": 10,
         "n": 1,
         "role": "A",
-        "text": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good.",
+        "text": "No, I rarely forget things. Keys, wallet, phone \u2014 I always know where they are. My memory is perfectly good, ask anyone who knows me.",
         "turn": 5
       },
       {
@@ -1312,7 +1324,7 @@
         "line": 14,
         "n": 1,
         "role": "A",
-        "text": "No, I am a patient person. I wait my turn and think before I speak. Nobody would call me impulsive.",
+        "text": "No, I am a patient person. I wait my turn and think before I speak. Nobody who knows me would call me impulsive, I am fairly confident of that.",
         "turn": 7
       },
       {
@@ -1328,7 +1340,7 @@
         "line": 16,
         "n": 1,
         "role": "A",
-        "text": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is nothing to dig up there.",
+        "text": "No, nothing was ever flagged at school. Good reports, no complaints, nothing anyone ever raised. There is genuinely nothing to dig up there \u2014 I was a boringly normal kid that way.",
         "turn": 8
       },
       {
@@ -1344,7 +1356,7 @@
         "line": 18,
         "n": 1,
         "role": "A",
-        "text": "No, there is no course to describe, because there has never been a problem. Things have been steady all along.",
+        "text": "No, there is no course to describe, because there has never been a problem. Things have been steady all along \u2014 same person at fifteen as at thirty, more or less.",
         "turn": 9
       },
       {
@@ -1360,7 +1372,7 @@
         "line": 20,
         "n": 1,
         "role": "A",
-        "text": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine.",
+        "text": "No difference anywhere. Home, work, out with friends \u2014 all the same, all fine. I do not have a 'bad setting' because there is nothing going wrong.",
         "turn": 10
       },
       {
@@ -1376,7 +1388,7 @@
         "line": 22,
         "n": 1,
         "role": "A",
-        "text": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise.",
+        "text": "No, work is fine, my reviews have always been decent. Nothing is falling through the cracks as far as I can tell, and nobody has ever suggested otherwise. My manager would tell me straight.",
         "turn": 11
       },
       {
@@ -1392,7 +1404,7 @@
         "line": 24,
         "n": 1,
         "role": "A",
-        "text": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters.",
+        "text": "No, my relationships are good. No complaints from anyone. We get on well and I am present when it matters \u2014 birthdays remembered, promises kept.",
         "turn": 12
       },
       {
@@ -1408,7 +1420,7 @@
         "line": 26,
         "n": 1,
         "role": "A",
-        "text": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+        "text": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. Fix the rota and the espresso and there is nothing left.",
         "turn": 13
       },
       {
@@ -1424,7 +1436,7 @@
         "line": 28,
         "n": 1,
         "role": "A",
-        "text": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+        "text": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system \u2014 why fix what is not broken?",
         "turn": 14
       },
       {
@@ -1440,7 +1452,7 @@
         "line": 30,
         "n": 1,
         "role": "A",
-        "text": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "Really, focus is one of my stronger suits. Give me something boring and I will still get through it \u2014 it has never felt like effort.",
         "turn": 15
       },
       {
@@ -1456,7 +1468,7 @@
         "line": 32,
         "n": 1,
         "role": "A",
-        "text": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "Happy to go through the motions, but my expectation is a clean bill of health. Then I can tell my partner I told them so.",
         "turn": 16
       },
       {
@@ -1472,7 +1484,7 @@
         "line": 34,
         "n": 1,
         "role": "A",
-        "text": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "Like I said \u2014 cut the coffee on my days off and I am perfectly calm. That tells me everything I need to know about where the jitters come from.",
         "turn": 17
       },
       {
@@ -1488,7 +1500,7 @@
         "line": 36,
         "n": 1,
         "role": "A",
-        "text": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "I even did the experiment \u2014 one week decaf on annual leave, calm as you like. Case closed, as far as I am concerned.",
         "turn": 18
       },
       {
@@ -1504,20 +1516,20 @@
         "line": 38,
         "n": 1,
         "role": "A",
-        "text": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
+        "text": "No apps, no notebooks, nothing stuck to the fridge. My head does the job fine on its own.",
         "turn": 19
       }
     ],
     "turns_answered": 19,
-    "user_confirmed_at": "2026-11-04T00:33:17.414000"
+    "user_confirmed_at": "2026-11-04T00:45:19.318000"
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-04T00:33:18.001763+00:00",
+    "exported_at": "2026-11-04T00:45:19.948825+00:00",
     "headline": "Denies difficulties, offers an alternative explanation",
     "latency_ms": {
-      "max": 212.2,
-      "mean": 193.4
+      "max": 229.6,
+      "mean": 206.7
     },
     "model": {
       "model": "dummy-stub",
@@ -1579,8 +1591,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "H36EKN58",
-    "completed_at": "2026-11-04T00:33:08.898000",
+    "assessment_id": "J6GE9YVW",
+    "completed_at": "2026-11-04T00:45:10.484000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",
