@@ -63,9 +63,9 @@
         "title": "Context and background"
       }
     ],
-    "assessment_id": "GS5H4247",
+    "assessment_id": "P3QXERJW",
     "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
-    "completed_at": "2026-11-03T20:25:09.800000",
+    "completed_at": "2026-11-04T00:33:27.090000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [
       {
@@ -415,7 +415,7 @@
     },
     "report_version": 1,
     "screening": {
-      "completed_at": "2026-11-03T20:25:01.111000",
+      "completed_at": "2026-11-04T00:33:18.377000",
       "positive": false,
       "score": 3,
       "scoring_method": "original-0-6"
@@ -493,32 +493,32 @@
         "turn": 14
       },
       {
-        "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then.",
+        "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
         "turn": 15
       },
       {
-        "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps.",
+        "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
         "turn": 16
       },
       {
-        "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice.",
+        "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
         "turn": 17
       },
       {
-        "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days.",
+        "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "How do you find organizing your time, your tasks, or your belongings?",
         "turn": 18
       },
       {
-        "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week.",
+        "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "What kinds of tasks are hardest for you to start or finish?",
         "turn": 19
       },
       {
-        "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad.",
+        "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
         "turn": 20
       }
@@ -699,7 +699,7 @@
             "turn": 1
           },
           {
-            "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps.",
+            "answer": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -753,7 +753,7 @@
             "turn": 2
           },
           {
-            "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice.",
+            "answer": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -807,7 +807,7 @@
             "turn": 3
           },
           {
-            "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days.",
+            "answer": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -861,7 +861,7 @@
             "turn": 4
           },
           {
-            "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week.",
+            "answer": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -915,7 +915,7 @@
             "turn": 5
           },
           {
-            "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad.",
+            "answer": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -1033,7 +1033,7 @@
             "turn": 8
           },
           {
-            "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then.",
+            "answer": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -1487,7 +1487,7 @@
         "line": 30,
         "n": 1,
         "role": "A",
-        "text": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then.",
+        "text": "School was never a problem. I got through it like everyone else, and I do not remember any big issues with teachers or grades back then. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 15
       },
       {
@@ -1503,7 +1503,7 @@
         "line": 32,
         "n": 1,
         "role": "A",
-        "text": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps.",
+        "text": "I am here because work suggested an assessment after the missed deadlines piled up. I want to know what is going on, and whether there is anything that actually helps. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 16
       },
       {
@@ -1519,7 +1519,7 @@
         "line": 34,
         "n": 1,
         "role": "A",
-        "text": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice.",
+        "text": "I zone out in the middle of things more than I would like. Someone will be explaining something and I will realise I only caught half of it. It is embarrassing when they notice. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 17
       },
       {
@@ -1535,7 +1535,7 @@
         "line": 36,
         "n": 1,
         "role": "A",
-        "text": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days.",
+        "text": "Organizing things is not my strong point. I have tried planners and apps and they work until I forget to open them, which takes about three days. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 18
       },
       {
@@ -1551,7 +1551,7 @@
         "line": 38,
         "n": 1,
         "role": "A",
-        "text": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week.",
+        "text": "At work I miss deadlines more than I would like to admit. Someone will ask where a report is and I will realise I never even started it, even though I meant to all week. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 19
       },
       {
@@ -1567,20 +1567,20 @@
         "line": 40,
         "n": 1,
         "role": "A",
-        "text": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad.",
+        "text": "I forget stupid little things all the time \u2014 why I walked into a room, where I put my phone while I am holding it. It drives my partner mad. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 20
       }
     ],
     "turns_answered": 20,
-    "user_confirmed_at": "2026-11-03T20:25:09.800000"
+    "user_confirmed_at": "2026-11-04T00:33:27.090000"
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-03T20:25:10.377857+00:00",
+    "exported_at": "2026-11-04T00:33:27.666291+00:00",
     "headline": "Gives conflicting accounts across turns",
     "latency_ms": {
-      "max": 201.3,
-      "mean": 191.9
+      "max": 204.3,
+      "mean": 193.4
     },
     "model": {
       "model": "dummy-stub",
@@ -1642,8 +1642,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "GS5H4247",
-    "completed_at": "2026-11-03T20:25:01.111000",
+    "assessment_id": "P3QXERJW",
+    "completed_at": "2026-11-04T00:33:18.377000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

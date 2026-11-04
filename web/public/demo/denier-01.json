@@ -61,9 +61,9 @@
         "title": "Context and background"
       }
     ],
-    "assessment_id": "TM7BBJEJ",
+    "assessment_id": "H36EKN58",
     "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
-    "completed_at": "2026-11-03T20:25:00.163000",
+    "completed_at": "2026-11-04T00:33:17.414000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [
       {
@@ -382,7 +382,7 @@
       "count": 19,
       "max_ms": 0.1,
       "p50_ms": 0.0,
-      "p95_ms": 0.1
+      "p95_ms": 0.009999999999999787
     },
     "mode": "full",
     "provisional_sketch": {
@@ -402,7 +402,7 @@
     },
     "report_version": 1,
     "screening": {
-      "completed_at": "2026-11-03T20:24:51.673000",
+      "completed_at": "2026-11-04T00:33:08.898000",
       "positive": false,
       "score": 0,
       "scoring_method": "original-0-6"
@@ -480,27 +480,27 @@
         "turn": 14
       },
       {
-        "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+        "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
         "turn": 15
       },
       {
-        "answer": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of.",
+        "answer": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
         "turn": 16
       },
       {
-        "answer": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else.",
+        "answer": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "When you need to sit still or stay with one thing, what is that like for you?",
         "turn": 17
       },
       {
-        "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+        "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
         "turn": 18
       },
       {
-        "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+        "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
         "turn": 19
       }
@@ -674,7 +674,7 @@
             "turn": 1
           },
           {
-            "answer": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of.",
+            "answer": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -728,7 +728,7 @@
             "turn": 2
           },
           {
-            "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+            "answer": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -878,7 +878,7 @@
             "turn": 6
           },
           {
-            "answer": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else.",
+            "answer": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -1124,7 +1124,7 @@
             "turn": 13
           },
           {
-            "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+            "answer": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -1178,7 +1178,7 @@
             "turn": 14
           },
           {
-            "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+            "answer": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
             "correction": null,
             "observations": [
               {
@@ -1440,7 +1440,7 @@
         "line": 30,
         "n": 1,
         "role": "A",
-        "text": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue.",
+        "text": "No, concentrating is fine for me. I can read a long report or sit through a film without any trouble. This has never been an issue. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 15
       },
       {
@@ -1456,7 +1456,7 @@
         "line": 32,
         "n": 1,
         "role": "A",
-        "text": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of.",
+        "text": "Honestly I am mostly here because my partner suggested it. I do not have goals as such \u2014 I expect to be told there is nothing to find. No previous assessments, nothing in the family that I know of. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 16
       },
       {
@@ -1472,7 +1472,7 @@
         "line": 34,
         "n": 1,
         "role": "A",
-        "text": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else.",
+        "text": "If I am restless it is the coffee, honestly. I am on about four or five cups on a night shift and then I wonder why I am bouncing my leg. That is a lifestyle thing, not anything else. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 17
       },
       {
@@ -1488,7 +1488,7 @@
         "line": 36,
         "n": 1,
         "role": "A",
-        "text": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know.",
+        "text": "Like I said, it is the coffee and the shifts. When I am on days and ease off the caffeine I am perfectly calm, so that tells me all I need to know. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 18
       },
       {
@@ -1504,20 +1504,20 @@
         "line": 38,
         "n": 1,
         "role": "A",
-        "text": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system.",
+        "text": "I do not really use anything, no lists or reminders. I just remember things. It has never been an issue, so I have never needed a system. To add to what I just said \u2014 that is really all I can say about that; I cannot give a specific date or number for it.",
         "turn": 19
       }
     ],
     "turns_answered": 19,
-    "user_confirmed_at": "2026-11-03T20:25:00.163000"
+    "user_confirmed_at": "2026-11-04T00:33:17.414000"
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-03T20:25:00.736277+00:00",
+    "exported_at": "2026-11-04T00:33:18.001763+00:00",
     "headline": "Denies difficulties, offers an alternative explanation",
     "latency_ms": {
-      "max": 218.0,
-      "mean": 192.4
+      "max": 212.2,
+      "mean": 193.4
     },
     "model": {
       "model": "dummy-stub",
@@ -1579,8 +1579,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "TM7BBJEJ",
-    "completed_at": "2026-11-03T20:24:51.673000",
+    "assessment_id": "H36EKN58",
+    "completed_at": "2026-11-04T00:33:08.898000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

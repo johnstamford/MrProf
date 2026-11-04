@@ -10,9 +10,22 @@ from __future__ import annotations
 
 
 class DummyPatient:
+    # Stateful repeat handling: follow-ups re-ask the same objective.
+    # Returning the script paragraph verbatim twice reads as a copy-paste
+    # error in frozen demos. On a repeat hit for the same objective, return
+    # the same script answer plus a short natural addendum that adds NO new
+    # facts (no dates, numbers, events) so ground truth stays intact and
+    # quote-exactness still holds (the stored text is verbatim what the
+    # extractor cites).
+    _REPEAT_ADDENDUM = (
+        " To add to what I just said — that is really all I can say about that;"
+        " I cannot give a specific date or number for it."
+    )
+
     def __init__(self, persona: dict):
         self._persona = persona
         self.calls = 0
+        self._seen: dict[str, int] = {}
 
     @property
     def kind(self) -> str:
@@ -20,7 +33,12 @@ class DummyPatient:
 
     def answer(self, question: str, turn: int, objective: str) -> str:  # noqa: ARG002
         self.calls += 1
-        return self._persona["script"][objective]["answer"]
+        base = self._persona["script"][objective]["answer"]
+        seen = self._seen.get(objective, 0)
+        self._seen[objective] = seen + 1
+        if seen == 0:
+            return base
+        return base + self._REPEAT_ADDENDUM
 
 
 class ModelPatient:
