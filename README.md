@@ -1,5 +1,7 @@
 # MrProf — prepare for your ADHD assessment, in your own words
 
+▶️ Project video: https://youtu.be/rBYZewVERxM
+
 MrProf guides you through the official ASRS v1.1 6-question screening and a
 one-question-at-a-time interview, then assembles a briefing grounded in your
 exact words — quotes, line numbers, denials, uncertainty, and gaps included —
