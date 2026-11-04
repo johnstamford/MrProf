@@ -46,6 +46,8 @@ HEADLINES = {
     "denier-01": "Denies difficulties, offers an alternative explanation",
     "contradictor-01": "Gives conflicting accounts across turns",
     "recall-01": "Incomplete recall with partial detail",
+    "presenting-01": "Frequent difficulties across settings, positive screen",
+    "persistent-01": "Long-standing difficulties despite heavy coping",
 }
 
 PROVES = {
@@ -53,6 +55,8 @@ PROVES = {
     "denier-01": "Denials are recorded as denied — never flipped into absence of evidence.",
     "contradictor-01": "Contradictions stay visible, with both accounts retained.",
     "recall-01": "\u201cI cannot remember\u201d is respected and logged as a gap, not a finding.",
+    "presenting-01": "A clearly positive screen routes to further assessment — organisation, never diagnosis.",
+    "persistent-01": "Childhood history plus work impact, with coping effort recorded alongside gaps.",
 }
 
 

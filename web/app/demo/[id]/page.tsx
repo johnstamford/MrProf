@@ -39,7 +39,7 @@ type DemoFile = {
   briefing: Briefing;
 };
 
-const ORDER = ["vague-01", "denier-01", "contradictor-01", "recall-01"];
+const ORDER = ["vague-01", "denier-01", "contradictor-01", "recall-01", "presenting-01", "persistent-01"];
 
 async function loadDemo(id: string): Promise<DemoFile | null> {
   try {

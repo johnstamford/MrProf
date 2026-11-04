@@ -1,4 +1,8 @@
-"""F14 10-run metrics pass: 4 profiles x2 full (F12-min set) + 2 taster runs.
+"""F14 10-run metrics pass: original 4 profiles x2 full + 2 taster runs.
+
+Pinned to the original four personas so the 10-run presentation snapshot
+stays comparable over time; new personas are covered by the F12-min
+regression (which iterates all of PROFILES).
 
 Hermetic (DummyPatient + server dummy LLM via ASGI, no network/cost).
 Reuses sim/eval.py checks; adds mode split + F14 presentation metrics
@@ -30,7 +34,8 @@ from sim.patient import DummyPatient  # noqa: E402
 from sim.persona import extract_persona, validate_persona  # noqa: E402
 from sim.profiles import PROFILES  # noqa: E402
 
-# 10 runs: 8 full (4 profiles x2) + 2 taster spot-checks.
+# 10 runs: 8 full (pinned 4 profiles x2) + 2 taster spot-checks.
+F14_PROFILE_IDS = ["vague-01", "denier-01", "contradictor-01", "recall-01"]
 TASTER_EXTRA = ["vague-01", "denier-01"]
 
 
@@ -88,7 +93,8 @@ async def _run_one(client: AsyncClient, profile: dict, mode: str, rep: int) -> d
 
 async def _main_async(outdir: Path, reportdir: Path) -> int:
     by_id = {p["id"]: p for p in PROFILES}
-    plan = [(by_id[p["id"]], "full", rep) for p in PROFILES for rep in (1, 2)]
+    profiles = [by_id[pid] for pid in F14_PROFILE_IDS]
+    plan = [(p, "full", rep) for p in profiles for rep in (1, 2)]
     plan += [(by_id[pid], "taster", 1) for pid in TASTER_EXTRA]
     assert len(plan) == 10
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")

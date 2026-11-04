@@ -15,7 +15,7 @@ type DemoSummary = {
   exported_at: string;
 };
 
-const ORDER = ["vague-01", "denier-01", "contradictor-01", "recall-01"];
+const ORDER = ["vague-01", "denier-01", "contradictor-01", "recall-01", "presenting-01", "persistent-01"];
 
 export default function DemoGallery() {
   const demos = [...(indexData.demos as DemoSummary[])].sort(
@@ -30,7 +30,7 @@ export default function DemoGallery() {
         Example reports
       </h1>
       <p className="mt-3 max-w-2xl leading-relaxed text-ink-soft">
-        Four frozen reports, generated through the real interview pipeline with
+        Six frozen reports, generated through the real interview pipeline with
         scripted synthetic patients. Quotes are exact interview output, never
         hand-edited. Each one proves a different capability.
       </p>

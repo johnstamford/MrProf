@@ -1,4 +1,4 @@
-"""F12-min regression: 4 profiles x 2 hermetic runs with threshold checks.
+"""F12-min regression: all profiles in sim/profiles.py x 2 hermetic runs.
 
 Hermetic by default (DummyPatient + server dummy LLM via ASGI, no network,
 no cost) so the gate is reproducible. Live-model runs stay manual acceptance
@@ -8,7 +8,7 @@ Thresholds (FEATURE_PLAN F12-min):
   - 100% quote-exactness (every evidence quote is an exact substring of its
     cited transcript segment)
   - 0 banned-language hits in system-generated copy
-  - 8/8 runs complete (stop_reason == complete)
+  - all runs complete (stop_reason == complete), one per profile x REPEATS
   - latency/cost logged (no threshold, recorded for the report)
 
 Each run is sealed via sim/artifacts.save_run into sim/runs/<...>/ (gitignored),

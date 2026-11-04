@@ -530,9 +530,10 @@ F10b stays post-hackathon.
 
 **Decision needed:** Metrics, denominators, and passing thresholds before treating a benchmark as a release gate. Initial sample proposal: 10 personas × 3 runs.
 
-**F12-min (29 Oct 2026, owner-agreed hackathon gate):** report 4 profiles × 2
+**F12-min (29 Oct 2026, owner-agreed hackathon gate; extended to 6 profiles
+Nov 2026 with two positive-screen personas):** report all profiles × 2
 runs regression + thresholds: 100% quote-exactness, 0 banned-language hits,
-4/4 completion, latency/cost logged. The 10×3 proposal stays a future target.
+full completion, latency/cost logged. The 10×3 proposal stays a future target.
 Fixtures and pass criteria frozen during eval; synthetic success ≠ clinical
 validity or real-user timing.
 
@@ -547,7 +548,7 @@ validity or real-user timing.
 **Depends on:** 8–11.
 
 **Status (2 Nov 2026): ✅ F12-min done — implemented and verified (hermetic dummy gate).**
-- `sim/eval.py`: 4 profiles × 2 hermetic runs (`DummyPatient` + server dummy
+- `sim/eval.py`: all profiles × 2 hermetic runs (`DummyPatient` + server dummy
   LLM via ASGI, no network/cost) with threshold checks — completion,
   quote-exactness (every evidence quote an exact substring of its cited
   segment), banned-language (report + briefing system copy), latency logged.
@@ -663,8 +664,8 @@ synthetic scenarios.
 
 ## 15. Frozen synthetic demo report set (NEW 29 Oct 2026, owner-agreed)
 
-**Deliver:** Four frozen, committed demo reports (vague / denier / contradictor /
-incomplete-recall) generated through the real API from `sim/profiles.py`, served
+**Deliver:** Six frozen, committed demo reports (vague / denier / contradictor /
+incomplete-recall / clearly-positive / coping-positive) generated through the real API from `sim/profiles.py`, served
 read-only at `/demo`, each proving a different capability.
 
 **Acceptance:**
@@ -683,7 +684,7 @@ read-only at `/demo`, each proving a different capability.
 **Depends on:** 8–9. Feeds F11 demo viewer and F14 demo rehearsal.
 
 **Status (29 Oct 2026): ✅ done — implemented and verified.**
-- `sim/export_demo.py` drives all 4 profiles through the real API (ASGI,
+- `sim/export_demo.py` drives all profiles through the real API (ASGI,
   `LLM_PROVIDER=dummy`, DummyPatient) and freezes `web/public/demo/<id>.json`
   + `index.json` with `{meta, screening, briefing}`; demo assessments deleted
   from the dev DB after export. Re-runs re-freeze with new stamps.

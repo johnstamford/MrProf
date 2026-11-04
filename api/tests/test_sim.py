@@ -31,7 +31,7 @@ async def client():
 
 
 def test_profiles_cover_required_behaviors():
-    assert len(PROFILES) == 4
+    assert len(PROFILES) == 6
     have = {b for p in PROFILES for b in p["behaviors"]}
     for required in ("vague", "denials", "contradictions", "incomplete-recall", "alternative-explanations"):
         assert required in have, required

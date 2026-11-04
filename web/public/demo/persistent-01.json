@@ -1,0 +1,1641 @@
+{
+  "briefing": {
+    "areas": [
+      {
+        "counts": {
+          "covered": 6
+        },
+        "key": "functioning",
+        "label": "Reported",
+        "objectives": [
+          "attention-focus",
+          "organization",
+          "task-completion",
+          "forgetfulness",
+          "restlessness",
+          "impulsivity"
+        ],
+        "status": "covered",
+        "title": "Daily functioning"
+      },
+      {
+        "counts": {
+          "covered": 1,
+          "unable": 1
+        },
+        "key": "course",
+        "label": "Reported",
+        "objectives": [
+          "childhood-onset",
+          "persistence-course"
+        ],
+        "status": "covered",
+        "title": "History and course"
+      },
+      {
+        "counts": {
+          "covered": 3
+        },
+        "key": "impact",
+        "label": "Reported",
+        "objectives": [
+          "settings",
+          "impact-work",
+          "impact-relationships"
+        ],
+        "status": "covered",
+        "title": "Settings and impact"
+      },
+      {
+        "counts": {
+          "covered": 3
+        },
+        "key": "context",
+        "label": "Reported",
+        "objectives": [
+          "context-factors",
+          "strategies",
+          "background-goals"
+        ],
+        "status": "covered",
+        "title": "Context and background"
+      }
+    ],
+    "assessment_id": "BSHZCP6E",
+    "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
+    "completed_at": "2026-11-04T01:02:01.708000",
+    "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
+    "contradictions": [],
+    "coverage": [
+      {
+        "note": "substantive account recorded",
+        "objective": "background-goals",
+        "status": "covered",
+        "title": "Background and goals",
+        "turns": [
+          1,
+          15
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "attention-focus",
+        "status": "covered",
+        "title": "Sustaining attention",
+        "turns": [
+          2,
+          16
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "organization",
+        "status": "covered",
+        "title": "Organization and time",
+        "turns": [
+          3,
+          17
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "task-completion",
+        "status": "covered",
+        "title": "Starting and finishing tasks",
+        "turns": [
+          4,
+          18
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "forgetfulness",
+        "status": "covered",
+        "title": "Forgetfulness in daily life",
+        "turns": [
+          5,
+          19
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "restlessness",
+        "status": "covered",
+        "title": "Restlessness and staying with one thing",
+        "turns": [
+          6,
+          20
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impulsivity",
+        "status": "covered",
+        "title": "Acting quickly and patience",
+        "turns": [
+          7
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "childhood-onset",
+        "status": "covered",
+        "title": "Childhood and school years",
+        "turns": [
+          8
+        ]
+      },
+      {
+        "note": "could not recall or say; not pressed further",
+        "objective": "persistence-course",
+        "status": "unable",
+        "title": "How things changed over time",
+        "turns": [
+          9
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "settings",
+        "status": "covered",
+        "title": "Different settings",
+        "turns": [
+          10
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impact-work",
+        "status": "covered",
+        "title": "Impact on work or study",
+        "turns": [
+          11
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "impact-relationships",
+        "status": "covered",
+        "title": "Impact on relationships and daily life",
+        "turns": [
+          12
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "context-factors",
+        "status": "covered",
+        "title": "Sleep, stress, mood, and health context",
+        "turns": [
+          13
+        ]
+      },
+      {
+        "note": "substantive account recorded",
+        "objective": "strategies",
+        "status": "covered",
+        "title": "Strategies and support",
+        "turns": [
+          14
+        ]
+      }
+    ],
+    "detail_summary": {
+      "grounded_turns": 15,
+      "level_counts": [
+        0,
+        1,
+        4,
+        15
+      ],
+      "total_turns": 20
+    },
+    "front_sheet": {
+      "context": [
+        {
+          "assertion": "present",
+          "line": 26,
+          "objective": "context-factors",
+          "obs_index": 0,
+          "period": "weeks",
+          "quote": "Tiredness sharpens everything, and I run tired most weeks because of the late working.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T13-A1",
+          "title": "Sleep, stress, mood, and health context",
+          "turn": 13,
+          "user_correction": ""
+        },
+        {
+          "assertion": "present",
+          "line": 28,
+          "objective": "strategies",
+          "obs_index": 0,
+          "period": "weeks",
+          "quote": "The lists, the alarms, the shared calendar, body-doubling with a friend over video while we both do admin \u2014 I have built scaffolding around my entire life.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T14-A1",
+          "title": "Strategies and support",
+          "turn": 14,
+          "user_correction": ""
+        }
+      ],
+      "impact": [
+        {
+          "assertion": "present",
+          "line": 20,
+          "objective": "settings",
+          "obs_index": 0,
+          "period": "",
+          "quote": "Work shows it most brutally because the stakes are formal.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T10-A1",
+          "title": "Different settings",
+          "turn": 10,
+          "user_correction": ""
+        },
+        {
+          "assertion": "present",
+          "line": 22,
+          "objective": "impact-work",
+          "obs_index": 0,
+          "period": "this year",
+          "quote": "I got a written warning this year for missed deadlines, despite working longer hours than anyone on the team.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T11-A1",
+          "title": "Impact on work or study",
+          "turn": 11,
+          "user_correction": ""
+        },
+        {
+          "assertion": "present",
+          "line": 24,
+          "objective": "impact-relationships",
+          "obs_index": 0,
+          "period": "years",
+          "quote": "My partner has started keeping a shared calendar for us because I kept forgetting plans we had made together.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T12-A1",
+          "title": "Impact on relationships and daily life",
+          "turn": 12,
+          "user_correction": ""
+        }
+      ],
+      "open_areas": [
+        {
+          "kind": "uncertain",
+          "ref": "persistence-course",
+          "text": "How things changed over time: could not recall or say \u2014 not pressed further",
+          "title": "How things changed over time"
+        }
+      ],
+      "timeline": [
+        {
+          "assertion": "present",
+          "line": 16,
+          "objective": "childhood-onset",
+          "obs_index": 0,
+          "period": "school",
+          "quote": "Clearing out my parents' loft, I found my old school reports, and it was like reading a preview: constant daydreaming, unfinished work, 'must learn to check his work'.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T8-A1",
+          "title": "Childhood and school years",
+          "turn": 8,
+          "user_correction": ""
+        },
+        {
+          "assertion": "uncertain",
+          "line": 18,
+          "objective": "persistence-course",
+          "obs_index": 0,
+          "period": "school",
+          "quote": "It has followed me through every stage \u2014 school, university, every job.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T9-A1",
+          "title": "How things changed over time",
+          "turn": 9,
+          "user_correction": ""
+        }
+      ],
+      "why": [
+        {
+          "assertion": "present",
+          "line": 2,
+          "objective": "background-goals",
+          "obs_index": 0,
+          "period": "school",
+          "quote": "After the warning at work and finding those school reports, I need a proper understanding of what I am dealing with.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T1-A1",
+          "title": "Background and goals",
+          "turn": 1,
+          "user_correction": ""
+        },
+        {
+          "assertion": "present",
+          "line": 30,
+          "objective": "background-goals",
+          "obs_index": 0,
+          "period": "",
+          "quote": "I want something I can show my manager that is honest \u2014 not an excuse, an explanation, and ideally a plan.",
+          "review_note": "",
+          "review_status": "pending",
+          "segment_id": "T15-A1",
+          "title": "Background and goals",
+          "turn": 15,
+          "user_correction": ""
+        }
+      ]
+    },
+    "gaps": [],
+    "kind": "interview",
+    "latency_summary": {
+      "count": 20,
+      "max_ms": 0.1,
+      "p50_ms": 0.0,
+      "p95_ms": 0.1
+    },
+    "mode": "full",
+    "provisional_sketch": {
+      "behaviour_reported": 6,
+      "denied": 0,
+      "experimental": true,
+      "headline": "Provisional sketch \u2014 experimental demo feature, not a medical conclusion",
+      "lines": [
+        "You reported difficulties in 13 of 14 areas (Background and goals; Sustaining attention; Organization and time; Starting and finishing tasks; Forgetfulness in daily life; Restlessness and staying with one thing; Acting quickly and patience; Childhood and school years; Different settings; Impact on work or study; Impact on relationships and daily life; Sleep, stress, mood, and health context; Strategies and support).",
+        "You were unsure about some areas \u2014 that is recorded as uncertainty, not as a negative.",
+        "Your screening was 5/6 (original-0-6), above the threshold where further assessment may be useful.",
+        "Several reported everyday areas plus a positive screen is the kind of presentation an ADHD assessment would explore \u2014 but the same pattern can come from many other things, and this sketch is unvalidated.",
+        "Only a qualified clinician can determine what explains your experiences. Take both reports to your appointment."
+      ],
+      "reported": 13,
+      "thin_or_missing": 0,
+      "uncertain": 1
+    },
+    "report_version": 1,
+    "screening": {
+      "completed_at": "2026-11-04T01:01:52.670000",
+      "positive": true,
+      "score": 5,
+      "scoring_method": "original-0-6"
+    },
+    "skill_version": "skill-v0.4-draft",
+    "statements": [
+      {
+        "answer": "After the warning at work and finding those school reports, I need a proper understanding of what I am dealing with. I have coped my way here on effort and scaffolding, and it is not holding anymore.",
+        "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+        "turn": 1
+      },
+      {
+        "answer": "My attention is either everywhere or hyperglued to the wrong thing. In a normal meeting I am gone within minutes, but I can lose four hours to reorganising my music library without noticing. There is no middle setting.",
+        "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 2
+      },
+      {
+        "answer": "I am the most organised disorganised person you will meet. Colour-coded lists, three apps, reminders for my reminders \u2014 and things still fall through the cracks the moment a week gets busy. The system is load-bearing and it still is not enough.",
+        "question": "How do you find organizing your time, your tasks, or your belongings?",
+        "turn": 3
+      },
+      {
+        "answer": "I work long hours to compensate for how slowly things start. I will sit down to do a task and somehow an hour passes before I have begun \u2014 tidying, emails, anything but the thing. Then I stay late to catch up, every week.",
+        "question": "What kinds of tasks are hardest for you to start or finish?",
+        "turn": 4
+      },
+      {
+        "answer": "I forget what I walked into rooms for, I forget to reply for days, I forget appointments I made myself. Very often, not occasionally \u2014 it is the texture of my days, not an exception.",
+        "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+        "turn": 5
+      },
+      {
+        "answer": "I am restless in the chair sense \u2014 shifting, crossing and uncrossing, getting up for water I do not want. Long car journeys are the worst; I arrive feeling like I have run a marathon while sitting down.",
+        "question": "When you need to sit still or stay with one thing, what is that like for you?",
+        "turn": 6
+      },
+      {
+        "answer": "Sometimes I speak before the thought is finished, especially when I am tired. And I say yes to things \u2014 projects, favours, trips \u2014 before checking whether I have any room for them. My calendar pays the price.",
+        "question": "How are you with waiting your turn, or holding back when you want to jump in?",
+        "turn": 7
+      },
+      {
+        "answer": "Clearing out my parents' loft, I found my old school reports, and it was like reading a preview: constant daydreaming, unfinished work, 'must learn to check his work'. I had forgotten all of it until I saw it in their handwriting.",
+        "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+        "turn": 8
+      },
+      {
+        "answer": "It has followed me through every stage \u2014 school, university, every job. Whether it was there before I was ten, I cannot recall; my memories that far back are thin. But from my teens onward, it is one continuous thread.",
+        "question": "How have these kinds of experiences changed over the years, as far as you can tell?",
+        "turn": 9
+      },
+      {
+        "answer": "Work shows it most brutally because the stakes are formal. But it is in the small hours of home life too \u2014 the unanswered messages, the half-done chores, the plans I forget I made. No setting is exempt.",
+        "question": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+        "turn": 10
+      },
+      {
+        "answer": "I got a written warning this year for missed deadlines, despite working longer hours than anyone on the team. That was the moment I stopped telling myself hard work would fix it \u2014 the hard work was already happening.",
+        "question": "Can you describe a recent time when these experiences affected your work or studies?",
+        "turn": 11
+      },
+      {
+        "answer": "My partner has started keeping a shared calendar for us because I kept forgetting plans we had made together. They are frustrated, and I do not blame them \u2014 being half-listened to for years would wear anyone down.",
+        "question": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+        "turn": 12
+      },
+      {
+        "answer": "Tiredness sharpens everything, and I run tired most weeks because of the late working. But I have had rested holidays where I still forgot the same kinds of things, so rest is not the root of it \u2014 it just turns the volume up.",
+        "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+        "turn": 13
+      },
+      {
+        "answer": "The lists, the alarms, the shared calendar, body-doubling with a friend over video while we both do admin \u2014 I have built scaffolding around my entire life. It holds on good weeks. On bad weeks I walk around the scaffolding instead of using it.",
+        "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+        "turn": 14
+      },
+      {
+        "answer": "I want something I can show my manager that is honest \u2014 not an excuse, an explanation, and ideally a plan. That is what I am hoping this process gives me.",
+        "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+        "turn": 15
+      },
+      {
+        "answer": "The hyperfocus side almost makes it worse, because people see me concentrate intensely on something pointless and conclude I could do it for work if I tried.",
+        "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 16
+      },
+      {
+        "answer": "Maintaining the system is practically a part-time job. I spend Sunday evenings planning the week and by Wednesday the plan is decorative.",
+        "question": "How do you find organizing your time, your tasks, or your belongings?",
+        "turn": 17
+      },
+      {
+        "answer": "The overtime is the hidden tax. My timesheets look heroic and my evenings do not exist. Nobody sees the hour of circling before each task.",
+        "question": "What kinds of tasks are hardest for you to start or finish?",
+        "turn": 18
+      },
+      {
+        "answer": "I once forgot my own birthday dinner \u2014 the one I had organised. My friends still bring it up. I laugh along because the alternative is crying.",
+        "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+        "turn": 19
+      },
+      {
+        "answer": "I volunteer for the tea round in long meetings just to have a reason to stand up. People think I am being nice. I am managing my legs.",
+        "question": "When you need to sit still or stay with one thing, what is that like for you?",
+        "turn": 20
+      }
+    ],
+    "support_note": "Support note \u2014 no one monitors your answers here. MrProf does not provide crisis support and no one reviews your answers in real time. If you feel unsafe or are thinking about harming yourself, please contact your local emergency number now (for example 112 in most of Europe, 911 in the US, 999 in the UK) or a local crisis helpline. You can also stop the interview at any time.",
+    "system_notes": [
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "background-goals",
+        "reason": "cover Background and goals (background-goals) in fixed order",
+        "turn": 1
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "attention-focus",
+        "reason": "cover Sustaining attention (attention-focus) in fixed order",
+        "turn": 2
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "organization",
+        "reason": "cover Organization and time (organization) in fixed order",
+        "turn": 3
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "task-completion",
+        "reason": "cover Starting and finishing tasks (task-completion) in fixed order",
+        "turn": 4
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "forgetfulness",
+        "reason": "cover Forgetfulness in daily life (forgetfulness) in fixed order",
+        "turn": 5
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "restlessness",
+        "reason": "cover Restlessness and staying with one thing (restlessness) in fixed order",
+        "turn": 6
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impulsivity",
+        "reason": "cover Acting quickly and patience (impulsivity) in fixed order",
+        "turn": 7
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "childhood-onset",
+        "reason": "cover Childhood and school years (childhood-onset) in fixed order",
+        "turn": 8
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "persistence-course",
+        "reason": "cover How things changed over time (persistence-course) in fixed order",
+        "turn": 9
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "settings",
+        "reason": "cover Different settings (settings) in fixed order",
+        "turn": 10
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impact-work",
+        "reason": "cover Impact on work or study (impact-work) in fixed order",
+        "turn": 11
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "impact-relationships",
+        "reason": "cover Impact on relationships and daily life (impact-relationships) in fixed order",
+        "turn": 12
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "context-factors",
+        "reason": "cover Sleep, stress, mood, and health context (context-factors) in fixed order",
+        "turn": 13
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "strategies",
+        "reason": "cover Strategies and support (strategies) in fixed order",
+        "turn": 14
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "background-goals",
+        "reason": "Background and goals is reported but example is missing: ask for one concrete recent occasion, once, no pressure",
+        "turn": 15
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "attention-focus",
+        "reason": "Sustaining attention is reported but example is missing: ask for one concrete recent occasion, once, no pressure",
+        "turn": 16
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "organization",
+        "reason": "Organization and time is reported but example is missing: ask for one concrete recent occasion, once, no pressure",
+        "turn": 17
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "task-completion",
+        "reason": "Starting and finishing tasks is reported but example is missing: ask for one concrete recent occasion, once, no pressure",
+        "turn": 18
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "forgetfulness",
+        "reason": "Forgetfulness in daily life is reported but example is missing: ask for one concrete recent occasion, once, no pressure",
+        "turn": 19
+      },
+      {
+        "model_name": "muse-spark-1.3-contributor",
+        "model_provider": "dummy",
+        "objective": "restlessness",
+        "reason": "Restlessness and staying with one thing is reported but example is missing: ask for one concrete recent occasion, once, no pressure",
+        "turn": 20
+      }
+    ],
+    "topic_version": "topics-v0.6-draft",
+    "topics": [
+      {
+        "coverage_detail": "Coverage detail: example \u2014",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "background-goals",
+        "status": "covered",
+        "title": "Background and goals",
+        "turns": [
+          {
+            "answer": "After the warning at work and finding those school reports, I need a proper understanding of what I am dealing with. I have coped my way here on effort and scaffolding, and it is not holding anymore.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 2,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "After the warning at work and finding those school reports, I need a proper understanding of what I am dealing with.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T1-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+            "turn": 1
+          },
+          {
+            "answer": "I want something I can show my manager that is honest \u2014 not an excuse, an explanation, and ideally a plan. That is what I am hoping this process gives me.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 30,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I want something I can show my manager that is honest \u2014 not an excuse, an explanation, and ideally a plan.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T15-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+            "turn": 15
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2014 \u00b7 setting \u2713",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "attention-focus",
+        "status": "covered",
+        "title": "Sustaining attention",
+        "turns": [
+          {
+            "answer": "My attention is either everywhere or hyperglued to the wrong thing. In a normal meeting I am gone within minutes, but I can lose four hours to reorganising my music library without noticing. There is no middle setting.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 4,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "My attention is either everywhere or hyperglued to the wrong thing.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T2-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+            "turn": 2
+          },
+          {
+            "answer": "The hyperfocus side almost makes it worse, because people see me concentrate intensely on something pointless and conclude I could do it for work if I tried.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 32,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "The hyperfocus side almost makes it worse, because people see me concentrate intensely on something pointless and conclude I could do it for work if I tried.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T16-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+            "turn": 16
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2713 \u00b7 setting \u2014",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "organization",
+        "status": "covered",
+        "title": "Organization and time",
+        "turns": [
+          {
+            "answer": "I am the most organised disorganised person you will meet. Colour-coded lists, three apps, reminders for my reminders \u2014 and things still fall through the cracks the moment a week gets busy. The system is load-bearing and it still is not enough.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 6,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I am the most organised disorganised person you will meet.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T3-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "How do you find organizing your time, your tasks, or your belongings?",
+            "turn": 3
+          },
+          {
+            "answer": "Maintaining the system is practically a part-time job. I spend Sunday evenings planning the week and by Wednesday the plan is decorative.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 34,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Maintaining the system is practically a part-time job.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T17-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "How do you find organizing your time, your tasks, or your belongings?",
+            "turn": 17
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2713 \u00b7 timeframe \u2713 \u00b7 setting \u2713",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "task-completion",
+        "status": "covered",
+        "title": "Starting and finishing tasks",
+        "turns": [
+          {
+            "answer": "I work long hours to compensate for how slowly things start. I will sit down to do a task and somehow an hour passes before I have begun \u2014 tidying, emails, anything but the thing. Then I stay late to catch up, every week.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 8,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I work long hours to compensate for how slowly things start.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T4-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "What kinds of tasks are hardest for you to start or finish?",
+            "turn": 4
+          },
+          {
+            "answer": "The overtime is the hidden tax. My timesheets look heroic and my evenings do not exist. Nobody sees the hour of circling before each task.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 36,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "The overtime is the hidden tax.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T18-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "What kinds of tasks are hardest for you to start or finish?",
+            "turn": 18
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2713 \u00b7 timeframe \u2014 \u00b7 setting \u2014",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "forgetfulness",
+        "status": "covered",
+        "title": "Forgetfulness in daily life",
+        "turns": [
+          {
+            "answer": "I forget what I walked into rooms for, I forget to reply for days, I forget appointments I made myself. Very often, not occasionally \u2014 it is the texture of my days, not an exception.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 10,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I forget what I walked into rooms for, I forget to reply for days, I forget appointments I made myself.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T5-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+            "turn": 5
+          },
+          {
+            "answer": "I once forgot my own birthday dinner \u2014 the one I had organised. My friends still bring it up. I laugh along because the alternative is crying.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 38,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I once forgot my own birthday dinner \u2014 the one I had organised.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T19-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+            "turn": 19
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2014 \u00b7 setting \u2713",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "restlessness",
+        "status": "covered",
+        "title": "Restlessness and staying with one thing",
+        "turns": [
+          {
+            "answer": "I am restless in the chair sense \u2014 shifting, crossing and uncrossing, getting up for water I do not want. Long car journeys are the worst; I arrive feeling like I have run a marathon while sitting down.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 12,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I am restless in the chair sense \u2014 shifting, crossing and uncrossing, getting up for water I do not want.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T6-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "When you need to sit still or stay with one thing, what is that like for you?",
+            "turn": 6
+          },
+          {
+            "answer": "I volunteer for the tea round in long meetings just to have a reason to stand up. People think I am being nice. I am managing my legs.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 40,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I volunteer for the tea round in long meetings just to have a reason to stand up.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T20-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "When you need to sit still or stay with one thing, what is that like for you?",
+            "turn": 20
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2713 \u00b7 timeframe \u2014 \u00b7 setting \u2014",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "impulsivity",
+        "status": "covered",
+        "title": "Acting quickly and patience",
+        "turns": [
+          {
+            "answer": "Sometimes I speak before the thought is finished, especially when I am tired. And I say yes to things \u2014 projects, favours, trips \u2014 before checking whether I have any room for them. My calendar pays the price.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 14,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Sometimes I speak before the thought is finished, especially when I am tired.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T7-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "How are you with waiting your turn, or holding back when you want to jump in?",
+            "turn": 7
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 timeframe \u2713",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "childhood-onset",
+        "status": "covered",
+        "title": "Childhood and school years",
+        "turns": [
+          {
+            "answer": "Clearing out my parents' loft, I found my old school reports, and it was like reading a preview: constant daydreaming, unfinished work, 'must learn to check his work'. I had forgotten all of it until I saw it in their handwriting.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 16,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Clearing out my parents' loft, I found my old school reports, and it was like reading a preview: constant daydreaming, unfinished work, 'must learn to check his work'.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T8-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+            "turn": 8
+          }
+        ]
+      },
+      {
+        "coverage_detail": "",
+        "label": "Uncertain",
+        "note": "could not recall or say; not pressed further",
+        "objective": "persistence-course",
+        "status": "unable",
+        "title": "How things changed over time",
+        "turns": [
+          {
+            "answer": "It has followed me through every stage \u2014 school, university, every job. Whether it was there before I was ten, I cannot recall; my memories that far back are thin. But from my teens onward, it is one continuous thread.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "uncertain",
+                "criterion_links": [],
+                "line": 18,
+                "note": "Expresses uncertainty on this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "It has followed me through every stage \u2014 school, university, every job.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T9-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "How have these kinds of experiences changed over the years, as far as you can tell?",
+            "turn": 9
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2014 \u00b7 setting \u2713",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "settings",
+        "status": "covered",
+        "title": "Different settings",
+        "turns": [
+          {
+            "answer": "Work shows it most brutally because the stakes are formal. But it is in the small hours of home life too \u2014 the unanswered messages, the half-done chores, the plans I forget I made. No setting is exempt.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 20,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Work shows it most brutally because the stakes are formal.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T10-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+            "turn": 10
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2713 \u00b7 setting \u2713",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "impact-work",
+        "status": "covered",
+        "title": "Impact on work or study",
+        "turns": [
+          {
+            "answer": "I got a written warning this year for missed deadlines, despite working longer hours than anyone on the team. That was the moment I stopped telling myself hard work would fix it \u2014 the hard work was already happening.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 22,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "I got a written warning this year for missed deadlines, despite working longer hours than anyone on the team.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T11-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "Can you describe a recent time when these experiences affected your work or studies?",
+            "turn": 11
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014 \u00b7 frequency \u2014 \u00b7 timeframe \u2713 \u00b7 setting \u2014",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "impact-relationships",
+        "status": "covered",
+        "title": "Impact on relationships and daily life",
+        "turns": [
+          {
+            "answer": "My partner has started keeping a shared calendar for us because I kept forgetting plans we had made together. They are frustrated, and I do not blame them \u2014 being half-listened to for years would wear anyone down.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 24,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "My partner has started keeping a shared calendar for us because I kept forgetting plans we had made together.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T12-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+            "turn": 12
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "context-factors",
+        "status": "covered",
+        "title": "Sleep, stress, mood, and health context",
+        "turns": [
+          {
+            "answer": "Tiredness sharpens everything, and I run tired most weeks because of the late working. But I have had rested holidays where I still forgot the same kinds of things, so rest is not the root of it \u2014 it just turns the volume up.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 26,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "Tiredness sharpens everything, and I run tired most weeks because of the late working.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T13-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+            "turn": 13
+          }
+        ]
+      },
+      {
+        "coverage_detail": "Coverage detail: example \u2014",
+        "label": "Reported",
+        "note": "substantive account recorded",
+        "objective": "strategies",
+        "status": "covered",
+        "title": "Strategies and support",
+        "turns": [
+          {
+            "answer": "The lists, the alarms, the shared calendar, body-doubling with a friend over video while we both do admin \u2014 I have built scaffolding around my entire life. It holds on good weeks. On bad weeks I walk around the scaffolding instead of using it.",
+            "correction": null,
+            "observations": [
+              {
+                "assertion": "present",
+                "criterion_links": [],
+                "line": 28,
+                "note": "Describes difficulty relevant to this topic; the quote is the supporting span.",
+                "obs_index": 0,
+                "quote": "The lists, the alarms, the shared calendar, body-doubling with a friend over video while we both do admin \u2014 I have built scaffolding around my entire life.",
+                "review_note": "",
+                "review_status": "pending",
+                "reviewed_at": null,
+                "segment_id": "T14-A1",
+                "user_corrected_at": null,
+                "user_correction": ""
+              }
+            ],
+            "question": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+            "turn": 14
+          }
+        ]
+      }
+    ],
+    "transcript": [
+      {
+        "id": "T1-Q1",
+        "line": 1,
+        "n": 1,
+        "role": "Q",
+        "text": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+        "turn": 1
+      },
+      {
+        "id": "T1-A1",
+        "line": 2,
+        "n": 1,
+        "role": "A",
+        "text": "After the warning at work and finding those school reports, I need a proper understanding of what I am dealing with. I have coped my way here on effort and scaffolding, and it is not holding anymore.",
+        "turn": 1
+      },
+      {
+        "id": "T2-Q1",
+        "line": 3,
+        "n": 1,
+        "role": "Q",
+        "text": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 2
+      },
+      {
+        "id": "T2-A1",
+        "line": 4,
+        "n": 1,
+        "role": "A",
+        "text": "My attention is either everywhere or hyperglued to the wrong thing. In a normal meeting I am gone within minutes, but I can lose four hours to reorganising my music library without noticing. There is no middle setting.",
+        "turn": 2
+      },
+      {
+        "id": "T3-Q1",
+        "line": 5,
+        "n": 1,
+        "role": "Q",
+        "text": "How do you find organizing your time, your tasks, or your belongings?",
+        "turn": 3
+      },
+      {
+        "id": "T3-A1",
+        "line": 6,
+        "n": 1,
+        "role": "A",
+        "text": "I am the most organised disorganised person you will meet. Colour-coded lists, three apps, reminders for my reminders \u2014 and things still fall through the cracks the moment a week gets busy. The system is load-bearing and it still is not enough.",
+        "turn": 3
+      },
+      {
+        "id": "T4-Q1",
+        "line": 7,
+        "n": 1,
+        "role": "Q",
+        "text": "What kinds of tasks are hardest for you to start or finish?",
+        "turn": 4
+      },
+      {
+        "id": "T4-A1",
+        "line": 8,
+        "n": 1,
+        "role": "A",
+        "text": "I work long hours to compensate for how slowly things start. I will sit down to do a task and somehow an hour passes before I have begun \u2014 tidying, emails, anything but the thing. Then I stay late to catch up, every week.",
+        "turn": 4
+      },
+      {
+        "id": "T5-Q1",
+        "line": 9,
+        "n": 1,
+        "role": "Q",
+        "text": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+        "turn": 5
+      },
+      {
+        "id": "T5-A1",
+        "line": 10,
+        "n": 1,
+        "role": "A",
+        "text": "I forget what I walked into rooms for, I forget to reply for days, I forget appointments I made myself. Very often, not occasionally \u2014 it is the texture of my days, not an exception.",
+        "turn": 5
+      },
+      {
+        "id": "T6-Q1",
+        "line": 11,
+        "n": 1,
+        "role": "Q",
+        "text": "When you need to sit still or stay with one thing, what is that like for you?",
+        "turn": 6
+      },
+      {
+        "id": "T6-A1",
+        "line": 12,
+        "n": 1,
+        "role": "A",
+        "text": "I am restless in the chair sense \u2014 shifting, crossing and uncrossing, getting up for water I do not want. Long car journeys are the worst; I arrive feeling like I have run a marathon while sitting down.",
+        "turn": 6
+      },
+      {
+        "id": "T7-Q1",
+        "line": 13,
+        "n": 1,
+        "role": "Q",
+        "text": "How are you with waiting your turn, or holding back when you want to jump in?",
+        "turn": 7
+      },
+      {
+        "id": "T7-A1",
+        "line": 14,
+        "n": 1,
+        "role": "A",
+        "text": "Sometimes I speak before the thought is finished, especially when I am tired. And I say yes to things \u2014 projects, favours, trips \u2014 before checking whether I have any room for them. My calendar pays the price.",
+        "turn": 7
+      },
+      {
+        "id": "T8-Q1",
+        "line": 15,
+        "n": 1,
+        "role": "Q",
+        "text": "Thinking back to childhood and school, what do you remember about yourself as a child?",
+        "turn": 8
+      },
+      {
+        "id": "T8-A1",
+        "line": 16,
+        "n": 1,
+        "role": "A",
+        "text": "Clearing out my parents' loft, I found my old school reports, and it was like reading a preview: constant daydreaming, unfinished work, 'must learn to check his work'. I had forgotten all of it until I saw it in their handwriting.",
+        "turn": 8
+      },
+      {
+        "id": "T9-Q1",
+        "line": 17,
+        "n": 1,
+        "role": "Q",
+        "text": "How have these kinds of experiences changed over the years, as far as you can tell?",
+        "turn": 9
+      },
+      {
+        "id": "T9-A1",
+        "line": 18,
+        "n": 1,
+        "role": "A",
+        "text": "It has followed me through every stage \u2014 school, university, every job. Whether it was there before I was ten, I cannot recall; my memories that far back are thin. But from my teens onward, it is one continuous thread.",
+        "turn": 9
+      },
+      {
+        "id": "T10-Q1",
+        "line": 19,
+        "n": 1,
+        "role": "Q",
+        "text": "Are these experiences different depending on where you are \u2014 for example at home versus work or study?",
+        "turn": 10
+      },
+      {
+        "id": "T10-A1",
+        "line": 20,
+        "n": 1,
+        "role": "A",
+        "text": "Work shows it most brutally because the stakes are formal. But it is in the small hours of home life too \u2014 the unanswered messages, the half-done chores, the plans I forget I made. No setting is exempt.",
+        "turn": 10
+      },
+      {
+        "id": "T11-Q1",
+        "line": 21,
+        "n": 1,
+        "role": "Q",
+        "text": "Can you describe a recent time when these experiences affected your work or studies?",
+        "turn": 11
+      },
+      {
+        "id": "T11-A1",
+        "line": 22,
+        "n": 1,
+        "role": "A",
+        "text": "I got a written warning this year for missed deadlines, despite working longer hours than anyone on the team. That was the moment I stopped telling myself hard work would fix it \u2014 the hard work was already happening.",
+        "turn": 11
+      },
+      {
+        "id": "T12-Q1",
+        "line": 23,
+        "n": 1,
+        "role": "Q",
+        "text": "How do these experiences affect the people around you, or your day-to-day life outside work?",
+        "turn": 12
+      },
+      {
+        "id": "T12-A1",
+        "line": 24,
+        "n": 1,
+        "role": "A",
+        "text": "My partner has started keeping a shared calendar for us because I kept forgetting plans we had made together. They are frustrated, and I do not blame them \u2014 being half-listened to for years would wear anyone down.",
+        "turn": 12
+      },
+      {
+        "id": "T13-Q1",
+        "line": 25,
+        "n": 1,
+        "role": "Q",
+        "text": "Are there things like sleep, stress, mood, or health that seem to make these experiences better or worse?",
+        "turn": 13
+      },
+      {
+        "id": "T13-A1",
+        "line": 26,
+        "n": 1,
+        "role": "A",
+        "text": "Tiredness sharpens everything, and I run tired most weeks because of the late working. But I have had rested holidays where I still forgot the same kinds of things, so rest is not the root of it \u2014 it just turns the volume up.",
+        "turn": 13
+      },
+      {
+        "id": "T14-Q1",
+        "line": 27,
+        "n": 1,
+        "role": "Q",
+        "text": "What do you do to cope with or work around these experiences \u2014 routines, reminders, help from others?",
+        "turn": 14
+      },
+      {
+        "id": "T14-A1",
+        "line": 28,
+        "n": 1,
+        "role": "A",
+        "text": "The lists, the alarms, the shared calendar, body-doubling with a friend over video while we both do admin \u2014 I have built scaffolding around my entire life. It holds on good weeks. On bad weeks I walk around the scaffolding instead of using it.",
+        "turn": 14
+      },
+      {
+        "id": "T15-Q1",
+        "line": 29,
+        "n": 1,
+        "role": "Q",
+        "text": "What brings you to this assessment now, and is there anything about your background you think is relevant?",
+        "turn": 15
+      },
+      {
+        "id": "T15-A1",
+        "line": 30,
+        "n": 1,
+        "role": "A",
+        "text": "I want something I can show my manager that is honest \u2014 not an excuse, an explanation, and ideally a plan. That is what I am hoping this process gives me.",
+        "turn": 15
+      },
+      {
+        "id": "T16-Q1",
+        "line": 31,
+        "n": 1,
+        "role": "Q",
+        "text": "Think about an ordinary day. What is it like for you to stay focused on one thing?",
+        "turn": 16
+      },
+      {
+        "id": "T16-A1",
+        "line": 32,
+        "n": 1,
+        "role": "A",
+        "text": "The hyperfocus side almost makes it worse, because people see me concentrate intensely on something pointless and conclude I could do it for work if I tried.",
+        "turn": 16
+      },
+      {
+        "id": "T17-Q1",
+        "line": 33,
+        "n": 1,
+        "role": "Q",
+        "text": "How do you find organizing your time, your tasks, or your belongings?",
+        "turn": 17
+      },
+      {
+        "id": "T17-A1",
+        "line": 34,
+        "n": 1,
+        "role": "A",
+        "text": "Maintaining the system is practically a part-time job. I spend Sunday evenings planning the week and by Wednesday the plan is decorative.",
+        "turn": 17
+      },
+      {
+        "id": "T18-Q1",
+        "line": 35,
+        "n": 1,
+        "role": "Q",
+        "text": "What kinds of tasks are hardest for you to start or finish?",
+        "turn": 18
+      },
+      {
+        "id": "T18-A1",
+        "line": 36,
+        "n": 1,
+        "role": "A",
+        "text": "The overtime is the hidden tax. My timesheets look heroic and my evenings do not exist. Nobody sees the hour of circling before each task.",
+        "turn": 18
+      },
+      {
+        "id": "T19-Q1",
+        "line": 37,
+        "n": 1,
+        "role": "Q",
+        "text": "Do you ever forget appointments, obligations, or where you put things? What is that like?",
+        "turn": 19
+      },
+      {
+        "id": "T19-A1",
+        "line": 38,
+        "n": 1,
+        "role": "A",
+        "text": "I once forgot my own birthday dinner \u2014 the one I had organised. My friends still bring it up. I laugh along because the alternative is crying.",
+        "turn": 19
+      },
+      {
+        "id": "T20-Q1",
+        "line": 39,
+        "n": 1,
+        "role": "Q",
+        "text": "When you need to sit still or stay with one thing, what is that like for you?",
+        "turn": 20
+      },
+      {
+        "id": "T20-A1",
+        "line": 40,
+        "n": 1,
+        "role": "A",
+        "text": "I volunteer for the tea round in long meetings just to have a reason to stand up. People think I am being nice. I am managing my legs.",
+        "turn": 20
+      }
+    ],
+    "turns_answered": 20,
+    "user_confirmed_at": "2026-11-04T01:02:01.708000"
+  },
+  "meta": {
+    "cost": "0 (dummy provider \u2014 no model spend)",
+    "exported_at": "2026-11-04T01:02:02.310597+00:00",
+    "headline": "Long-standing difficulties despite heavy coping",
+    "latency_ms": {
+      "max": 244.5,
+      "mean": 209.7
+    },
+    "model": {
+      "model": "dummy-stub",
+      "provider": "dummy"
+    },
+    "note": "Generated through the real API with a scripted synthetic patient. Quotes are exact interview output, never hand-edited.",
+    "patient_kind": "dummy",
+    "person_behaviors": [
+      "frequent-difficulties",
+      "childhood-history",
+      "work-impact",
+      "coping-strain"
+    ],
+    "profile_id": "persistent-01",
+    "proves": "Childhood history plus work impact, with coping effort recorded alongside gaps.",
+    "screening_method": "original-0-6",
+    "screening_score": 5,
+    "skill_version": "skill-v0.4-draft",
+    "synthetic": true,
+    "taxonomy_version": "taxonomy-v0.3-draft",
+    "topic_version": "topics-v0.6-draft",
+    "turns": 20,
+    "watermark": "SYNTHETIC DEMO \u2014 not a real person"
+  },
+  "screening": {
+    "answers": [
+      {
+        "answer": "Often",
+        "counted": true,
+        "n": "1",
+        "question": "How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?"
+      },
+      {
+        "answer": "Very often",
+        "counted": true,
+        "n": "2",
+        "question": "How often do you have difficulty getting things in order when you have to do a task that requires organization?"
+      },
+      {
+        "answer": "Often",
+        "counted": true,
+        "n": "3",
+        "question": "How often do you have problems remembering appointments or obligations?"
+      },
+      {
+        "answer": "Often",
+        "counted": true,
+        "n": "4",
+        "question": "When you have a task that requires a lot of thought, how often do you avoid or delay getting started?"
+      },
+      {
+        "answer": "Sometimes",
+        "counted": false,
+        "n": "5",
+        "question": "How often do you fidget or squirm with your hands or feet when you have to sit down for a long time?"
+      },
+      {
+        "answer": "Often",
+        "counted": true,
+        "n": "6",
+        "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
+      }
+    ],
+    "assessment_id": "BSHZCP6E",
+    "completed_at": "2026-11-04T01:01:52.670000",
+    "cutoff": 4,
+    "explanation": "Your screening result is positive. This suggests further assessment may be useful. Only a qualified clinician can determine what explains these experiences.",
+    "instrument": "asrs-v1.1-6q",
+    "interview_offer": {
+      "next_stage": "interview",
+      "note": "Your screening answers carry forward \u2014 you will not need to repeat them.",
+      "offered": true
+    },
+    "next_section": {
+      "intro": "What happens next: you will be asked several questions, one at a time, covering the following topics. Answer in your own words. If you cannot recall something, say so \u2014 you will not be pressed, and gaps are recorded as gaps.",
+      "topics": [
+        "Attention, organization, and getting things done",
+        "Restlessness and activity",
+        "Background and history over time",
+        "Impact on work, education, and relationships",
+        "Sleep, mood, health, and other context",
+        "Strategies and support you use"
+      ]
+    },
+    "positive": true,
+    "report_version": 1,
+    "score": 5,
+    "scoring_method": "original-0-6",
+    "scoring_version": "WHO-Adult-ASRS-v1.1-PartA-shaded-2003/Q1-3>=Sometimes-Q4-6>=Often-cutoff4;NYU-attribution-2026-10;owner-verified-vs-NYU-patient-facing-shaded-PDF-2026-10-27",
+    "threshold_description": "Q1-Q3: Sometimes/Often/Very often; Q4-Q6: Often/Very often; positive if >=4 of 6"
+  }
+}

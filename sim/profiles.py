@@ -778,6 +778,387 @@ PROFILES = [
             },
         },
     },
+    {
+        "id": "presenting-01",
+        "label": "Reports frequent difficulties across settings",
+        "behaviors": ["frequent-difficulties", "childhood-history", "work-impact"],
+        "screening": ["often", "often", "very often", "often", "sometimes", "sometimes"],
+        "facts": [
+            "Frequently loses the thread of conversations and meetings.",
+            "Bills and paperwork pile up for weeks; has paid several late fees this year.",
+            "Mind races at night; regularly short on sleep.",
+            "Described as dreamy and disorganized through school; old reports mention it.",
+            "Fidgets and feels restless through long meetings.",
+        ],
+        "uncertain": ["Cannot pin down exactly when things got worse at work."],
+        "contradictions": [],
+        "style": (
+            "Answer in full sentences, a few per answer, open and forthcoming — you "
+            "have been waiting a while to talk about this. Give concrete recent "
+            "examples where you have them. Never give exact dates or numbers beyond "
+            "what you state here."
+        ),
+        "script": {
+            "attention-focus": {
+                "answer": (
+                    "Honestly, staying focused is a daily battle. In meetings I will realise "
+                    "halfway through that I have absorbed nothing for ten minutes, and then I "
+                    "have to piece it together from context. It happens most days, I would say."
+                ),
+                "followup": (
+                    "It is worst when someone is just talking at me with slides. One on one I can "
+                    "mostly hold on, but put me in a room with a monologue and I am gone within minutes."
+                ),
+                "basis": "fact:0",
+            },
+            "organization": {
+                "answer": (
+                    "Organisation is a disaster area, and I say that with love for myself. Piles "
+                    "of unopened post, a desktop covered in files called 'final final v2'. I buy "
+                    "a new planner every January and it is abandoned by February."
+                ),
+                "followup": (
+                    "The planners are almost a tradition now — my partner buys me one every "
+                    "Christmas and we both know how it ends. I appreciate the optimism."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "task-completion": {
+                "answer": (
+                    "Starting things is the hardest part of my week. Bills sit on the counter "
+                    "for weeks until a late fee forces my hand — that has happened several times "
+                    "this year alone. It is not laziness, or at least it does not feel like it "
+                    "from the inside; it feels like wading through something."
+                ),
+                "followup": (
+                    "The maddening bit is that once I finally start, I am usually done in twenty "
+                    "minutes. Weeks of dread for twenty minutes of admin. I cannot make it make sense."
+                ),
+                "basis": "fact:1",
+            },
+            "forgetfulness": {
+                "answer": (
+                    "I lose things constantly — keys, glasses, my phone while I am holding it. "
+                    "And appointments slip clean out of my head even when I have written them down. "
+                    "Last week I double-booked myself twice in three days."
+                ),
+                "followup": (
+                    "The double-booking was embarrassing because both people knew each other. I had "
+                    "to confess I had just forgotten, twice, in one week, to overlapping friends."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "restlessness": {
+                "answer": (
+                    "Sitting still through a long meeting is genuinely painful. I click pens, "
+                    "bounce my leg, shift about — anything to discharge the fidgets. Afterwards "
+                    "I am wrung out from the effort of looking normal."
+                ),
+                "followup": (
+                    "Colleagues have commented on the pen-clicking, so now I try to fidget silently, "
+                    "which somehow takes even more energy. There is no winning."
+                ),
+                "basis": "fact:4",
+            },
+            "impulsivity": {
+                "answer": (
+                    "I interrupt people more than I would like — the thought arrives and it just "
+                    "comes straight out. Shopping is the other one: parcels arriving for things I "
+                    "do not remember ordering is a regular event in this house."
+                ),
+                "followup": (
+                    "My partner now asks me to sleep on any purchase over a trivial amount, which "
+                    "is humiliating and completely necessary. It works, mostly."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "childhood-onset": {
+                "answer": (
+                    "School is actually well documented in my case — I was the dreamy kid, always "
+                    "staring out of the window. My old reports say things like 'capable but "
+                    "disorganised' and 'needs to apply herself'. My mum kept them all, bless her."
+                ),
+                "followup": (
+                    "The reports are remarkably consistent year to year, which my mum finds hilarious "
+                    "and I find slightly devastating. Same comments from age eight to sixteen."
+                ),
+                "basis": "fact:3",
+            },
+            "persistence-course": {
+                "answer": (
+                    "It has been there as long as I can remember, though work is where it really "
+                    "bites now. I cannot pin down exactly when things got worse at work — it crept "
+                    "up as the jobs got more demanding, I think."
+                ),
+                "followup": (
+                    "University masked a lot of it because the chaos had a timetable around it. Once "
+                    "I had to build my own structure from scratch, the wheels came off properly."
+                ),
+                "basis": "uncertain",
+            },
+            "settings": {
+                "answer": (
+                    "Everywhere, honestly, but with different costumes. At work it is missed deadlines, "
+                    "at home it is chaos and forgotten plans, socially it is zoning out mid-conversation. "
+                    "Same thread running through all of it."
+                ),
+                "followup": (
+                    "Holidays are the one exception — with nothing to organise and nowhere to be, I am "
+                    "practically serene. Then real life resumes and so does everything else."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "impact-work": {
+                "answer": (
+                    "Work has taken a real hit this year. I have had formal feedback about missed "
+                    "deadlines and sloppy handoffs, which stung because I am working so hard. It is "
+                    "the gap between the effort and the output that gets me."
+                ),
+                "followup": (
+                    "I was up late three nights last week redoing something I had rushed and botched. "
+                    "The overtime hides the problem from everyone except me — and my sleep."
+                ),
+                "basis": "behavior:work-impact",
+            },
+            "impact-relationships": {
+                "answer": (
+                    "My partner is patient but fraying, I can tell. They will tell me something "
+                    "important and I will have drifted off halfway, and then I have to ask them to "
+                    "repeat it, and I can see the look. It is corrosive in a slow way."
+                ),
+                "followup": (
+                    "We had a long talk about it recently and they said they sometimes feel like a "
+                    "low priority. That landed hard, because they are the opposite of that to me."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "context-factors": {
+                "answer": (
+                    "Sleep is bad — my mind races at night going over the day, and then I am short "
+                    "on sleep and everything is harder. I know poor sleep makes it all worse, but "
+                    "the racing mind is there even in good weeks, so it is not the whole story."
+                ),
+                "followup": (
+                    "I have tried the usual sleep hygiene stuff and it helps at the margins. But I "
+                    "can have a solid eight hours and still lose my keys twice before nine."
+                ),
+                "basis": "fact:2",
+            },
+            "strategies": {
+                "answer": (
+                    "I have tried everything — apps, alarms, accountability buddies, a whiteboard the "
+                    "size of a door. Each one works for a week or two and then fades. The whiteboard "
+                    "is currently a very expensive wall decoration."
+                ),
+                "followup": (
+                    "The pattern is always the same: enormous enthusiasm, colour-coding, and then one "
+                    "busy week breaks the chain and I never pick it back up. I have stopped buying new apps."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "background-goals": {
+                "answer": (
+                    "I am here because I want to understand what has been going on my whole life, "
+                    "frankly. The school reports, the missed bills, the warning signs at work — I want "
+                    "a proper look at all of it, and to know what actually helps."
+                ),
+                "followup": (
+                    "If there is support or strategies that work for brains like mine, I want them. "
+                    "I am done white-knuckling through every week on effort alone."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+        },
+    },
+    {
+        "id": "persistent-01",
+        "label": "Long-standing difficulties despite heavy coping",
+        "behaviors": ["frequent-difficulties", "childhood-history", "work-impact", "coping-strain"],
+        "screening": ["often", "very often", "often", "often", "sometimes", "often"],
+        "facts": [
+            "Misses deadlines at work despite long hours; received a written warning.",
+            "Found old school reports describing constant daydreaming and unfinished work.",
+            "Runs elaborate lists and reminders that collapse under pressure.",
+            "Partner frustrated by forgotten plans and half-listened conversations.",
+        ],
+        "uncertain": ["Cannot recall whether difficulties were present before age ten."],
+        "contradictions": [],
+        "style": (
+            "Answer in full sentences, a few per answer — reflective, a bit weary, someone "
+            "who has coped hard for years and is running out of road. Concrete where you "
+            "can be, honest where you cannot. Never invent dates."
+        ),
+        "script": {
+            "attention-focus": {
+                "answer": (
+                    "My attention is either everywhere or hyperglued to the wrong thing. In a "
+                    "normal meeting I am gone within minutes, but I can lose four hours to "
+                    "reorganising my music library without noticing. There is no middle setting."
+                ),
+                "followup": (
+                    "The hyperfocus side almost makes it worse, because people see me concentrate "
+                    "intensely on something pointless and conclude I could do it for work if I tried."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "organization": {
+                "answer": (
+                    "I am the most organised disorganised person you will meet. Colour-coded lists, "
+                    "three apps, reminders for my reminders — and things still fall through the cracks "
+                    "the moment a week gets busy. The system is load-bearing and it still is not enough."
+                ),
+                "followup": (
+                    "Maintaining the system is practically a part-time job. I spend Sunday evenings "
+                    "planning the week and by Wednesday the plan is decorative."
+                ),
+                "basis": "fact:2",
+            },
+            "task-completion": {
+                "answer": (
+                    "I work long hours to compensate for how slowly things start. I will sit down "
+                    "to do a task and somehow an hour passes before I have begun — tidying, emails, "
+                    "anything but the thing. Then I stay late to catch up, every week."
+                ),
+                "followup": (
+                    "The overtime is the hidden tax. My timesheets look heroic and my evenings do not "
+                    "exist. Nobody sees the hour of circling before each task."
+                ),
+                "basis": "fact:0",
+            },
+            "forgetfulness": {
+                "answer": (
+                    "I forget what I walked into rooms for, I forget to reply for days, I forget "
+                    "appointments I made myself. Very often, not occasionally — it is the texture of "
+                    "my days, not an exception."
+                ),
+                "followup": (
+                    "I once forgot my own birthday dinner — the one I had organised. My friends still "
+                    "bring it up. I laugh along because the alternative is crying."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "restlessness": {
+                "answer": (
+                    "I am restless in the chair sense — shifting, crossing and uncrossing, getting up "
+                    "for water I do not want. Long car journeys are the worst; I arrive feeling like "
+                    "I have run a marathon while sitting down."
+                ),
+                "followup": (
+                    "I volunteer for the tea round in long meetings just to have a reason to stand up. "
+                    "People think I am being nice. I am managing my legs."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "impulsivity": {
+                "answer": (
+                    "Sometimes I speak before the thought is finished, especially when I am tired. "
+                    "And I say yes to things — projects, favours, trips — before checking whether I "
+                    "have any room for them. My calendar pays the price."
+                ),
+                "followup": (
+                    "The yes-saying is the expensive one. I agree in the moment because the person is "
+                    "right there, and then the week arrives and it does not fit anywhere."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "childhood-onset": {
+                "answer": (
+                    "Clearing out my parents' loft, I found my old school reports, and it was like "
+                    "reading a preview: constant daydreaming, unfinished work, 'must learn to check "
+                    "his work'. I had forgotten all of it until I saw it in their handwriting."
+                ),
+                "followup": (
+                    "What got me was how early it starts in the reports — and how nothing was ever done "
+                    "about it. It was just treated as a character trait, year after year."
+                ),
+                "basis": "fact:1",
+            },
+            "persistence-course": {
+                "answer": (
+                    "It has followed me through every stage — school, university, every job. Whether "
+                    "it was there before I was ten, I cannot recall; my memories that far back are "
+                    "thin. But from my teens onward, it is one continuous thread."
+                ),
+                "followup": (
+                    "Each stage just changed the scenery. The unfinished coursework became unfinished "
+                    "reports became unfinished life admin. Same shape, bigger consequences."
+                ),
+                "basis": "uncertain",
+            },
+            "settings": {
+                "answer": (
+                    "Work shows it most brutally because the stakes are formal. But it is in the "
+                    "small hours of home life too — the unanswered messages, the half-done chores, "
+                    "the plans I forget I made. No setting is exempt."
+                ),
+                "followup": (
+                    "Socially I overcompensate by being the enthusiastic one, which works until I forget "
+                    "a promise I made mid-enthusiasm. Then I am the flaky enthusiastic one."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "impact-work": {
+                "answer": (
+                    "I got a written warning this year for missed deadlines, despite working longer "
+                    "hours than anyone on the team. That was the moment I stopped telling myself hard "
+                    "work would fix it — the hard work was already happening."
+                ),
+                "followup": (
+                    "My manager was decent about it, honestly — said the quality is good when it arrives, "
+                    "but 'when' is doing a lot of heavy lifting in that sentence."
+                ),
+                "basis": "fact:0",
+            },
+            "impact-relationships": {
+                "answer": (
+                    "My partner has started keeping a shared calendar for us because I kept forgetting "
+                    "plans we had made together. They are frustrated, and I do not blame them — being "
+                    "half-listened to for years would wear anyone down."
+                ),
+                "followup": (
+                    "The shared calendar helps, when I check it. The worst rows are the ones where the "
+                    "plan was right there in writing and I still forgot. Those are hard to explain."
+                ),
+                "basis": "fact:3",
+            },
+            "context-factors": {
+                "answer": (
+                    "Tiredness sharpens everything, and I run tired most weeks because of the late "
+                    "working. But I have had rested holidays where I still forgot the same kinds of "
+                    "things, so rest is not the root of it — it just turns the volume up."
+                ),
+                "followup": (
+                    "Caffeine is structural at this point — several cups before I feel switched on. "
+                    "It gets me started but it does not keep me on track, if that makes sense."
+                ),
+                "basis": "behavior:frequent-difficulties",
+            },
+            "strategies": {
+                "answer": (
+                    "The lists, the alarms, the shared calendar, body-doubling with a friend over video "
+                    "while we both do admin — I have built scaffolding around my entire life. It holds "
+                    "on good weeks. On bad weeks I walk around the scaffolding instead of using it."
+                ),
+                "followup": (
+                    "Body-doubling is the newest one and honestly the best — having another person "
+                    "there, even on a screen, makes starting possible. I wish I had found it a decade ago."
+                ),
+                "basis": "fact:2",
+            },
+            "background-goals": {
+                "answer": (
+                    "After the warning at work and finding those school reports, I need a proper "
+                    "understanding of what I am dealing with. I have coped my way here on effort and "
+                    "scaffolding, and it is not holding anymore."
+                ),
+                "followup": (
+                    "I want something I can show my manager that is honest — not an excuse, an "
+                    "explanation, and ideally a plan. That is what I am hoping this process gives me."
+                ),
+                "basis": "behavior:work-impact",
+            },
+        },
+    },
 ]
 
 

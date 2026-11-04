@@ -62,9 +62,9 @@
         "title": "Context and background"
       }
     ],
-    "assessment_id": "YQFSK4YQ",
+    "assessment_id": "RB2W29EN",
     "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
-    "completed_at": "2026-11-04T00:45:09.475000",
+    "completed_at": "2026-11-04T01:01:12.384000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [],
     "coverage": [
@@ -337,9 +337,9 @@
     "kind": "interview",
     "latency_summary": {
       "count": 20,
-      "max_ms": 0.1,
+      "max_ms": 0.2,
       "p50_ms": 0.0,
-      "p95_ms": 0.1
+      "p95_ms": 0.10500000000000008
     },
     "mode": "full",
     "provisional_sketch": {
@@ -359,7 +359,7 @@
     },
     "report_version": 1,
     "screening": {
-      "completed_at": "2026-11-04T00:45:00.502000",
+      "completed_at": "2026-11-04T01:01:03.609000",
       "positive": false,
       "score": 3,
       "scoring_method": "original-0-6"
@@ -1516,15 +1516,15 @@
       }
     ],
     "turns_answered": 20,
-    "user_confirmed_at": "2026-11-04T00:45:09.475000"
+    "user_confirmed_at": "2026-11-04T01:01:12.384000"
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-04T00:45:10.089501+00:00",
+    "exported_at": "2026-11-04T01:01:12.989121+00:00",
     "headline": "Vague short answers",
     "latency_ms": {
-      "max": 231.8,
-      "mean": 205.9
+      "max": 215.2,
+      "mean": 196.4
     },
     "model": {
       "model": "dummy-stub",
@@ -1586,8 +1586,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "YQFSK4YQ",
-    "completed_at": "2026-11-04T00:45:00.502000",
+    "assessment_id": "RB2W29EN",
+    "completed_at": "2026-11-04T01:01:03.609000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",

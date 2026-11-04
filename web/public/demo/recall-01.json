@@ -61,9 +61,9 @@
         "title": "Context and background"
       }
     ],
-    "assessment_id": "2HE6JHM6",
+    "assessment_id": "FMRXWS44",
     "banner": "Prepared from your answers for clinician review \u2014 unreviewed draft.",
-    "completed_at": "2026-11-04T00:45:39.424000",
+    "completed_at": "2026-11-04T01:01:41.677000",
     "completion_note": "Information gathering has ended within the turn budget. Topics below were not covered or only thinly covered; they are recorded as gaps, not as negative findings. A clinician will still need to explore anything missing.",
     "contradictions": [
       {
@@ -394,7 +394,7 @@
     },
     "report_version": 1,
     "screening": {
-      "completed_at": "2026-11-04T00:45:30.411000",
+      "completed_at": "2026-11-04T01:01:32.930000",
       "positive": false,
       "score": 3,
       "scoring_method": "original-0-6"
@@ -1551,15 +1551,15 @@
       }
     ],
     "turns_answered": 20,
-    "user_confirmed_at": "2026-11-04T00:45:39.424000"
+    "user_confirmed_at": "2026-11-04T01:01:41.677000"
   },
   "meta": {
     "cost": "0 (dummy provider \u2014 no model spend)",
-    "exported_at": "2026-11-04T00:45:40.049447+00:00",
+    "exported_at": "2026-11-04T01:01:42.257403+00:00",
     "headline": "Incomplete recall with partial detail",
     "latency_ms": {
-      "max": 226.6,
-      "mean": 207.2
+      "max": 216.1,
+      "mean": 195.4
     },
     "model": {
       "model": "dummy-stub",
@@ -1621,8 +1621,8 @@
         "question": "How often do you feel overly active and compelled to do things, like you were driven by a motor?"
       }
     ],
-    "assessment_id": "2HE6JHM6",
-    "completed_at": "2026-11-04T00:45:30.411000",
+    "assessment_id": "FMRXWS44",
+    "completed_at": "2026-11-04T01:01:32.930000",
     "cutoff": 4,
     "explanation": "Your screening result is below the threshold. This does not exclude ADHD or other conditions. If you still have concerns, further assessment may be useful.",
     "instrument": "asrs-v1.1-6q",
